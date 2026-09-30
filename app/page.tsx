@@ -1,3 +1,4 @@
+import { CapabilitiesSection } from "@/components/sections/capabilities";
 import { HeroSection } from "@/components/sections/hero";
 import { LogoStripSection } from "@/components/sections/logo-strip";
 import { SetupSection } from "@/components/sections/setup";
@@ -8,6 +9,7 @@ export default function Home() {
       <HeroSection />
       <LogoStripSection />
       <SetupSection />
+      <CapabilitiesSection />
     </main>
   );
 }
