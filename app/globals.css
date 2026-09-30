@@ -5,6 +5,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-frame: var(--frame);
+  --color-frame-strong: var(--frame-strong);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --animate-skeleton: skeleton 2s -1s infinite linear;
@@ -153,6 +155,8 @@
 }
 
 :root {
+  --frame: --alpha(var(--color-neutral-500) / 21%);
+  --frame-strong: --alpha(var(--color-neutral-500) / 52%);
   --destructive-foreground: var(--color-red-700);
   --info: var(--color-blue-500);
   --info-foreground: var(--color-blue-700);
@@ -284,5 +288,14 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@keyframes scroll-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
   }
 }

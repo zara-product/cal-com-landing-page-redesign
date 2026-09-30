@@ -2,48 +2,35 @@
 
 import {
   CheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  CopyIcon,
   GlobeIcon,
+  LinkIcon,
+  MapPinIcon,
+  MoonIcon,
+  PhoneIcon,
   PlusIcon,
-  VideoIcon,
+  SunIcon,
+  XIcon,
 } from "lucide-react";
+import NextImage from "next/image";
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
+// ─── Hooks ────────────────────────────────────────────────────────────────────
 
-const STEPS = [
-  {
-    id: "connect" as const,
-    number: "1",
-    label: "Connect",
-    fullLabel: "Connect",
-    description: "Link your calendars so Cal.com knows when you're busy.",
-  },
-  {
-    id: "availability" as const,
-    number: "2",
-    label: "Availability",
-    fullLabel: "Set availability",
-    description: "Define the days and hours when people can book you.",
-  },
-  {
-    id: "booked" as const,
-    number: "3",
-    label: "Get booked",
-    fullLabel: "Get booked",
-    description: "Share your link — anyone can find a time that works.",
-  },
-] as const;
-
-type StepId = (typeof STEPS)[number]["id"];
-
-// ─── useFadeIn ────────────────────────────────────────────────────────────────
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
 
 function useFadeIn(isActive: boolean): boolean {
-  // Start visible if initially active so the default step renders without animation delay.
   const [visible, setVisible] = React.useState(isActive);
   React.useEffect(() => {
     if (!isActive) {
@@ -56,41 +43,139 @@ function useFadeIn(isActive: boolean): boolean {
   return visible;
 }
 
+// ─── Steps ────────────────────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    id: "connect" as const,
+    number: "01",
+    title: "Connect your calendar",
+    description:
+      "We'll check for conflicts across your calendars, so you don't have to worry about double-bookings.",
+  },
+  {
+    id: "availability" as const,
+    number: "02",
+    title: "Set your availability",
+    description:
+      "Want to block off weekends? Add buffers or booking limits? We make that easy.",
+  },
+  {
+    id: "meet" as const,
+    number: "03",
+    title: "Choose how to meet",
+    description:
+      "Video, phone or in person — set the option that fits the meeting.",
+  },
+] as const;
+
+type StepId = (typeof STEPS)[number]["id"];
+const STEP_IDS: StepId[] = ["connect", "availability", "meet"];
+const AUTO_CYCLE_MS = 5200;
+
 // ─── SetupSection ─────────────────────────────────────────────────────────────
 
 export function SetupSection() {
   const [activeStep, setActiveStep] = React.useState<StepId>("connect");
+  const [progress, setProgress] = React.useState(0);
+  const [inView, setInView] = React.useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const sectionRef = React.useRef<HTMLElement>(null);
+  const rafRef = React.useRef<number | null>(null);
+  const startTimeRef = React.useRef<number | null>(null);
+
+  // Start timer only once the section has scrolled into view
+  React.useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
+    if (!inView) return;
+
+    // Read activeStep here so it's a real dep (no stale closure, satisfies lint)
+    const nextStep =
+      STEP_IDS[(STEP_IDS.indexOf(activeStep) + 1) % STEP_IDS.length];
+
+    if (prefersReducedMotion) {
+      const timer = setInterval(() => setActiveStep(nextStep), AUTO_CYCLE_MS);
+      return () => clearInterval(timer);
+    }
+
+    startTimeRef.current = null;
+    setProgress(0);
+
+    const animate = (timestamp: number) => {
+      if (startTimeRef.current === null) startTimeRef.current = timestamp;
+      const pct = Math.min(
+        (timestamp - startTimeRef.current) / AUTO_CYCLE_MS,
+        1,
+      );
+      setProgress(pct * 100);
+      if (pct < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        rafRef.current = null;
+        setActiveStep(nextStep);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [activeStep, prefersReducedMotion, inView]);
+
+  function handleStepClick(id: StepId) {
+    setActiveStep(id);
+  }
 
   return (
     <section
-      aria-label="Simple scheduling, set up in minutes"
+      ref={sectionRef}
+      aria-label="Simple scheduling"
       className="w-full bg-background"
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="border-t border-border py-20 lg:py-28">
+      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
+        <div className="py-20 lg:py-28">
           {/* Section header */}
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              This is where Cal.com starts
-            </p>
-            <h2 className="mt-4 text-[1.875rem] font-bold leading-tight tracking-tight text-foreground lg:text-[2.25rem]">
-              Simple scheduling,
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              Simple scheduling
+            </span>
+            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+              Share your availability.
               <br />
-              set up in minutes.
+              Skip the back-and-forth.
             </h2>
-            <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted-foreground">
-              Connect your calendars, define when you&apos;re available, and let
-              people book a time that works — without the back-and-forth.
+            <p className="mt-5 text-base leading-relaxed text-muted-foreground">
+              Stay in control of your time while Cal.com takes care of the
+              scheduling around it.
             </p>
           </div>
 
           {/* Step nav + product stage */}
-          <div className="mt-14 grid grid-cols-1 items-start gap-8 lg:mt-16 lg:grid-cols-[260px_1fr] lg:gap-10 xl:grid-cols-[280px_1fr] xl:gap-14">
+          <div className="mt-14 grid grid-cols-1 items-start gap-6 lg:mt-16 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-10 xl:gap-14">
             {/* Step nav */}
             <div
               role="tablist"
               aria-label="Setup steps"
-              className="flex flex-row gap-1.5 lg:flex-col lg:gap-1"
+              className="flex flex-col gap-1"
             >
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
@@ -102,67 +187,79 @@ export function SetupSection() {
                     aria-selected={isActive}
                     aria-controls={`setup-panel-${step.id}`}
                     id={`setup-tab-${step.id}`}
-                    onClick={() => setActiveStep(step.id)}
+                    onClick={() => handleStepClick(step.id)}
                     className={cn(
-                      "group relative flex flex-1 flex-col items-center gap-2 rounded-xl border px-3 py-3.5 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:flex-none lg:flex-row lg:items-start lg:gap-3 lg:px-4 lg:py-4 lg:text-left",
+                      "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
-                        ? "border-border bg-muted/50"
-                        : "border-transparent hover:bg-muted/30",
+                        ? "bg-background shadow-sm"
+                        : "bg-transparent hover:bg-muted/20",
                     )}
                   >
-                    {/* Left accent — desktop only */}
-                    {isActive && (
-                      <span
+                    {/* Progress fill — animates left-to-right inside active card */}
+                    {isActive && !prefersReducedMotion && (
+                      <div
                         aria-hidden="true"
-                        className="absolute inset-y-3 left-0 hidden w-0.5 rounded-r-full bg-foreground lg:block"
+                        className="pointer-events-none absolute inset-0 bg-muted/50"
+                        style={{ width: `${progress}%`, right: "auto" }}
                       />
                     )}
 
-                    {/* Number pill */}
-                    <span
-                      className={cn(
-                        "flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors",
-                        isActive
-                          ? "bg-foreground text-background"
-                          : "bg-border text-muted-foreground",
-                      )}
-                    >
-                      {step.number}
-                    </span>
-
-                    {/* Labels */}
-                    <div className="min-w-0">
-                      <p
+                    <div className="relative flex items-start gap-3 px-5 py-4">
+                      <span
                         className={cn(
-                          "text-xs font-semibold transition-colors lg:text-sm",
+                          "shrink-0 tabular-nums text-xs font-semibold leading-snug",
                           isActive
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        <span className="lg:hidden">{step.label}</span>
-                        <span className="hidden lg:inline">
-                          {step.fullLabel}
-                        </span>
-                      </p>
-                      <p
-                        className={cn(
-                          "mt-0.5 hidden text-xs leading-snug transition-colors lg:block",
-                          isActive
-                            ? "text-muted-foreground"
+                            ? "text-foreground/40"
                             : "text-muted-foreground/40",
                         )}
                       >
-                        {step.description}
-                      </p>
+                        {step.number}
+                      </span>
+                      <span className="min-w-0">
+                        <span
+                          className={cn(
+                            "block text-base font-bold leading-snug transition-colors",
+                            isActive
+                              ? "text-foreground"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {step.title}
+                        </span>
+                        <span
+                          className={cn(
+                            "grid overflow-hidden transition-all duration-500",
+                            isActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                          )}
+                          style={
+                            prefersReducedMotion
+                              ? { transition: "none" }
+                              : undefined
+                          }
+                        >
+                          <span
+                            className={cn(
+                              "min-h-0 text-sm leading-relaxed text-muted-foreground transition-opacity duration-300",
+                              isActive ? "opacity-100 mt-2" : "opacity-0",
+                            )}
+                            style={
+                              prefersReducedMotion
+                                ? { transition: "none" }
+                                : undefined
+                            }
+                          >
+                            {step.description}
+                          </span>
+                        </span>
+                      </span>
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Product stage — grid-stacked for crossfade */}
-            <div className="grid">
+            {/* Product stage — fixed-height neutral frame; panels centred within */}
+            <div className="relative min-h-[440px] rounded-2xl bg-muted/30">
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
                 return (
@@ -172,26 +269,55 @@ export function SetupSection() {
                     id={`setup-panel-${step.id}`}
                     aria-labelledby={`setup-tab-${step.id}`}
                     aria-hidden={!isActive}
-                    style={{ gridArea: "1 / 1" }}
                     className={cn(
-                      "transition-opacity duration-200",
+                      "absolute inset-0 flex items-center justify-center p-5",
+                      "transition-[opacity,transform] duration-300 ease-out",
                       isActive
-                        ? "relative z-10 opacity-100"
-                        : "pointer-events-none z-0 opacity-0",
+                        ? "z-10 translate-y-0 opacity-100"
+                        : "pointer-events-none z-0 translate-y-2 opacity-0",
                     )}
+                    style={{
+                      transition: prefersReducedMotion ? "none" : undefined,
+                    }}
                   >
-                    {step.id === "connect" && (
-                      <ConnectPanel isActive={isActive} />
-                    )}
-                    {step.id === "availability" && (
-                      <AvailabilityPanel isActive={isActive} />
-                    )}
-                    {step.id === "booked" && (
-                      <BookedPanel isActive={isActive} />
-                    )}
+                    <div className="w-full max-w-[440px]">
+                      {step.id === "connect" && (
+                        <ConnectPanel isActive={isActive} />
+                      )}
+                      {step.id === "availability" && (
+                        <AvailabilityPanel isActive={isActive} />
+                      )}
+                      {step.id === "meet" && <MeetPanel isActive={isActive} />}
+                    </div>
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* ── Make it yours ── */}
+          <div className="mt-20 border-t border-border pt-14 lg:mt-24">
+            <div className="mb-10">
+              <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
+                Make it yours
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <MakeItYoursCard
+                title="Your own booking link"
+                description="A short, clean link that's easy to share and remember."
+                visual={<BookingLinkVisual />}
+              />
+              <MakeItYoursCard
+                title="Your look"
+                description="Add your photo, brand colour and choose light or dark mode."
+                visual={<YourLookVisual />}
+              />
+              <MakeItYoursCard
+                title="A better booking experience"
+                description="Bookers see times in their own timezone and choose what works in a few clicks."
+                visual={<TimeSlotsVisual />}
+              />
             </div>
           </div>
         </div>
@@ -202,117 +328,193 @@ export function SetupSection() {
 
 // ─── ConnectPanel ─────────────────────────────────────────────────────────────
 
-type CalendarEntry = {
-  key: string;
-  name: string;
-  accountLabel: string | null;
-  initial: string;
-  connected: boolean;
-};
+function IconGoogleCalendar() {
+  return (
+    <NextImage
+      src="/icons/google-calendar.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
 
-const CALENDARS: CalendarEntry[] = [
+function IconOutlook() {
+  return (
+    <NextImage
+      src="/icons/outlook-calendar.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
+
+function IconAppleCalendar() {
+  return (
+    <NextImage
+      src="/icons/apple-calendar.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
+
+const CONNECT_CALENDARS = [
   {
     key: "google",
     name: "Google Calendar",
     accountLabel: "Personal",
-    initial: "G",
-    connected: true,
+    Icon: IconGoogleCalendar,
+  },
+  {
+    key: "outlook",
+    name: "Microsoft Outlook",
+    accountLabel: "Work",
+    Icon: IconOutlook,
   },
   {
     key: "apple",
     name: "Apple Calendar",
     accountLabel: "iCloud",
-    initial: "A",
-    connected: true,
+    Icon: IconAppleCalendar,
   },
-  {
-    key: "outlook",
-    name: "Microsoft Outlook",
-    accountLabel: null,
-    initial: "O",
-    connected: false,
-  },
-];
+] as const;
 
 function ConnectPanel({ isActive }: { isActive: boolean }) {
-  const visible = useFadeIn(isActive);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [entered, setEntered] = React.useState(false);
+  const [googleOn, setGoogleOn] = React.useState(false);
+  const [outlookOn, setOutlookOn] = React.useState(false);
+  const [showConfirmation, setShowConfirmation] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isActive) {
+      setEntered(false);
+      setGoogleOn(false);
+      setOutlookOn(false);
+      setShowConfirmation(false);
+      return;
+    }
+
+    const rafId = requestAnimationFrame(() => setEntered(true));
+
+    if (prefersReducedMotion) {
+      setGoogleOn(true);
+      setOutlookOn(true);
+      setShowConfirmation(true);
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    const t1 = setTimeout(() => setGoogleOn(true), 300);
+    const t2 = setTimeout(() => setOutlookOn(true), 1000);
+    const t3 = setTimeout(() => setShowConfirmation(true), 1700);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [isActive, prefersReducedMotion]);
+
+  const calStates = [
+    { ...CONNECT_CALENDARS[0], on: googleOn },
+    { ...CONNECT_CALENDARS[1], on: outlookOn },
+    { ...CONNECT_CALENDARS[2], on: false },
+  ] as const;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
-      {/* Header */}
-      <div className="border-b border-border px-6 py-5">
-        <p className="text-sm font-semibold text-foreground">Your calendars</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Cal.com checks your existing events to prevent double-booking.
-        </p>
-      </div>
+    <div className="relative">
+      {/* Calendar card */}
+      <div
+        className="overflow-hidden rounded-xl border border-border bg-background"
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                opacity: entered ? 1 : 0,
+                transform: entered ? "none" : "translateY(6px) scale(0.98)",
+                transition: "opacity 350ms ease-out, transform 350ms ease-out",
+              }
+        }
+      >
+        <div className="border-b border-border px-6 py-5">
+          <p className="text-sm font-semibold text-foreground">
+            Connected calendars
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Cal.com checks your existing events to prevent double-booking.
+          </p>
+        </div>
 
-      {/* Calendar rows */}
-      <div className="divide-y divide-border/50">
-        {CALENDARS.map((cal, i) => (
-          <div
-            key={cal.key}
-            className="flex items-center gap-4 px-6 py-4 transition-[opacity,transform] duration-300"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "none" : "translateY(8px)",
-              transitionDelay: visible ? `${i * 60}ms` : "0ms",
-            }}
-          >
-            {/* Initial badge */}
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold text-foreground/70">
-              {cal.initial}
-            </span>
-
-            {/* Name + account */}
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground">{cal.name}</p>
-              {cal.accountLabel && (
+        <div className="divide-y divide-border/50">
+          {calStates.map((cal) => (
+            <div key={cal.key} className="flex items-center gap-4 px-6 py-4">
+              <span className="flex h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border/50">
+                <cal.Icon />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground">
+                  {cal.name}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {cal.accountLabel}
                 </p>
-              )}
+              </div>
+              <VisualSwitch checked={cal.on} />
             </div>
-
-            {/* Connection status */}
-            {cal.connected ? (
-              <Badge variant="success" size="sm">
-                Connected
-              </Badge>
-            ) : (
-              <button
-                type="button"
-                className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <PlusIcon className="size-3" aria-hidden="true" />
-                Add
-              </button>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Conflict checking footer */}
+      {/* Floating confirmation card — bottom-right corner, restrained right overhang */}
       <div
-        className="flex items-center gap-3 border-t border-border bg-muted/30 px-6 py-4 transition-opacity duration-300"
-        style={{
-          opacity: visible ? 1 : 0,
-          transitionDelay: visible ? `${CALENDARS.length * 60 + 60}ms` : "0ms",
-        }}
+        aria-live="polite"
+        className="pointer-events-none absolute z-10"
+        style={
+          prefersReducedMotion
+            ? {
+                right: "-52px",
+                bottom: "-36px",
+                opacity: showConfirmation ? 1 : 0,
+              }
+            : {
+                right: "-52px",
+                bottom: "-36px",
+                opacity: showConfirmation ? 1 : 0,
+                transform: showConfirmation
+                  ? "translateY(0)"
+                  : "translateY(10px)",
+                transition: "opacity 400ms ease-out, transform 400ms ease-out",
+              }
+        }
       >
-        <span
-          className="flex size-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success-foreground"
-          aria-hidden="true"
-        >
-          <CheckIcon className="size-3" />
-        </span>
-        <div>
-          <p className="text-xs font-medium text-foreground">
-            Conflict checking active
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Your existing events remain private
-          </p>
+        <div className="pointer-events-auto flex w-56 items-start gap-3 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
+          <span
+            className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success-foreground"
+            aria-hidden="true"
+          >
+            <CheckIcon className="h-3 w-3" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Calendars in sync
+            </p>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              Busy times are hidden from your booking page
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -321,21 +523,12 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
 
 // ─── AvailabilityPanel ────────────────────────────────────────────────────────
 
-type DayEntry = {
-  key: string;
-  label: string;
-  short: string;
-  enabled: boolean;
-  start: string | null;
-  end: string | null;
-};
-
-const DAYS: DayEntry[] = [
+const DAYS = [
+  { key: "sun", label: "Sunday", short: "Sun", start: null, end: null },
   {
     key: "mon",
     label: "Monday",
     short: "Mon",
-    enabled: true,
     start: "9:00 AM",
     end: "5:00 PM",
   },
@@ -343,7 +536,6 @@ const DAYS: DayEntry[] = [
     key: "tue",
     label: "Tuesday",
     short: "Tue",
-    enabled: true,
     start: "9:00 AM",
     end: "5:00 PM",
   },
@@ -351,7 +543,6 @@ const DAYS: DayEntry[] = [
     key: "wed",
     label: "Wednesday",
     short: "Wed",
-    enabled: true,
     start: "9:00 AM",
     end: "5:00 PM",
   },
@@ -359,7 +550,6 @@ const DAYS: DayEntry[] = [
     key: "thu",
     label: "Thursday",
     short: "Thu",
-    enabled: true,
     start: "9:00 AM",
     end: "5:00 PM",
   },
@@ -367,27 +557,11 @@ const DAYS: DayEntry[] = [
     key: "fri",
     label: "Friday",
     short: "Fri",
-    enabled: true,
     start: "9:00 AM",
     end: "5:00 PM",
   },
-  {
-    key: "sat",
-    label: "Saturday",
-    short: "Sat",
-    enabled: false,
-    start: null,
-    end: null,
-  },
-  {
-    key: "sun",
-    label: "Sunday",
-    short: "Sun",
-    enabled: false,
-    start: null,
-    end: null,
-  },
-];
+  { key: "sat", label: "Saturday", short: "Sat", start: null, end: null },
+] as const;
 
 function VisualSwitch({ checked }: { checked: boolean }) {
   return (
@@ -400,7 +574,7 @@ function VisualSwitch({ checked }: { checked: boolean }) {
     >
       <span
         className={cn(
-          "block size-[14px] rounded-full bg-background shadow-sm transition-transform duration-200",
+          "block h-[14px] w-[14px] rounded-full bg-background shadow-sm transition-transform duration-200",
           checked ? "translate-x-[12px]" : "translate-x-0",
         )}
       />
@@ -409,226 +583,528 @@ function VisualSwitch({ checked }: { checked: boolean }) {
 }
 
 function AvailabilityPanel({ isActive }: { isActive: boolean }) {
-  const visible = useFadeIn(isActive);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [activeDays, setActiveDays] = React.useState<Set<string>>(new Set());
+  const [showLimits, setShowLimits] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isActive) {
+      setActiveDays(new Set());
+      setShowLimits(false);
+      return;
+    }
+
+    const weekdays = DAYS.filter((d) => d.start !== null);
+
+    if (prefersReducedMotion) {
+      setActiveDays(new Set(weekdays.map((d) => d.key)));
+      setShowLimits(true);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    for (let i = 0; i < weekdays.length; i++) {
+      const { key } = weekdays[i];
+      timers.push(
+        setTimeout(
+          () => {
+            setActiveDays((prev) => new Set([...prev, key]));
+          },
+          350 + i * 380,
+        ),
+      );
+    }
+
+    // Show limits card after all weekdays active + a beat
+    timers.push(
+      setTimeout(
+        () => setShowLimits(true),
+        350 + (weekdays.length - 1) * 380 + 600,
+      ),
+    );
+
+    return () => {
+      for (const t of timers) clearTimeout(t);
+    };
+  }, [isActive, prefersReducedMotion]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
-        <div>
-          <p className="text-sm font-semibold text-foreground">
-            Your availability
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            When can people book time with you?
-          </p>
+    <div className="relative">
+      {/* Main card */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Your availability
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              When can people book time with you?
+            </p>
+          </div>
+          <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
+            <GlobeIcon className="h-3 w-3 opacity-60" aria-hidden="true" />
+            Europe / Berlin
+          </span>
         </div>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
-          <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
-          Europe/Berlin
-        </span>
+
+        {/* Day rows — weekdays activate sequentially; weekend stays muted */}
+        <div className="divide-y divide-border/50">
+          {DAYS.map((day) => {
+            const unavailable = day.start === null;
+            const on = !unavailable && activeDays.has(day.key);
+            return (
+              <div
+                key={day.key}
+                className="flex items-center gap-3 px-6 py-1.5"
+              >
+                <VisualSwitch checked={on} />
+                <span
+                  className={cn(
+                    "w-24 shrink-0 text-sm font-medium transition-colors duration-300",
+                    on ? "text-foreground" : "text-muted-foreground/40",
+                  )}
+                >
+                  <span className="hidden sm:inline">{day.label}</span>
+                  <span className="sm:hidden">{day.short}</span>
+                </span>
+                {unavailable ? (
+                  <span className="text-xs text-muted-foreground/40">
+                    Unavailable
+                  </span>
+                ) : (
+                  <div
+                    className="flex items-center gap-1.5 text-xs"
+                    style={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            opacity: on ? 1 : 0,
+                            transform: on ? "none" : "translateX(-6px)",
+                            transition:
+                              "opacity 250ms ease-out, transform 250ms ease-out",
+                          }
+                    }
+                  >
+                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                      {day.start}
+                    </span>
+                    <span className="text-muted-foreground/40">–</span>
+                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                      {day.end}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="ml-1 text-muted-foreground/30"
+                    >
+                      <XIcon className="h-3 w-3" />
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="text-muted-foreground/30"
+                    >
+                      <PlusIcon className="h-3 w-3" />
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="text-muted-foreground/30"
+                    >
+                      <CopyIcon className="h-3 w-3" />
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Day rows */}
-      <div className="divide-y divide-border/50">
-        {DAYS.map((day, i) => (
-          <div
-            key={day.key}
-            className="flex items-center gap-4 px-6 py-3.5 transition-[opacity,transform] duration-300"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "none" : "translateX(-8px)",
-              transitionDelay: visible ? `${i * 45}ms` : "0ms",
-            }}
-          >
-            <VisualSwitch checked={day.enabled} />
-
-            <span
-              className={cn(
-                "w-24 shrink-0 text-sm font-medium",
-                day.enabled ? "text-foreground" : "text-muted-foreground/40",
-              )}
-            >
-              <span className="hidden sm:inline">{day.label}</span>
-              <span className="sm:hidden">{day.short}</span>
-            </span>
-
-            {day.enabled && day.start && day.end ? (
-              <div className="flex items-center gap-2 text-xs">
-                <span className="rounded border border-border px-2.5 py-1 font-medium text-foreground">
-                  {day.start}
-                </span>
-                <span className="text-muted-foreground/40">–</span>
-                <span className="rounded border border-border px-2.5 py-1 font-medium text-foreground">
-                  {day.end}
-                </span>
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground/40">
-                Unavailable
-              </span>
-            )}
+      {/* Floating Optional limits card — bottom-right corner, restrained right overhang */}
+      <div
+        aria-live="polite"
+        className="pointer-events-none absolute z-10"
+        style={
+          prefersReducedMotion
+            ? { right: "-52px", bottom: "-28px", opacity: showLimits ? 1 : 0 }
+            : {
+                right: "-52px",
+                bottom: "-28px",
+                opacity: showLimits ? 1 : 0,
+                transform: showLimits ? "translateY(0)" : "translateY(10px)",
+                transition: "opacity 400ms ease-out, transform 400ms ease-out",
+              }
+        }
+      >
+        <div className="pointer-events-auto w-56 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
+          <p className="mb-2 text-xs font-semibold text-foreground">
+            Optional limits
+          </p>
+          <div className="space-y-1 text-xs font-medium text-foreground">
+            <p>10 min buffer</p>
+            <p>Max 4 a day</p>
+            <p>2h notice</p>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── BookedPanel ──────────────────────────────────────────────────────────────
+// ─── MeetPanel ────────────────────────────────────────────────────────────────
 
-const CAL_DAYS_HDR = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
-const OCT_OFFSET = 3; // Oct 1 2025 is Wednesday (index 3)
-const OCT_CELLS = Array.from({ length: 35 }, (_, i) => {
-  const d = i - OCT_OFFSET + 1;
-  return d >= 1 && d <= 31 ? d : null;
-});
-const AVAILABLE_DAYS = new Set([
-  6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31,
-]);
-const SELECTED_DAY = 14;
-const TIME_SLOTS = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "2:00 PM",
-  "3:30 PM",
-] as const;
-const SELECTED_SLOT = "10:00 AM";
+// Logo icon components for video conferencing services
+function IconCalVideo({ className: _c }: { className?: string }) {
+  return (
+    <NextImage
+      src="/icons/cal-video.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
 
-function BookedPanel({ isActive }: { isActive: boolean }) {
+function IconGoogleMeet({ className: _c }: { className?: string }) {
+  return (
+    <NextImage
+      src="/icons/google-meet.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
+
+function IconZoomVideo({ className: _c }: { className?: string }) {
+  return (
+    <NextImage
+      src="/icons/zoom.svg"
+      width={36}
+      height={36}
+      unoptimized
+      alt=""
+      aria-hidden="true"
+      className="h-full w-full object-contain"
+    />
+  );
+}
+
+type IconComponent = React.FC<{ className?: string }>;
+
+interface MeetingRow {
+  key: string;
+  label: string;
+  description: string;
+  Icon: IconComponent;
+  isLogo: boolean;
+  enabled: boolean;
+}
+
+const MEETING_TYPES: MeetingRow[] = [
+  {
+    key: "cal-video",
+    label: "Cal Video",
+    description: "Built-in video, no account needed",
+    Icon: IconCalVideo,
+    isLogo: true,
+    enabled: true,
+  },
+  {
+    key: "google-meet",
+    label: "Google Meet",
+    description: "Google Meet link sent with confirmation",
+    Icon: IconGoogleMeet,
+    isLogo: true,
+    enabled: true,
+  },
+  {
+    key: "zoom",
+    label: "Zoom",
+    description: "Zoom link sent with confirmation",
+    Icon: IconZoomVideo,
+    isLogo: true,
+    enabled: true,
+  },
+  {
+    key: "phone",
+    label: "Phone call",
+    description: "They call you, or you call them",
+    Icon: PhoneIcon as IconComponent,
+    isLogo: false,
+    enabled: true,
+  },
+  {
+    key: "inperson",
+    label: "In person",
+    description: "Set a location",
+    Icon: MapPinIcon as IconComponent,
+    isLogo: false,
+    enabled: false,
+  },
+];
+
+function MeetPanel({ isActive }: { isActive: boolean }) {
   const visible = useFadeIn(isActive);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [showBookerCard, setShowBookerCard] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isActive) {
+      setShowBookerCard(false);
+      return;
+    }
+    if (prefersReducedMotion) {
+      setShowBookerCard(true);
+      return;
+    }
+    // Appear after rows have animated in (5 rows × 80ms stagger + 300ms transition)
+    const t = setTimeout(() => setShowBookerCard(true), 900);
+    return () => clearTimeout(t);
+  }, [isActive, prefersReducedMotion]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
-      {/* Host identity */}
-      <div className="border-b border-border px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <span className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground">
-              AM
-            </span>
-            <span
-              className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background bg-success"
-              aria-hidden="true"
-            />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">Alex Morgan</p>
-            <p className="text-xs text-muted-foreground">30 Minute Meeting</p>
-          </div>
+    <div className="relative">
+      <div className="overflow-hidden rounded-xl border border-border bg-background">
+        <div className="border-b border-border px-6 py-5">
+          <p className="text-sm font-semibold text-foreground">
+            How would you like to meet?
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Choose the formats available for this event type
+          </p>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <VideoIcon className="size-3 opacity-60" aria-hidden="true" />
-            Video call
-          </span>
-          <span aria-hidden="true" className="opacity-30">
-            ·
-          </span>
-          <span>30 min</span>
-          <span aria-hidden="true" className="opacity-30">
-            ·
-          </span>
-          <span className="flex items-center gap-1">
-            <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
-            Europe/Berlin
-          </span>
+
+        <div className="divide-y divide-border/50">
+          {MEETING_TYPES.map((row, i) => {
+            const Icon = row.Icon;
+            return (
+              <div
+                key={row.key}
+                className="flex items-center gap-4 px-6 py-3"
+                style={{
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? "none" : "translateY(6px)",
+                  transition: "opacity 300ms, transform 300ms",
+                  transitionDelay: visible ? `${i * 80}ms` : "0ms",
+                }}
+              >
+                {row.isLogo ? (
+                  <span className="flex h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border/50">
+                    <Icon />
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
+                      row.enabled
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">
+                    {row.label}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {row.description}
+                  </p>
+                </div>
+                <VisualSwitch checked={row.enabled} />
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Calendar + time slots */}
+      {/* Floating Booker chooses card — bottom-right, consistent with other cards */}
       <div
-        className="flex divide-x divide-border transition-opacity duration-300"
-        style={{
-          opacity: visible ? 1 : 0,
-          transitionDelay: visible ? "40ms" : "0ms",
-        }}
+        aria-live="polite"
+        className="pointer-events-none absolute z-10"
+        style={
+          prefersReducedMotion
+            ? {
+                right: "-52px",
+                bottom: "-32px",
+                opacity: showBookerCard ? 1 : 0,
+              }
+            : {
+                right: "-52px",
+                bottom: "-32px",
+                opacity: showBookerCard ? 1 : 0,
+                transform: showBookerCard
+                  ? "translateY(0)"
+                  : "translateY(10px)",
+                transition: "opacity 400ms ease-out, transform 400ms ease-out",
+              }
+        }
       >
-        {/* Calendar */}
-        <div className="flex-1 px-6 py-5" aria-hidden="true">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
-              October 2025
-            </span>
-            <div className="flex items-center gap-0.5">
-              <button
-                type="button"
-                aria-label="Previous month"
-                tabIndex={-1}
-                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted"
-              >
-                <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                aria-label="Next month"
-                tabIndex={-1}
-                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted"
-              >
-                <ChevronRightIcon className="size-3.5" aria-hidden="true" />
-              </button>
+        <div className="pointer-events-auto w-56 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
+          <p className="mb-2.5 text-xs font-semibold text-foreground">
+            Booker chooses
+          </p>
+          <div className="space-y-1">
+            {/* Cal Video — selected */}
+            <div className="flex items-center gap-2.5 rounded-lg bg-foreground px-3 py-1.5">
+              <span className="flex h-3.5 w-3.5 shrink-0 overflow-hidden rounded-sm">
+                <NextImage
+                  src="/icons/cal-video.svg"
+                  width={14}
+                  height={14}
+                  unoptimized
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-contain"
+                />
+              </span>
+              <span className="text-xs font-medium text-background">
+                Cal Video
+              </span>
+            </div>
+            {/* Phone */}
+            <div className="flex items-center gap-2.5 px-3 py-1.5">
+              <PhoneIcon
+                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span className="text-xs text-muted-foreground">Phone</span>
+            </div>
+            {/* In person */}
+            <div className="flex items-center gap-2.5 px-3 py-1.5">
+              <MapPinIcon
+                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span className="text-xs text-muted-foreground">In person</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          <div className="grid grid-cols-7 text-center">
-            {CAL_DAYS_HDR.map((d) => (
-              <div
-                key={d}
-                className="flex h-8 items-center justify-center text-[10px] font-medium text-muted-foreground/60"
-              >
-                {d}
-              </div>
-            ))}
-            {OCT_CELLS.map((day, i) => (
-              <div
-                key={day !== null ? `day-${day}` : `empty-${i}`}
-                className={cn(
-                  "mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs",
-                  day === null
-                    ? ""
-                    : day === SELECTED_DAY
-                      ? "bg-primary font-semibold text-primary-foreground"
-                      : AVAILABLE_DAYS.has(day)
-                        ? "cursor-default text-foreground"
-                        : "text-muted-foreground/30",
-                )}
-              >
-                {day}
-              </div>
-            ))}
+// ─── Make it yours ────────────────────────────────────────────────────────────
+
+function MakeItYoursCard({
+  title,
+  description,
+  visual,
+}: {
+  title: string;
+  description: string;
+  visual: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-background p-5">
+      <div className="mb-4 flex min-h-[88px] items-center">{visual}</div>
+      <p className="text-sm font-semibold leading-tight text-foreground">
+        {title}
+      </p>
+      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function BookingLinkVisual() {
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
+        <LinkIcon
+          className="h-3 w-3 shrink-0 text-muted-foreground/50"
+          aria-hidden="true"
+        />
+        <span className="text-xs text-muted-foreground">
+          cal.com/
+          <span className="font-medium text-foreground">username</span>
+        </span>
+      </div>
+      <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2">
+        <LinkIcon
+          className="h-3 w-3 shrink-0 text-muted-foreground/30"
+          aria-hidden="true"
+        />
+        <span className="text-xs text-muted-foreground/50">
+          cal.com/username/
+          <span className="text-muted-foreground">30min</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function YourLookVisual() {
+  return (
+    <div className="w-full space-y-3">
+      <div className="flex items-center gap-3">
+        {/* Avatar placeholder */}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-muted">
+          <span className="text-[10px] font-semibold text-muted-foreground">
+            YN
+          </span>
+        </div>
+        {/* Brand colour swatches */}
+        <div className="flex gap-1.5">
+          <span className="h-5 w-5 rounded-full bg-indigo-500 ring-2 ring-indigo-500 ring-offset-1" />
+          <span className="h-5 w-5 rounded-full bg-sky-500" />
+          <span className="h-5 w-5 rounded-full bg-emerald-500" />
+          <span className="h-5 w-5 rounded-full bg-rose-500" />
+        </div>
+      </div>
+      {/* Light / dark toggle */}
+      <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <SunIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          Light
+        </span>
+        <div className="flex h-5 w-9 items-center justify-end rounded-full bg-foreground pr-[3px]">
+          <span className="h-3.5 w-3.5 rounded-full bg-background" />
+        </div>
+        <span className="flex items-center gap-1.5">
+          Dark
+          <MoonIcon
+            className="h-3.5 w-3.5 text-foreground"
+            aria-hidden="true"
+          />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const MINI_SLOTS = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM"] as const;
+
+function TimeSlotsVisual() {
+  return (
+    <div className="w-full">
+      <p className="mb-2.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
+        Thu, 16 Oct · Europe / Berlin
+      </p>
+      <div className="grid grid-cols-2 gap-1.5">
+        {MINI_SLOTS.map((slot, i) => (
+          <div
+            key={slot}
+            className={cn(
+              "rounded-md border py-2 text-center text-[11px] font-medium",
+              i === 1
+                ? "border-foreground bg-foreground text-background"
+                : "border-border text-foreground",
+            )}
+          >
+            {slot}
           </div>
-        </div>
-
-        {/* Time slots */}
-        <div
-          className="flex w-36 shrink-0 flex-col gap-2 px-4 py-5 transition-[opacity,transform] duration-300"
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "none" : "translateX(8px)",
-            transitionDelay: visible ? "160ms" : "0ms",
-          }}
-        >
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
-            Tue, Oct 14
-          </p>
-          {TIME_SLOTS.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              tabIndex={-1}
-              aria-pressed={slot === SELECTED_SLOT}
-              className={cn(
-                "w-full rounded-lg border py-2 text-center text-xs font-medium transition-colors",
-                slot === SELECTED_SLOT
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-foreground",
-              )}
-            >
-              {slot}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -1,0 +1,9 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="white"/>
+  <!-- Google Meet camera body (green) -->
+  <rect x="4" y="16" width="38" height="30" rx="6" fill="#00897B"/>
+  <!-- Camera wedge right side (green) -->
+  <path d="M42 28l16-10v28L42 36V28z" fill="#00897B"/>
+  <!-- Lens highlight -->
+  <circle cx="20" cy="31" r="7" fill="white" opacity="0.2"/>
+</svg>

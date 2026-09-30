@@ -1,0 +1,352 @@
+"use client";
+
+import * as React from "react";
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
+
+interface WallCard {
+  id: string;
+  name: string;
+  avatar?: string;
+  username?: string;
+  platform?: string;
+  quote: string;
+}
+
+interface ColumnConfig {
+  id: string;
+  duration: string;
+  delay: string;
+  height?: number;
+  maskTop?: number; // percent, default 13
+  cards: WallCard[];
+}
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const COLUMNS: ColumnConfig[] = [
+  {
+    id: "col-1",
+    duration: "32s",
+    delay: "-8s",
+    height: 860,
+    maskTop: 10,
+    cards: [
+      {
+        id: "rotimi",
+        name: "Rotimi Best",
+        username: "rotimi_best",
+        platform: "X",
+        quote:
+          "for the love of me, why do people still use Calendly? Just today I have seen products reference Calendly while they know of @calcom It's a no brainer for me to use , their brand is amazing, cool team + they even have more compelling features 🥳",
+      },
+      {
+        id: "jeroen",
+        name: "Jeroen C.",
+        platform: "G2",
+        quote:
+          "I came from calendly, where I had a lot of features I didn't need in a paid account. Cal.com's free account for a freelancer like me is great. It packs quite some features, including Google Analytics and workflows. Support has been very responsive in fixing things, big plus!",
+      },
+      {
+        id: "mrugesh",
+        name: "Mrugesh Mohapatra",
+        avatar: "https://github.com/raisedadead.png?size=400",
+        username: "raisedadead",
+        platform: "X",
+        quote:
+          "Ya'll, I just moved my calendar booking page from Calendly to – Use this to book some face time with me.",
+      },
+      {
+        id: "nickolas",
+        name: "Nickolas Tazes",
+        username: "nickolas_tazes",
+        platform: "X",
+        quote:
+          "I had a Calendly and a cal.com account. Now I only have @calcom. It's a no-brainer!",
+      },
+    ],
+  },
+  {
+    id: "col-2",
+    duration: "38s",
+    delay: "-19s",
+    height: 600,
+    maskTop: 13,
+    cards: [
+      {
+        id: "david-g",
+        name: "David Guyon",
+        username: "DavidGuyon",
+        platform: "X",
+        quote:
+          "Testing out as an alternative to Calendly and loving it so far. Configurable, good onboarding, simple to use 👍.",
+      },
+      {
+        id: "regina",
+        name: "Regina Gerbeaux",
+        username: "regina_gerbeaux",
+        platform: "Product Hunt",
+        quote:
+          "Second to none on all calendar scheduling apps - team ships fast and new features / versions are constantly being released.",
+      },
+      {
+        id: "clement",
+        name: "Clément Dutoict",
+        username: "clement_dutoict",
+        platform: "Product Hunt",
+        quote: "I love the minimalist style of this app.",
+      },
+    ],
+  },
+  {
+    id: "col-3",
+    duration: "35s",
+    delay: "-4s",
+    height: 600,
+    maskTop: 13,
+    cards: [
+      {
+        id: "aria",
+        name: "Aria Minaei",
+        avatar: "https://github.com/AriaMinaei.png?size=400",
+        username: "ariaminaei",
+        platform: "Product Hunt",
+        quote:
+          "Just gave it a go and it's definitely the easiest meeting I've ever scheduled! No context switching, no distractions, and works even better on mobile too.",
+      },
+      {
+        id: "jay",
+        name: "Jay Fajardo",
+        username: "jayfajardo",
+        platform: "X",
+        quote: "Stoked to try out as a replacement for Calendly.",
+      },
+      {
+        id: "shivansh",
+        name: "Shivansh",
+        username: "Shivansh_C",
+        platform: "X",
+        quote:
+          "I've officially transitioned out of Calendly to for personal calendar needs. Simple onboarding, automated workflows and comprehensive documentation- that's the reason why. The fact that it's open source is a cherry on cake.",
+      },
+    ],
+  },
+  {
+    id: "col-4",
+    duration: "41s",
+    delay: "-24s",
+    height: 860,
+    maskTop: 10,
+    cards: [
+      {
+        id: "david-a",
+        name: "David Asabina",
+        avatar: "https://github.com/vidbina.png?size=400",
+        username: "vidbina",
+        platform: "Product Hunt",
+        quote:
+          "Had an issue logging in and Peer (CEO) tended to the matter within the hour. I haven't had such responsive customer service so this was quite the experience. It's refreshing to find a customer-centric open source project do so well.",
+      },
+      {
+        id: "zach",
+        name: "Zach Waterfield",
+        quote:
+          "I use cal to manage all my external meetings and it's the perfect solution. Has all the features I need and couldn't live without it.",
+      },
+      {
+        id: "berkant",
+        name: "Berkant Seyhan",
+        quote:
+          "One of the best organizing apps I've used lately. At the same time, I cannot help but mention that they are actively responsive and open to development.",
+      },
+    ],
+  },
+];
+
+// ─── Card avatar ───────────────────────────────────────────────────────────────
+
+function CardAvatar({ name, src }: { name: string; src?: string }) {
+  const [imgFailed, setImgFailed] = React.useState(false);
+
+  const parts = name.trim().split(" ");
+  const initials = (
+    parts.length >= 2
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : parts[0].slice(0, 2)
+  ).toUpperCase();
+
+  if (src && !imgFailed) {
+    return (
+      // biome-ignore lint/performance/noImgElement: portrait thumbnails; no remote pattern config needed for v1
+      <img
+        src={src}
+        alt=""
+        width={32}
+        height={32}
+        onError={() => setImgFailed(true)}
+        className="w-8 h-8 rounded-full object-cover shrink-0"
+      />
+    );
+  }
+
+  return (
+    <span
+      className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-foreground/50 text-xs font-semibold shrink-0"
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  );
+}
+
+// ─── Wall card ─────────────────────────────────────────────────────────────────
+
+function WallCardItem({ card }: { card: WallCard }) {
+  const handleLine = [card.username && `@${card.username}`, card.platform]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <div className="rounded-xl border border-border bg-background p-4">
+      <div className="flex items-start gap-3 mb-3">
+        <CardAvatar name={card.name} src={card.avatar} />
+        <div className="min-w-0">
+          <span className="block text-sm font-semibold text-foreground leading-tight">
+            {card.name}
+          </span>
+          {handleLine && (
+            <span className="block text-xs text-muted-foreground leading-tight mt-0.5">
+              {handleLine}
+            </span>
+          )}
+        </div>
+      </div>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        &ldquo;{card.quote}&rdquo;
+      </p>
+    </div>
+  );
+}
+
+// ─── Reduced-motion hook ───────────────────────────────────────────────────────
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+// ─── Scroll column ─────────────────────────────────────────────────────────────
+
+function ScrollColumn({
+  col,
+  reduced,
+}: {
+  col: ColumnConfig;
+  reduced: boolean;
+}) {
+  if (reduced) {
+    return (
+      <div className="flex flex-col gap-4">
+        {col.cards.map((card) => (
+          <WallCardItem key={card.id} card={card} />
+        ))}
+      </div>
+    );
+  }
+
+  const maskTopPct = col.maskTop ?? 13;
+  // Flat-transparent dead zone (0 → maskTopPct) then a short fade into full opacity.
+  const colMask = `linear-gradient(to bottom, transparent 0%, transparent ${maskTopPct}%, black ${maskTopPct + 4}%, black 87%, transparent 100%)`;
+
+  return (
+    <div
+      style={{
+        height: col.height ?? 600,
+        overflow: "hidden",
+        WebkitMaskImage: colMask,
+        maskImage: colMask,
+      }}
+    >
+      {/* Screen-reader list — static, not animated */}
+      <ul className="sr-only">
+        {col.cards.map((card) => (
+          <li key={card.id}>
+            <strong>{card.name}</strong>: {card.quote}
+          </li>
+        ))}
+      </ul>
+
+      {/* Animated track — hidden from assistive tech */}
+      <div
+        aria-hidden="true"
+        style={{
+          animation: `scroll-up ${col.duration} linear ${col.delay} infinite`,
+        }}
+      >
+        {/* Two identical sets; translateY(-50%) moves exactly one set height */}
+        <div className="flex flex-col gap-4 pb-4">
+          {col.cards.map((card) => (
+            <WallCardItem key={card.id} card={card} />
+          ))}
+        </div>
+        <div className="flex flex-col gap-4 pb-4">
+          {col.cards.map((card) => (
+            <WallCardItem key={`${card.id}-dup`} card={card} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Section ───────────────────────────────────────────────────────────────────
+
+export function WallOfLoveSection() {
+  const reduced = usePrefersReducedMotion();
+
+  return (
+    <section className="w-full bg-neutral-50 py-24 overflow-hidden">
+      <div className="mx-auto max-w-[1200px] px-10">
+        <div className="relative z-10 flex flex-col items-center text-center gap-4 mb-16">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-px bg-foreground" aria-hidden="true" />
+            <span className="text-xs font-semibold tracking-widest uppercase text-foreground">
+              Wall of love
+            </span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground leading-[1.05] tracking-tight max-w-lg">
+            What people value about Cal.com.
+          </h2>
+          <p className="text-base text-muted-foreground leading-relaxed max-w-md">
+            Real feedback from people using Cal.com to schedule, integrate and
+            build around the way they work.
+          </p>
+        </div>
+
+        <div className="lg:-mt-80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:items-end gap-4">
+          {COLUMNS.map((col, i) => (
+            <div
+              key={col.id}
+              className={
+                i === 1
+                  ? "hidden sm:block"
+                  : i >= 2
+                    ? "hidden lg:block"
+                    : undefined
+              }
+            >
+              <ScrollColumn col={col} reduced={reduced} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

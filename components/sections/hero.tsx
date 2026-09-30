@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export function HeroSection() {
   return (
     <section aria-label="Hero" className="w-full bg-background">
-      <div className="mx-auto max-w-7xl px-6 pt-24 pb-16 lg:px-8 lg:pt-32 lg:pb-24">
+      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10 pt-24 pb-16 lg:pt-32 lg:pb-24">
         <div className="grid grid-cols-1 items-center gap-12 xl:grid-cols-2 xl:gap-16">
           {/* Left: copy */}
           <div className="flex flex-col">

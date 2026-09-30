@@ -117,7 +117,7 @@ export function LogoStripSection() {
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
         <div className="border-t border-border">
           <div className="flex flex-col gap-4 py-7 md:flex-row md:items-center md:gap-0 md:py-6">
             {/* Copy block */}

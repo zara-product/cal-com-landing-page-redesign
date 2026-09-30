@@ -62,15 +62,99 @@ const TESTIMONIALS = [
   },
 ] as const;
 
-const COUNT = TESTIMONIALS.length;
-const GAP = 32;
-const AUTOPLAY_MS = 4000;
-const SWIPE_THRESHOLD = 50;
+const COUNT = TESTIMONIALS.length; // 6
 
-// Large sparse rounded-tile pattern — quiet texture on dark background
-const PATTERN_URL = `url("data:image/svg+xml,${encodeURIComponent(
-  '<svg width="80" height="80" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="72" height="72" rx="12" fill="white" fill-opacity="0.032"/></svg>',
-)}")`;
+// Two clones on each side so the clone's neighbor always renders a real card.
+// Layout: [clone(Ant), clone(Micah), Flo…Micah, clone(Flo), clone(Guillermo)]
+// Index:        0           1         2…7          8             9
+const REAL_START = 2; // index of first real slide
+const REAL_END = COUNT + 1; // index of last real slide (= 7)
+
+const SLIDES = [
+  TESTIMONIALS[COUNT - 2], // 0: clone of Ant
+  TESTIMONIALS[COUNT - 1], // 1: clone of Micah
+  ...TESTIMONIALS, // 2–7: real slides
+  TESTIMONIALS[0], // 8: clone of Flo
+  TESTIMONIALS[1], // 9: clone of Guillermo
+];
+const SLIDE_KEYS = [
+  "clone-prev-2",
+  "clone-prev-1",
+  ...TESTIMONIALS.map((t) => t.id),
+  "clone-next-1",
+  "clone-next-2",
+];
+
+// Gap wide enough to place the arrow between the neighboring card and the
+// active card with clear breathing room on both sides.
+const GAP = 80;
+const AUTOPLAY_MS = 4500;
+const SWIPE_THRESHOLD = 50;
+const TILE_SIZE = 96;
+const TILE_GAP = 12;
+const TILE_COLS = 10;
+const TILE_ROWS = 10;
+
+// ─── TileCluster ──────────────────────────────────────────────────────────────
+
+function tileOpacity(row: number, col: number): number {
+  const v = (row * 7 + col * 13) % 17;
+  if (v < 2) return 0.07;
+  if (v < 5) return 0.04;
+  return 0.02;
+}
+
+function tileBorder(row: number, col: number): number {
+  const v = (row * 7 + col * 13) % 17;
+  if (v < 2) return 0.07;
+  if (v < 5) return 0.05;
+  return 0.04;
+}
+
+function TileCluster() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{
+        maskImage:
+          "radial-gradient(ellipse 75% 85% at 100% 0%, black 10%, transparent 65%)",
+        WebkitMaskImage:
+          "radial-gradient(ellipse 75% 85% at 100% 0%, black 10%, transparent 65%)",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          right: "-10%",
+          top: "-25%",
+          width: "70%",
+          transform: "rotate(-8deg)",
+          display: "grid",
+          gridTemplateColumns: `repeat(${TILE_COLS}, ${TILE_SIZE}px)`,
+          gap: `${TILE_GAP}px`,
+        }}
+      >
+        {Array.from({ length: TILE_ROWS * TILE_COLS }).map((_, idx) => {
+          const row = Math.floor(idx / TILE_COLS);
+          const col = idx % TILE_COLS;
+          return (
+            <div
+              key={`${row}-${col}`}
+              style={{
+                width: `${TILE_SIZE}px`,
+                height: `${TILE_SIZE}px`,
+                borderRadius: "16px",
+                background: `rgba(255,255,255,${tileOpacity(row, col)})`,
+                border: `1px solid rgba(255,255,255,${tileBorder(row, col)})`,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 // ─── usePrefersReducedMotion ──────────────────────────────────────────────────
 
@@ -87,6 +171,9 @@ function usePrefersReducedMotion(): boolean {
 }
 
 // ─── PortraitSlot ─────────────────────────────────────────────────────────────
+// Priority: genuine portrait image → company-name wordmark fallback.
+// The wordmark fallback is intentional design, not a placeholder —
+// used whenever no verified person image is available.
 
 function PortraitSlot({
   portrait,
@@ -111,10 +198,9 @@ function PortraitSlot({
     );
   }
 
-  // V1 fallback: company name label — swap for real logo in refinement pass
   return (
-    <div className="flex h-full w-full items-center justify-center p-6">
-      <span className="text-center text-xs font-semibold uppercase tracking-widest text-foreground/30">
+    <div className="flex h-full w-full items-center justify-center bg-foreground p-8">
+      <span className="select-none text-center text-2xl font-bold uppercase tracking-[0.18em] text-background">
         {company}
       </span>
     </div>
@@ -124,13 +210,23 @@ function PortraitSlot({
 // ─── TestimonialsSection ──────────────────────────────────────────────────────
 
 export function TestimonialsSection() {
-  const [active, setActive] = React.useState(0);
-  const [isPaused, setIsPaused] = React.useState(false);
+  // virtualActive: position in SLIDES (0–1 = left clones, 2–7 = real, 8–9 = right clones)
+  const [virtualActive, setVirtualActive] = React.useState(REAL_START);
+  // animated: false during the silent snap from clone → real position
+  const [animated, setAnimated] = React.useState(true);
+  const [cardHovered, setCardHovered] = React.useState(false);
+  const [isDragging, setIsDragging] = React.useState(false);
   const [containerW, setContainerW] = React.useState(1440);
   const containerRef = React.useRef<HTMLElement>(null);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragStartX = React.useRef<number | null>(null);
+  // Prevents overlapping transitions from rapid clicks / autoplay races.
+  const transitioningRef = React.useRef(false);
   const prefersReducedMotion = usePrefersReducedMotion();
+
+  const isPaused = cardHovered || isDragging;
+  // displayActive: 0–5, maps virtual position to real testimonial for pagination
+  const displayActive = (virtualActive - REAL_START + COUNT) % COUNT;
 
   React.useEffect(() => {
     const el = containerRef.current;
@@ -141,80 +237,148 @@ export function TestimonialsSection() {
     return () => ro.disconnect();
   }, []);
 
-  const scheduleNext = React.useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (prefersReducedMotion || isPaused) return;
-    timerRef.current = setTimeout(
-      () => setActive((a) => (a + 1) % COUNT),
-      AUTOPLAY_MS,
-    );
-  }, [isPaused, prefersReducedMotion]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: active intentionally restarts the autoplay timer after each advance
+  // Autoplay — restarts whenever slide changes or pause state changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: virtualActive restarts the countdown after each slide advance
   React.useEffect(() => {
-    scheduleNext();
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (isPaused || prefersReducedMotion) return;
+    timerRef.current = setTimeout(() => {
+      if (!transitioningRef.current) {
+        transitioningRef.current = true;
+        // Advance to the first right-side clone at most; onTransitionEnd snaps back.
+        setVirtualActive((v) => Math.min(v + 1, REAL_END + 1));
+      }
+    }, AUTOPLAY_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [active, scheduleNext]);
+  }, [virtualActive, isPaused, prefersReducedMotion]);
 
-  const go = React.useCallback((index: number) => {
-    setActive(((index % COUNT) + COUNT) % COUNT);
+  // Re-enable transition on the frame after a silent snap; release the lock.
+  React.useEffect(() => {
+    if (!animated) {
+      const id = requestAnimationFrame(() => {
+        setAnimated(true);
+        transitioningRef.current = false;
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [animated]);
+
+  // prefersReducedMotion: snap instantly when hitting a clone boundary
+  React.useEffect(() => {
+    if (!prefersReducedMotion) return;
+    if (virtualActive > REAL_END) {
+      const offset = virtualActive - REAL_END;
+      setVirtualActive(REAL_START + offset - 1);
+    } else if (virtualActive < REAL_START) {
+      const offset = REAL_START - virtualActive;
+      setVirtualActive(REAL_END - offset + 1);
+    }
+  }, [virtualActive, prefersReducedMotion]);
+
+  // Clear stale hover state when the active slide changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: virtualActive triggers the reset — setCardHovered is stable
+  React.useEffect(() => {
+    setCardHovered(false);
+  }, [virtualActive]);
+
+  // navigate: guarded by transitioningRef so rapid clicks don't stack transitions
+  const navigate = React.useCallback((delta: number) => {
+    if (transitioningRef.current) return;
+    transitioningRef.current = true;
+    setVirtualActive((v) =>
+      Math.max(0, Math.min(SLIDES.length - 1, v + delta)),
+    );
+  }, []);
+
+  // Cancel the timer synchronously on mouseenter — the useEffect cleanup runs
+  // after the next paint (~16ms), which is too late if the timer is about to fire.
+  const handleCardMouseEnter = React.useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setCardHovered(true);
+  }, []);
+
+  const handleCardMouseLeave = React.useCallback(() => {
+    setCardHovered(false);
   }, []);
 
   const cardW = Math.min(860, containerW * 0.65);
-  const translateX = containerW / 2 - active * (cardW + GAP) - cardW / 2;
+  const translateX = containerW / 2 - virtualActive * (cardW + GAP) - cardW / 2;
+
+  // Arrow centre sits exactly at the midpoint of the gap between the
+  // neighbouring preview card and the active card edge.
+  const arrowHalf = 24; // half of 48px hit target
+  const arrowOutset = cardW / 2 + GAP / 2; // midpoint of the gap
+  const leftArrowLeft = Math.max(8, containerW / 2 - arrowOutset - arrowHalf);
+  const rightArrowLeft = Math.min(
+    containerW - 8 - arrowHalf * 2,
+    containerW / 2 + arrowOutset - arrowHalf,
+  );
+
+  // Snap silently when landing on a clone boundary.
+  // virtualActive > REAL_END → we've gone past the last real slide into right clones.
+  // virtualActive < REAL_START → we've gone past the first real slide into left clones.
+  const onTrackTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    if (virtualActive > REAL_END) {
+      const offset = virtualActive - REAL_END;
+      setAnimated(false);
+      setVirtualActive(REAL_START + offset - 1);
+      // transitioningRef is released in the !animated useEffect (after the snap RAF)
+    } else if (virtualActive < REAL_START) {
+      const offset = REAL_START - virtualActive;
+      setAnimated(false);
+      setVirtualActive(REAL_END - offset + 1);
+    } else {
+      // Normal transition completed — release the lock immediately
+      transitioningRef.current = false;
+    }
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     dragStartX.current = e.clientX;
+    setIsDragging(true);
   };
   const onPointerUp = (e: React.PointerEvent) => {
-    if (dragStartX.current === null) return;
-    const delta = dragStartX.current - e.clientX;
-    if (Math.abs(delta) >= SWIPE_THRESHOLD) {
-      go(delta > 0 ? active + 1 : active - 1);
+    if (dragStartX.current !== null) {
+      const delta = dragStartX.current - e.clientX;
+      if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+        navigate(delta > 0 ? 1 : -1);
+      }
+      dragStartX.current = null;
     }
-    dragStartX.current = null;
+    setIsDragging(false);
   };
   const onPointerLeave = () => {
     dragStartX.current = null;
+    setIsDragging(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
-      go(active - 1);
+      navigate(-1);
     } else if (e.key === "ArrowRight") {
       e.preventDefault();
-      go(active + 1);
+      navigate(1);
     }
   };
 
   return (
     <section
       aria-label="Customer testimonials"
-      className="relative w-full overflow-hidden bg-foreground"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
+      className="relative w-full overflow-hidden bg-neutral-950"
     >
-      {/* Sparse rounded-tile texture — fades downward from top centre */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: PATTERN_URL,
-          maskImage:
-            "radial-gradient(ellipse 100% 55% at 50% 0%, black 0%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 100% 55% at 50% 0%, black 0%, transparent 100%)",
-        }}
-      />
+      {/* Top-right concentrated tile cluster */}
+      <TileCluster />
 
-      {/* Section header — left-aligned, constrained width */}
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="border-t border-background/10 pt-20 lg:pt-28">
+      {/* Section header — left-aligned */}
+      <div className="relative mx-auto max-w-[1200px] border-l border-r border-background/10 px-10">
+        <div className="pt-20 lg:pt-28">
           <div className="flex items-center gap-3">
             <div className="h-px w-6 bg-background/35" aria-hidden="true" />
             <p className="text-[11px] font-semibold uppercase tracking-widest text-background/50">
@@ -247,105 +411,136 @@ export function TestimonialsSection() {
         onPointerLeave={onPointerLeave}
         style={{ touchAction: "pan-y" }}
       >
-        {/* Chevron — previous */}
-        <button
-          type="button"
-          aria-label="Previous testimonial"
-          onClick={() => go(active - 1)}
-          className="absolute left-3 top-1/2 z-20 -translate-y-1/2 p-2 text-background/45 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground lg:left-6"
-        >
-          <ChevronLeftIcon className="size-7" aria-hidden="true" />
-        </button>
+        <div className="relative">
+          {/* Chevron — previous */}
+          <button
+            type="button"
+            aria-label="Previous testimonial"
+            onClick={() => navigate(-1)}
+            className="absolute z-20 flex h-12 w-12 items-center justify-center text-background/50 transition-opacity hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+            style={{
+              left: `${leftArrowLeft}px`,
+              top: "50%",
+              transform: "translateY(-50%)",
+            }}
+          >
+            <ChevronLeftIcon
+              className="size-9"
+              strokeWidth={1.75}
+              aria-hidden="true"
+            />
+          </button>
 
-        {/* Chevron — next */}
-        <button
-          type="button"
-          aria-label="Next testimonial"
-          onClick={() => go(active + 1)}
-          className="absolute right-3 top-1/2 z-20 -translate-y-1/2 p-2 text-background/45 transition-colors hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground lg:right-6"
-        >
-          <ChevronRightIcon className="size-7" aria-hidden="true" />
-        </button>
+          {/* Chevron — next */}
+          <button
+            type="button"
+            aria-label="Next testimonial"
+            onClick={() => navigate(1)}
+            className="absolute z-20 flex h-12 w-12 items-center justify-center text-background/50 transition-opacity hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+            style={{
+              left: `${rightArrowLeft}px`,
+              top: "50%",
+              transform: "translateY(-50%)",
+            }}
+          >
+            <ChevronRightIcon
+              className="size-9"
+              strokeWidth={1.75}
+              aria-hidden="true"
+            />
+          </button>
 
-        {/* Card track */}
-        <div
-          className={cn(
-            "flex select-none items-stretch py-4",
-            !prefersReducedMotion &&
-              "transition-transform duration-300 ease-out",
-          )}
-          style={{
-            gap: `${GAP}px`,
-            transform: `translateX(${translateX}px)`,
-          }}
-        >
-          {TESTIMONIALS.map((t, i) => {
-            const isActive = i === active;
-            const isAdjacent = Math.abs(i - active) === 1;
-            return (
-              // biome-ignore lint/a11y/useSemanticElements: role="group" is the correct ARIA role for a carousel slide
-              <div
-                key={t.id}
-                role="group"
-                aria-label={`${t.name}, ${t.role}`}
-                aria-hidden={!isActive}
-                onClick={() => !isActive && go(i)}
-                style={{ width: `${cardW}px`, flexShrink: 0 }}
-                className={cn(
-                  "flex flex-col rounded-2xl bg-background transition-[opacity,transform] duration-300 sm:flex-row",
-                  isActive
-                    ? "scale-100 cursor-default opacity-100 shadow-2xl"
-                    : isAdjacent
-                      ? "scale-[0.93] cursor-pointer opacity-45 hover:opacity-55"
-                      : "scale-[0.88] cursor-pointer opacity-20",
-                )}
-              >
-                {/* Portrait column */}
-                <div className="flex shrink-0 items-center justify-center p-6 sm:p-8 sm:pr-0 lg:p-10 lg:pr-0">
-                  <div className="relative">
-                    {/* Tilted backing rect — same size as portrait, peeks right and bottom-right */}
-                    <div
-                      className="absolute inset-0 rounded-2xl bg-neutral-100"
-                      style={{
-                        transform: "rotate(4deg) translate(12px, 10px)",
-                      }}
-                    />
-                    {/* Portrait */}
-                    <div className="relative aspect-square w-[140px] overflow-hidden rounded-2xl bg-neutral-100 sm:w-[160px] lg:w-[200px]">
-                      <PortraitSlot
-                        portrait={t.portrait}
-                        name={t.name}
-                        company={t.company}
+          {/* Card track */}
+          <div
+            className={cn(
+              "flex select-none items-stretch py-4",
+              !prefersReducedMotion &&
+                animated &&
+                "transition-transform duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+            )}
+            style={{
+              gap: `${GAP}px`,
+              transform: `translateX(${translateX}px)`,
+            }}
+            onTransitionEnd={onTrackTransitionEnd}
+          >
+            {SLIDES.map((t, i) => {
+              const isActive = i === virtualActive;
+              const dist = Math.abs(i - virtualActive);
+              const isAdjacent = dist === 1;
+              // Clone slides exist purely for visual continuity; hide from AT always.
+              const isClone = i < REAL_START || i > REAL_END;
+              return (
+                // biome-ignore lint/a11y/useSemanticElements: role="group" is the correct ARIA role for a carousel slide
+                <div
+                  key={SLIDE_KEYS[i]}
+                  role="group"
+                  aria-label={`${t.name}, ${t.role}`}
+                  aria-hidden={isClone || !isActive}
+                  onClick={() => {
+                    if (!isActive && !isClone && !transitioningRef.current) {
+                      transitioningRef.current = true;
+                      setVirtualActive(i);
+                    }
+                  }}
+                  onMouseEnter={isActive ? handleCardMouseEnter : undefined}
+                  onMouseLeave={isActive ? handleCardMouseLeave : undefined}
+                  style={{ width: `${cardW}px`, flexShrink: 0 }}
+                  className={cn(
+                    "flex flex-col rounded-2xl bg-background sm:flex-row",
+                    !prefersReducedMotion &&
+                      animated &&
+                      "transition-[opacity,transform] duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    isActive
+                      ? "scale-100 cursor-default opacity-100 shadow-2xl"
+                      : isAdjacent
+                        ? "scale-[0.93] cursor-pointer opacity-35 hover:opacity-45"
+                        : "scale-[0.88] cursor-pointer opacity-15",
+                  )}
+                >
+                  {/* Portrait column */}
+                  <div className="flex shrink-0 items-center justify-center p-6 sm:p-8 sm:pr-0 lg:p-10 lg:pr-0">
+                    <div className="relative">
+                      <div
+                        className="absolute inset-0 rounded-2xl bg-muted"
+                        style={{
+                          transform: "rotate(5deg) translate(15px, 6px)",
+                        }}
                       />
+                      <div className="relative aspect-square w-[140px] overflow-hidden rounded-2xl bg-muted sm:w-[160px] lg:w-[200px]">
+                        <PortraitSlot
+                          portrait={t.portrait}
+                          name={t.name}
+                          company={t.company}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content column */}
+                  <div className="flex flex-1 flex-col justify-center px-6 pb-8 pt-2 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+                    <blockquote>
+                      <p className="text-[1.25rem] font-bold leading-snug tracking-tight text-foreground lg:text-[1.5rem]">
+                        &ldquo;{t.quote}&rdquo;
+                      </p>
+                    </blockquote>
+
+                    <div className="mt-7">
+                      <p className="text-[0.9375rem] font-semibold text-foreground">
+                        {t.name}
+                      </p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {t.role}
+                      </p>
                     </div>
                   </div>
                 </div>
-
-                {/* Content column */}
-                <div className="flex flex-1 flex-col justify-center px-6 pb-8 pt-2 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
-                  {/* Quote first — no company label above */}
-                  <blockquote>
-                    <p className="text-[1.25rem] font-bold leading-snug tracking-tight text-foreground lg:text-[1.5rem]">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                  </blockquote>
-
-                  {/* Attribution: name then role, company */}
-                  <div className="mt-7">
-                    <p className="text-[0.9375rem] font-semibold text-foreground">
-                      {t.name}
-                    </p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {t.role}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Pagination dots */}
+        {/* Pagination dots — always maps over real TESTIMONIALS */}
         <div
           role="tablist"
           aria-label="Go to testimonial"
@@ -356,12 +551,18 @@ export function TestimonialsSection() {
               key={t.id}
               type="button"
               role="tab"
-              aria-selected={i === active}
+              aria-selected={i === displayActive}
               aria-label={`Testimonial ${i + 1}: ${t.name}`}
-              onClick={() => go(i)}
+              onClick={() => {
+                const target = REAL_START + i;
+                if (target !== virtualActive && !transitioningRef.current) {
+                  transitioningRef.current = true;
+                  setVirtualActive(target);
+                }
+              }}
               className={cn(
                 "h-1.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
-                i === active
+                i === displayActive
                   ? "w-6 bg-background"
                   : "w-1.5 bg-background/30 hover:bg-background/50",
               )}

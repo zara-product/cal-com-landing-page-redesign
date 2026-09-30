@@ -73,8 +73,8 @@ export function CapabilitiesSection() {
       aria-label="Built for when scheduling gets complex"
       className="w-full bg-background"
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="border-t border-border py-20 lg:py-28">
+      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
+        <div className="py-20 lg:py-28">
           {/* Section header */}
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">

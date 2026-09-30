@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import { SiteFooter } from "@/components/sections/site-footer";
+import { PageRails } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
 
-const interHeading = Inter({subsets:['latin'],variable:'--font-heading'});
+const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +28,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable, interHeading.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        inter.variable,
+        interHeading.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* `relative` on body gives PageRails its absolute positioning anchor */}
+      <body className="relative min-h-full flex flex-col">
+        <PageRails />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }
