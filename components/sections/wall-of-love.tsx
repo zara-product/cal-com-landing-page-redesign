@@ -270,6 +270,11 @@ function ScrollColumn({
   // Flat-transparent dead zone (0 → maskTopPct) then a short fade into full opacity.
   const colMask = `linear-gradient(to bottom, transparent 0%, transparent ${maskTopPct}%, black ${maskTopPct + 4}%, black 87%, transparent 100%)`;
 
+  // Build two unique-keyed repetitions so each set's height exceeds the clip
+  // height. translateY(-50%) then moves exactly one set (2 reps) with no gap.
+  const rep0 = col.cards.map((c) => ({ ...c, _k: `${c.id}-r0` }));
+  const rep1 = col.cards.map((c) => ({ ...c, _k: `${c.id}-r1` }));
+
   return (
     <div
       style={{
@@ -295,15 +300,22 @@ function ScrollColumn({
           animation: `scroll-up ${col.duration} linear ${col.delay} infinite`,
         }}
       >
-        {/* Two identical sets; translateY(-50%) moves exactly one set height */}
+        {/* Set 1 — two reps so set height > clip height */}
         <div className="flex flex-col gap-4 pb-4">
-          {col.cards.map((card) => (
-            <WallCardItem key={card.id} card={card} />
+          {rep0.map(({ _k, ...card }) => (
+            <WallCardItem key={`s1-${_k}`} card={card} />
+          ))}
+          {rep1.map(({ _k, ...card }) => (
+            <WallCardItem key={`s1-${_k}`} card={card} />
           ))}
         </div>
+        {/* Set 2 — identical to set 1; translateY(-50%) lands here seamlessly */}
         <div className="flex flex-col gap-4 pb-4">
-          {col.cards.map((card) => (
-            <WallCardItem key={`${card.id}-dup`} card={card} />
+          {rep0.map(({ _k, ...card }) => (
+            <WallCardItem key={`s2-${_k}`} card={card} />
+          ))}
+          {rep1.map(({ _k, ...card }) => (
+            <WallCardItem key={`s2-${_k}`} card={card} />
           ))}
         </div>
       </div>

@@ -115,7 +115,7 @@ export function QuestionsSection() {
           >
             Talk to sales
             <svg
-              className="w-4 h-4"
+              className="size-4"
               viewBox="0 0 16 16"
               fill="none"
               aria-hidden="true"

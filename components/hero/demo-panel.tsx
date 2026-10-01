@@ -1,20 +1,21 @@
 "use client";
 
 import {
-  ArrowRightIcon,
   Building2Icon,
+  CalendarIcon,
   CheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  ClockIcon,
   Code2Icon,
   GlobeIcon,
+  ShieldIcon,
+  ShuffleIcon,
+  SplitIcon,
   UserRoundIcon,
   UsersRoundIcon,
   VideoIcon,
 } from "lucide-react";
 import * as React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -25,10 +26,10 @@ type Mode = (typeof MODES)[number];
 // Each mode gets its own display duration so Individuals has enough room for
 // the full booking choreography.
 const MODE_DURATION: Record<Mode, number> = {
-  individuals: 7000,
-  teams: 5000,
-  organizations: 5000,
-  developers: 5000,
+  individuals: 4000,
+  teams: 4000,
+  organizations: 4000,
+  developers: 4000,
 };
 
 const MODE_LABELS: Record<Mode, string> = {
@@ -52,15 +53,22 @@ const MODE_ICONS: Record<Mode, React.ElementType> = {
   developers: Code2Icon,
 };
 
-// ─── Individuals animation thresholds (% of MODE_DURATION.individuals) ────────
-// Each value is a progress% threshold at which a new animation phase begins.
+// ─── Individuals animation thresholds (% of MODE_DURATION.individuals = 4000ms) ──
+const IND_CALENDAR = 6.25; // 250ms — available dates illuminate; Oct 8 selected
+const IND_SLOTS = [22.5, 24.0, 25.5, 27.0, 28.5] as const; // 900–1140ms stagger
+const IND_SELECT = 38.75; // 1550ms — 10:00 selected
+const IND_CONFIRM = 55.0; // 2200ms — confirmation card fades in
 
-const IND_DATE_SELECT = 6; // 420 ms — date 14 highlights
-const IND_TIMES_HEADER = 12; // 840 ms — "Tue, Oct 14" header appears
-// Five time slots stagger in starting at 13%
-const IND_SLOTS = [13, 19, 25, 31, 37] as const;
-const IND_TIME_SELECT = 46; // 3 220 ms — 10:00 AM slot selected
-const IND_CONFIRM = 56; // 3 920 ms — confirmation card fades in
+// ─── Teams animation thresholds (% of MODE_DURATION.teams = 4000ms) ──────────
+const TMS_SHUFFLE = 6.25; // 250ms  — activate shuffle node
+const TMS_SELECT = 25.0; // 1000ms — select Sofia (dim other avatars)
+const TMS_REVEAL = 43.75; // 1750ms — reveal result card
+const SOFIA_INDEX = 2; // 3rd avatar in the stack (0-based)
+
+// ─── Organizations animation thresholds (% of MODE_DURATION.organizations = 4000ms) ─
+const ORG_ROUTE = 6.25; // 250ms  — activate routing node
+const ORG_RESOLVE = 25.0; // 1000ms — result card fades in
+const ORG_ASSIGN = 43.75; // 1750ms — final assignment + security line
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -76,13 +84,42 @@ function usePrefersReducedMotion(): boolean {
   return prefers;
 }
 
+// ─── FadeOutBar ───────────────────────────────────────────────────────────────
+// Renders a progress fill at a fixed width and fades it out over 175ms.
+// Mounts at opacity 1, transitions to 0 after the first paint, then calls onDone.
+
+function FadeOutBar({ width, onDone }: { width: number; onDone: () => void }) {
+  const [gone, setGone] = React.useState(false);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setGone(true), 16);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-y-0 left-0 bg-foreground/[0.06]"
+      style={{
+        width: `${width}%`,
+        opacity: gone ? 0 : 1,
+        transition: "opacity 175ms ease-out",
+      }}
+      onTransitionEnd={onDone}
+    />
+  );
+}
+
 // ─── DemoPanel ────────────────────────────────────────────────────────────────
 
 export function DemoPanel() {
   const [activeMode, setActiveMode] = React.useState<Mode>("individuals");
   const [progress, setProgress] = React.useState(0);
-  const [isPaused, setIsPaused] = React.useState(false);
   const [inView, setInView] = React.useState(true); // hero is above-fold on load
+  const [departingBar, setDepartingBar] = React.useState<{
+    mode: Mode;
+    width: number;
+  } | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const tabsRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -101,7 +138,7 @@ export function DemoPanel() {
   }, []);
 
   React.useEffect(() => {
-    if (prefersReducedMotion || isPaused || !inView) return;
+    if (prefersReducedMotion || !inView) return;
 
     const duration = MODE_DURATION[activeMode];
     // Resume from saved progress position after pause / inView change.
@@ -115,6 +152,7 @@ export function DemoPanel() {
       setProgress(p);
       if (p >= 100) {
         progressRef.current = 0;
+        setDepartingBar({ mode: activeMode, width: 100 });
         setActiveMode((m) => MODES[(MODES.indexOf(m) + 1) % MODES.length]);
         return;
       }
@@ -123,13 +161,24 @@ export function DemoPanel() {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [activeMode, isPaused, prefersReducedMotion, inView]);
+  }, [activeMode, prefersReducedMotion, inView]);
 
-  const switchMode = React.useCallback((mode: Mode) => {
+  const switchMode = React.useCallback(
+    (mode: Mode) => {
+      if (mode === activeMode) return;
+      setDepartingBar({ mode: activeMode, width: progressRef.current });
+      progressRef.current = 0;
+      setProgress(0);
+      setActiveMode(mode);
+    },
+    [activeMode],
+  );
+
+  const resetProgress = React.useCallback(() => {
+    setDepartingBar({ mode: activeMode, width: progressRef.current });
     progressRef.current = 0;
     setProgress(0);
-    setActiveMode(mode);
-  }, []);
+  }, [activeMode]);
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLButtonElement>,
@@ -157,23 +206,8 @@ export function DemoPanel() {
     }
   };
 
-  const handlePause = () => setIsPaused(true);
-  const handleResume = () => setIsPaused(false);
-
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: pause/resume on hover is a UX enhancement only
-    <div
-      ref={containerRef}
-      className="flex flex-col gap-4"
-      onMouseEnter={handlePause}
-      onMouseLeave={handleResume}
-      onFocusCapture={handlePause}
-      onBlurCapture={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-          handleResume();
-        }
-      }}
-    >
+    <div ref={containerRef} className="flex flex-col gap-6">
       {/* Mode selector */}
       <div
         ref={tabsRef}
@@ -211,6 +245,15 @@ export function DemoPanel() {
                   style={{ width: `${progress}%` }}
                 />
               )}
+              {/* Fade-out fill when this tab's progress just completed */}
+              {departingBar?.mode === mode &&
+                !isActive &&
+                !prefersReducedMotion && (
+                  <FadeOutBar
+                    width={departingBar.width}
+                    onDone={() => setDepartingBar(null)}
+                  />
+                )}
               <Icon className="relative size-3.5 shrink-0" aria-hidden="true" />
               <span className="relative hidden sm:inline">
                 {MODE_LABELS[mode]}
@@ -247,9 +290,27 @@ export function DemoPanel() {
                   prefersReducedMotion={prefersReducedMotion}
                 />
               )}
-              {mode === "teams" && <TeamsPanel />}
-              {mode === "organizations" && <OrgsPanel />}
-              {mode === "developers" && <DevelopersPanel />}
+              {mode === "teams" && (
+                <TeamsPanel
+                  progress={isActive ? progress : 0}
+                  isActive={isActive}
+                  prefersReducedMotion={prefersReducedMotion}
+                />
+              )}
+              {mode === "organizations" && (
+                <OrgsPanel
+                  progress={isActive ? progress : 0}
+                  isActive={isActive}
+                  prefersReducedMotion={prefersReducedMotion}
+                />
+              )}
+              {mode === "developers" && (
+                <DevelopersPanel
+                  isActive={isActive}
+                  prefersReducedMotion={prefersReducedMotion}
+                  onRestartProgress={resetProgress}
+                />
+              )}
             </div>
           );
         })}
@@ -260,21 +321,21 @@ export function DemoPanel() {
 
 // ─── Panel: Individuals ───────────────────────────────────────────────────────
 
-const CAL_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
+const CAL_DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
 
-// October 2025: Oct 1 = Wednesday (offset 3), 31 days
-const OCT_OFFSET = 3;
+// October 2026: Oct 1 = Thursday (offset 4 in SUN-SAT grid)
+const OCT_OFFSET = 4;
 const OCT_CELLS = Array.from({ length: 35 }, (_, i) => {
   const d = i - OCT_OFFSET + 1;
   return d >= 1 && d <= 31 ? d : null;
 });
 
 const AVAILABLE_DAYS = new Set([
-  6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31,
+  5, 6, 7, 9, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27,
 ]);
-const SELECTED_DAY = 14;
-const TIME_SLOTS = ["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:30 PM"];
-const SELECTED_SLOT = "10:00 AM";
+const SELECTED_DAY = 8;
+const TIME_SLOTS = ["9:00", "9:30", "10:00", "10:30", "11:00"] as const;
+const SELECTED_SLOT = "10:00";
 
 function IndividualsPanel({
   progress,
@@ -285,174 +346,188 @@ function IndividualsPanel({
   isActive: boolean;
   prefersReducedMotion: boolean;
 }) {
-  // Derive animation state from progress percentage.
-  // When prefersReducedMotion, show the completed state statically.
   const instant = prefersReducedMotion && isActive;
-  const dateSelected = instant || (isActive && progress >= IND_DATE_SELECT);
-  const timesHeaderVisible =
-    instant || (isActive && progress >= IND_TIMES_HEADER);
+  const calIlluminated = instant || (isActive && progress >= IND_CALENDAR);
   const visibleSlotCount = instant
     ? TIME_SLOTS.length
     : isActive
       ? IND_SLOTS.filter((t) => progress >= t).length
       : 0;
-  const slotSelected = instant || (isActive && progress >= IND_TIME_SELECT);
+  const slotSelected = instant || (isActive && progress >= IND_SELECT);
   const showConfirmation = instant || (isActive && progress >= IND_CONFIRM);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-card">
-      {/* Host identity header */}
-      <div className="border-b border-border px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <Avatar className="size-10">
-              <AvatarFallback className="bg-neutral-100 text-sm font-semibold text-neutral-700">
-                AM
+    <div className="relative">
+      {/* Main booking card */}
+      <div
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                transform: isActive ? "none" : "translateY(6px) scale(0.98)",
+                transition: isActive ? "transform 450ms ease-out" : "none",
+              }
+        }
+        className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+      >
+        <div className="flex divide-x divide-border">
+          {/* Left — host details */}
+          <div className="flex w-[132px] shrink-0 flex-col gap-4 p-4">
+            <Avatar className="size-8">
+              <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
+              <AvatarFallback className="bg-neutral-200 text-[9px] font-semibold text-neutral-600">
+                EN
               </AvatarFallback>
             </Avatar>
-            <span
-              className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background bg-success"
-              aria-hidden="true"
-            />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">Alex Morgan</p>
-            <p className="text-xs text-muted-foreground">30 Minute Meeting</p>
-          </div>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <VideoIcon className="size-3 opacity-60" aria-hidden="true" />
-            Video call
-          </span>
-          <span aria-hidden="true" className="opacity-30">
-            ·
-          </span>
-          <span>30 min</span>
-          <span aria-hidden="true" className="opacity-30">
-            ·
-          </span>
-          <span className="flex items-center gap-1">
-            <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
-            Europe/Berlin
-          </span>
-        </div>
-      </div>
-
-      {/* Date + time */}
-      <div className="flex gap-0 divide-x divide-border">
-        {/* Calendar */}
-        <div className="min-w-0 flex-1 px-4 py-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
-              October 2025
-            </span>
-            <div className="flex items-center gap-0.5">
-              <button
-                type="button"
-                aria-label="Previous month"
-                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <ChevronLeftIcon className="size-3.5" />
-              </button>
-              <button
-                type="button"
-                aria-label="Next month"
-                className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <ChevronRightIcon className="size-3.5" />
-              </button>
+            <div className="-mt-1">
+              <p className="text-[11px] text-muted-foreground">Ewa Nowak</p>
+              <p className="mt-0.5 text-sm font-bold text-foreground">
+                Intro call
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <ClockIcon
+                  className="size-3 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] text-muted-foreground">30m</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <VideoIcon
+                  className="size-3 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] text-muted-foreground">
+                  Cal Video
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <GlobeIcon
+                  className="size-3 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="text-[11px] text-muted-foreground">
+                  Europe/Warsaw
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-7 text-center" aria-hidden="true">
-            {CAL_DAYS.map((d) => (
-              <div
-                key={d}
-                className="flex h-7 items-center justify-center text-[10px] font-medium text-muted-foreground/60"
-              >
-                {d}
-              </div>
-            ))}
-            {OCT_CELLS.map((day, i) => (
-              <div
-                key={day !== null ? `day-${day}` : `empty-${i}`}
-                className={cn(
-                  "mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-colors duration-300",
-                  day === null
-                    ? ""
-                    : day === SELECTED_DAY
-                      ? dateSelected
-                        ? "bg-primary font-semibold text-primary-foreground"
-                        : "cursor-pointer text-foreground hover:bg-muted"
-                      : AVAILABLE_DAYS.has(day)
-                        ? "cursor-pointer text-foreground hover:bg-muted"
-                        : "text-muted-foreground/30",
-                )}
-              >
-                {day}
-              </div>
-            ))}
+          {/* Middle — calendar */}
+          <div className="min-w-0 flex-1 p-4">
+            <div className="mb-3 flex items-baseline gap-1">
+              <span className="text-sm font-bold text-foreground">October</span>
+              <span className="text-sm text-muted-foreground">2026</span>
+            </div>
+            <div className="grid grid-cols-7" aria-hidden="true">
+              {CAL_DAYS.map((d) => (
+                <div
+                  key={d}
+                  className="pb-1.5 text-center text-[8px] font-medium tracking-wide text-muted-foreground/50"
+                >
+                  {d}
+                </div>
+              ))}
+              {OCT_CELLS.map((day, i) => {
+                if (day === null) {
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static calendar offset — order never changes
+                  return <div key={`e-${i}`} className="py-[3px]" />;
+                }
+                const isSelected = day === SELECTED_DAY;
+                const isAvail = AVAILABLE_DAYS.has(day);
+                return (
+                  <div
+                    key={day}
+                    className="flex items-center justify-center py-[3px]"
+                  >
+                    <div
+                      className={cn(
+                        "flex size-7 items-center justify-center rounded-xl text-[11px] transition-all duration-300",
+                        isSelected
+                          ? calIlluminated
+                            ? "bg-foreground font-semibold text-background"
+                            : "text-muted-foreground/30"
+                          : isAvail
+                            ? calIlluminated
+                              ? "bg-neutral-100 font-medium text-foreground"
+                              : "text-muted-foreground/30"
+                            : "text-muted-foreground/30",
+                      )}
+                    >
+                      {day}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Time slots — revealed progressively */}
-        <div className="flex w-[108px] shrink-0 flex-col gap-1.5 px-3 py-4">
-          <p
-            className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60 transition-opacity duration-200"
-            style={{ opacity: timesHeaderVisible ? 1 : 0 }}
-            aria-hidden="true"
-          >
-            Tue, Oct 14
-          </p>
-          {TIME_SLOTS.map((slot, i) => {
-            const isVisible = i < visibleSlotCount;
-            const isSelected = slotSelected && slot === SELECTED_SLOT;
-            return (
-              <button
-                key={slot}
-                type="button"
-                aria-pressed={isSelected}
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? "none" : "translateY(4px)",
-                  transition:
-                    "opacity 220ms ease-out, transform 220ms ease-out, background-color 250ms, border-color 250ms, color 250ms",
-                }}
-                className={cn(
-                  "w-full rounded-lg border py-1.5 text-center text-xs font-medium",
-                  isSelected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-foreground",
-                )}
-              >
-                {slot}
-              </button>
-            );
-          })}
+          {/* Right — time slots */}
+          <div className="flex w-[76px] shrink-0 flex-col bg-neutral-50 px-2.5 pb-2.5 pt-4">
+            <p className="mb-4 text-xs" aria-hidden="true">
+              <span className="font-normal text-muted-foreground">Thu </span>
+              <span className="font-semibold text-foreground">08</span>
+            </p>
+            <div className="flex flex-col gap-1.5" aria-hidden="true">
+              {TIME_SLOTS.map((slot, i) => {
+                const isVisible = i < visibleSlotCount;
+                const isSelected = slotSelected && slot === SELECTED_SLOT;
+                return (
+                  <div
+                    key={slot}
+                    style={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            opacity: isVisible ? 1 : 0,
+                            transform: isVisible ? "none" : "translateY(4px)",
+                            transition:
+                              "opacity 200ms ease-out, transform 200ms ease-out, background-color 250ms, color 250ms",
+                          }
+                    }
+                    className={cn(
+                      "rounded-lg py-1 text-center text-[11px] font-medium",
+                      isSelected
+                        ? "bg-foreground text-background"
+                        : "border border-border bg-card text-foreground shadow-xs",
+                    )}
+                  >
+                    {slot}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Confirmation overlay — appears over the lower portion of the card */}
+      {/* Floating confirmation card */}
       <div
         aria-live="polite"
-        className="pointer-events-none absolute inset-x-3 bottom-3 z-20"
-        style={{
-          opacity: showConfirmation ? 1 : 0,
-          transform: showConfirmation ? "translateY(0)" : "translateY(6px)",
-          transition: "opacity 350ms ease-out, transform 350ms ease-out",
-        }}
+        className="absolute -bottom-6 right-0 z-20 w-[56%]"
+        style={
+          prefersReducedMotion
+            ? { opacity: showConfirmation ? 1 : 0 }
+            : {
+                opacity: showConfirmation ? 1 : 0,
+                transform: showConfirmation
+                  ? "translateY(0)"
+                  : "translateY(8px)",
+                transition: "opacity 500ms ease-out, transform 500ms ease-out",
+              }
+        }
       >
-        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3 shadow-md">
-          <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
+        <div className="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-md">
+          <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-success/10">
             <CheckIcon className="size-3 text-success" aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-foreground">
               This meeting is scheduled
             </p>
-            <p className="mt-0.5 text-[10px] text-muted-foreground">
-              Alex Morgan · Oct 14 · 10:00 AM
+            <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
+              Thu 8 Oct, 10:00 · invite sent to both of you
             </p>
           </div>
         </div>
@@ -463,117 +538,191 @@ function IndividualsPanel({
 
 // ─── Panel: Teams ─────────────────────────────────────────────────────────────
 
-const TEAM_MEMBERS = [
-  {
-    initials: "SC",
-    name: "Sarah Chen",
-    role: "Account Executive",
-    assigned: true,
-    status: "Next available",
-    statusVariant: "success" as const,
-  },
-  {
-    initials: "ML",
-    name: "Marcus Lee",
-    role: "Account Executive",
-    assigned: false,
-    status: "2 bookings today",
-    statusVariant: "neutral" as const,
-  },
-  {
-    initials: "PP",
-    name: "Priya Patel",
-    role: "Solutions Engineer",
-    assigned: false,
-    status: "Available",
-    statusVariant: "neutral" as const,
-  },
-  {
-    initials: "AV",
-    name: "Alex Vega",
-    role: "Account Executive",
-    assigned: false,
-    status: "Away",
-    statusVariant: "muted" as const,
-  },
-];
+const TEAM_AVATARS = [
+  { key: "m1", src: "/avatars/teams-member-1.png" },
+  { key: "m2", src: "/avatars/teams-member-2.png" },
+  { key: "sofia", src: "/avatars/teams-sofia.png" },
+  { key: "m4", src: "/avatars/teams-member-4.png" },
+] as const;
 
-function TeamsPanel() {
+function TeamsPanel({
+  progress,
+  isActive,
+  prefersReducedMotion,
+}: {
+  progress: number;
+  isActive: boolean;
+  prefersReducedMotion: boolean;
+}) {
+  const instant = prefersReducedMotion && isActive;
+  const shuffleActive = instant || (isActive && progress >= TMS_SHUFFLE);
+  const sofiaSelected = instant || (isActive && progress >= TMS_SELECT);
+  const resultRevealed = instant || (isActive && progress >= TMS_REVEAL);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">
-              Team Sales Call
-            </p>
-          </div>
-          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <VideoIcon className="size-3 opacity-60" aria-hidden="true" />
-            <span>Video call · 30 min</span>
-          </div>
-        </div>
-        <Badge variant="secondary" size="sm" className="shrink-0">
-          Round robin
-        </Badge>
-      </div>
+    <div
+      className="flex justify-center py-1"
+      style={
+        prefersReducedMotion
+          ? undefined
+          : {
+              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
+              transition: isActive ? "transform 450ms ease-out" : "none",
+            }
+      }
+    >
+      <div className="flex w-full max-w-[400px] flex-col items-center">
+        {/* ── Top card ──────────────────────────────────────────── */}
+        <div className="w-full rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
+          <div className="flex items-center gap-4">
+            {/* Overlapping avatar stack */}
+            <div className="flex shrink-0 -space-x-2.5">
+              {TEAM_AVATARS.map(({ key, src }, i) => (
+                <div
+                  key={key}
+                  className="relative"
+                  style={{
+                    zIndex: TEAM_AVATARS.length - i,
+                    opacity: sofiaSelected ? (i === SOFIA_INDEX ? 1 : 0.4) : 1,
+                    transition: prefersReducedMotion
+                      ? undefined
+                      : "opacity 500ms ease-out",
+                  }}
+                >
+                  <Avatar className="size-8 ring-2 ring-card">
+                    <AvatarImage src={src} alt="" />
+                    <AvatarFallback className="bg-neutral-200" />
+                  </Avatar>
+                </div>
+              ))}
+            </div>
 
-      {/* Host list */}
-      <div className="px-2 py-2">
-        <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
-          Eligible hosts
-        </p>
-        {TEAM_MEMBERS.map((member) => (
-          <div
-            key={member.initials}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5",
-              member.assigned ? "bg-muted/70" : "",
-            )}
-          >
-            <div className="relative shrink-0">
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-neutral-100 text-[9px] font-semibold text-neutral-700">
-                  {member.initials}
-                </AvatarFallback>
-              </Avatar>
-              {member.assigned && (
-                <span
-                  className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border border-background bg-success"
+            {/* Event metadata */}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Product demo · Sales team
+              </p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <ShuffleIcon
+                  className="size-3.5 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-              )}
+                <span className="text-xs text-muted-foreground">
+                  Round robin · 45m
+                </span>
+              </div>
             </div>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-xs font-medium text-foreground">
-                {member.name}
-              </span>
-              <span className="truncate text-[10px] text-muted-foreground">
-                {member.role}
-              </span>
-            </div>
-            <span
-              className={cn(
-                "shrink-0 text-[10px] font-medium",
-                member.statusVariant === "success"
-                  ? "text-success-foreground"
-                  : member.statusVariant === "muted"
-                    ? "text-muted-foreground/60"
-                    : "text-muted-foreground",
-              )}
-            >
-              {member.status}
-            </span>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Footer */}
-      <div className="border-t border-border px-5 py-3">
-        <p className="text-[10px] text-muted-foreground">
-          Cal.com routes to the least-busy eligible host · resets daily
-        </p>
+        {/* ── Centre pipeline ───────────────────────────────────── */}
+        <div
+          className="relative flex w-full flex-col items-center"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, oklch(0 0 0 / 0.055) 1px, transparent 1px)",
+            backgroundSize: "14px 14px",
+          }}
+        >
+          <div className="h-7 border-l border-dashed border-border" />
+
+          {/* Shuffle node */}
+          <div
+            className="flex size-10 items-center justify-center rounded-full bg-card shadow-sm"
+            style={{
+              border: `1px solid ${shuffleActive ? "var(--border)" : "oklch(0 0 0 / 0.1)"}`,
+              transform: shuffleActive ? "scale(1.05)" : "scale(1)",
+              transition: prefersReducedMotion
+                ? undefined
+                : "transform 500ms ease-out, border-color 500ms ease-out",
+            }}
+          >
+            <ShuffleIcon
+              className="size-4"
+              style={{
+                opacity: shuffleActive ? 1 : 0.35,
+                transition: prefersReducedMotion
+                  ? undefined
+                  : "opacity 500ms ease-out",
+              }}
+              aria-hidden="true"
+            />
+          </div>
+
+          <div className="h-7 border-l border-dashed border-border" />
+        </div>
+
+        {/* ── Bottom result card ────────────────────────────────── */}
+        <div
+          className="w-full rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
+          style={
+            prefersReducedMotion
+              ? undefined
+              : {
+                  opacity: resultRevealed ? 1 : 0.4,
+                  transform: resultRevealed
+                    ? "translateY(0)"
+                    : "translateY(8px)",
+                  transition:
+                    "opacity 500ms ease-out, transform 500ms ease-out",
+                }
+          }
+        >
+          <div className="flex items-center gap-4">
+            {/* Customer → check → Host */}
+            <div className="shrink-0">
+              {/* Labels */}
+              <div className="mb-1.5 flex gap-3">
+                <span className="w-10 text-center text-[10px] text-muted-foreground">
+                  Customer
+                </span>
+                <span className="w-6" aria-hidden="true" />
+                <span className="w-10 text-center text-[10px] text-muted-foreground">
+                  Host
+                </span>
+              </div>
+              {/* Avatars + check — items-center aligns check with avatar midlines */}
+              <div className="flex items-center gap-3">
+                <Avatar className="size-10">
+                  <AvatarImage
+                    src="/avatars/teams-customer.png"
+                    alt="Customer"
+                  />
+                  <AvatarFallback className="bg-neutral-200" />
+                </Avatar>
+                <div className="flex size-6 items-center justify-center rounded-full border border-success/20 bg-success/10">
+                  <CheckIcon
+                    className="size-3 text-success"
+                    aria-hidden="true"
+                  />
+                </div>
+                <Avatar className="size-10">
+                  <AvatarImage
+                    src="/avatars/teams-sofia.png"
+                    alt="Sofia Ruiz"
+                  />
+                  <AvatarFallback className="bg-neutral-200" />
+                </Avatar>
+              </div>
+            </div>
+
+            {/* Vertical divider */}
+            <div
+              className="h-12 w-px shrink-0 bg-border/60"
+              aria-hidden="true"
+            />
+
+            {/* Result text */}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-snug text-foreground">
+                This event is scheduled
+              </p>
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                Sofia Ruiz · Thu 8 Oct, 10:00 · least booked this week
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -581,69 +730,200 @@ function TeamsPanel() {
 
 // ─── Panel: Organizations ─────────────────────────────────────────────────────
 
-function OrgsPanel() {
+function OrgsPanel({
+  progress,
+  isActive,
+  prefersReducedMotion,
+}: {
+  progress: number;
+  isActive: boolean;
+  prefersReducedMotion: boolean;
+}) {
+  const instant = prefersReducedMotion && isActive;
+  const routeActive = instant || (isActive && progress >= ORG_ROUTE);
+  const resultRevealed = instant || (isActive && progress >= ORG_RESOLVE);
+  const assigned = instant || (isActive && progress >= ORG_ASSIGN);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      {/* Header */}
-      <div className="border-b border-border px-5 py-4">
-        <p className="text-sm font-semibold text-foreground">Booking Router</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Route bookings to the right team automatically
-        </p>
-      </div>
-
-      {/* Routing rule */}
-      <div className="px-5 py-5">
-        {/* Condition */}
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
-            When
-          </p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded border border-border bg-card px-2 py-0.5 text-xs font-medium text-foreground">
-              Company size
-            </span>
-            <span className="text-xs text-muted-foreground">
-              is greater than
-            </span>
-            <span className="rounded border border-border bg-card px-2 py-0.5 text-xs font-medium text-foreground">
-              50
-            </span>
+    <div
+      className="flex justify-center py-1"
+      style={
+        prefersReducedMotion
+          ? undefined
+          : {
+              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
+              transition: isActive ? "transform 450ms ease-out" : "none",
+            }
+      }
+    >
+      <div className="flex w-full max-w-[400px] flex-col items-center">
+        {/* ── Top form card ─────────────────────────────────────── */}
+        <div className="w-full rounded-2xl border border-border bg-card shadow-sm">
+          {/* Browser chrome */}
+          <div className="flex items-center border-b border-border/60 px-4 py-2.5">
+            <div className="flex gap-1" aria-hidden="true">
+              <span className="size-2 rounded-full bg-neutral-200" />
+              <span className="size-2 rounded-full bg-neutral-200" />
+              <span className="size-2 rounded-full bg-neutral-200" />
+            </div>
+            <div className="flex flex-1 justify-center">
+              <span className="rounded-full bg-muted px-3 py-0.5 text-[11px] text-muted-foreground">
+                acme.cal.com/sales
+              </span>
+            </div>
+            {/* Invisible spacer balances the three dots */}
+            <div className="flex gap-1" aria-hidden="true">
+              <span className="size-2 opacity-0" />
+              <span className="size-2 opacity-0" />
+              <span className="size-2 opacity-0" />
+            </div>
+          </div>
+          {/* Content */}
+          <div className="px-4 py-3">
+            <p className="text-sm font-semibold text-foreground">
+              Talk to sales
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Company size{" "}
+              <span className="font-semibold text-foreground">1,000+</span>
+              {" · "}Country{" "}
+              <span className="font-semibold text-foreground">Germany</span>
+            </p>
           </div>
         </div>
 
-        {/* Arrow connector */}
-        <div className="flex items-center py-2 pl-4">
-          <div className="flex flex-col items-center gap-0.5">
-            <div className="h-3 w-px bg-border" />
-            <div className="size-1.5 rotate-45 border-b border-r border-muted-foreground/40" />
+        {/* ── Centre pipeline ───────────────────────────────────── */}
+        <div
+          className="relative flex w-full flex-col items-center"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, oklch(0 0 0 / 0.055) 1px, transparent 1px)",
+            backgroundSize: "14px 14px",
+          }}
+        >
+          <div className="h-7 border-l border-dashed border-border" />
+
+          {/* Routing node */}
+          <div
+            className="flex size-10 items-center justify-center rounded-xl bg-card shadow-sm"
+            style={{
+              border: `1px solid ${routeActive ? "var(--border)" : "oklch(0 0 0 / 0.1)"}`,
+              transform:
+                routeActive && !resultRevealed ? "scale(1.05)" : "scale(1)",
+              transition: prefersReducedMotion
+                ? undefined
+                : "transform 500ms ease-out, border-color 500ms ease-out",
+            }}
+          >
+            <SplitIcon
+              className="size-4"
+              style={{
+                opacity: routeActive ? 1 : 0.35,
+                transition: prefersReducedMotion
+                  ? undefined
+                  : "opacity 500ms ease-out",
+              }}
+              aria-hidden="true"
+            />
           </div>
+
+          <div className="h-7 border-l border-dashed border-border" />
         </div>
 
-        {/* Destination */}
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
-            Route to
-          </p>
-          <div className="flex items-center justify-between">
-            <div>
+        {/* ── Bottom result card ────────────────────────────────── */}
+        <div
+          className="w-full rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
+          style={
+            prefersReducedMotion
+              ? undefined
+              : {
+                  opacity: resultRevealed ? 1 : 0.4,
+                  transform: resultRevealed
+                    ? "translateY(0)"
+                    : "translateY(8px)",
+                  transition:
+                    "opacity 500ms ease-out, transform 500ms ease-out",
+                }
+          }
+        >
+          <div className="flex items-center gap-3">
+            {/* Calendar icon tile */}
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+              <CalendarIcon
+                className="size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </div>
+
+            {/* Text */}
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
-                Enterprise Sales
+                Routed to Enterprise AE · DACH
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Host: Available host · Round robin
+                {assigned
+                  ? "Marcus Lee · Thu 10:00 booked"
+                  : "Matching by attributes…"}
               </p>
             </div>
-            <Badge variant="secondary" size="sm">
-              Team
-            </Badge>
+
+            {/* Avatar stack — A (top), B (Marcus Lee / middle), C (bottom) */}
+            <div className="flex shrink-0 flex-col items-center gap-0.5">
+              <Avatar className="size-4 opacity-40">
+                <AvatarImage src="/avatars/orgs-ae-a.png" alt="" />
+                <AvatarFallback className="bg-neutral-200" />
+              </Avatar>
+              <div className="h-2 border-l border-dashed border-border/60" />
+              {/* Middle (B) — enlarges and gets selection ring on assign */}
+              <Avatar
+                style={{
+                  width: assigned ? 24 : 16,
+                  height: assigned ? 24 : 16,
+                  opacity: assigned ? 1 : 0.4,
+                  outlineWidth: "2px",
+                  outlineStyle: "solid",
+                  outlineColor: assigned
+                    ? "var(--color-foreground)"
+                    : "transparent",
+                  outlineOffset: "1px",
+                  transition: prefersReducedMotion
+                    ? undefined
+                    : "width 300ms ease-out, height 300ms ease-out, opacity 300ms ease-out, outline-color 300ms ease-out",
+                }}
+              >
+                <AvatarImage src="/avatars/orgs-ae-b.png" alt="" />
+                <AvatarFallback className="bg-neutral-300" />
+              </Avatar>
+              <div className="h-2 border-l border-dashed border-border/60" />
+              <Avatar className="size-4 opacity-40">
+                <AvatarImage src="/avatars/orgs-ae-c.png" alt="" />
+                <AvatarFallback className="bg-neutral-200" />
+              </Avatar>
+            </div>
           </div>
         </div>
 
-        {/* Default fallback */}
-        <p className="mt-3 text-[10px] text-muted-foreground">
-          Default fallback → General Enquiries
-        </p>
+        {/* ── Security line ─────────────────────────────────────── */}
+        <div
+          aria-hidden={!assigned}
+          className="mt-4 flex items-center gap-2"
+          style={
+            prefersReducedMotion
+              ? { opacity: assigned ? 1 : 0 }
+              : {
+                  opacity: assigned ? 1 : 0,
+                  transition: "opacity 500ms ease-out",
+                }
+          }
+        >
+          <ShieldIcon
+            className="size-3.5 shrink-0 text-success"
+            aria-hidden="true"
+          />
+          <span className="text-xs text-muted-foreground">
+            SAML SSO and SCIM across every team
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -651,111 +931,488 @@ function OrgsPanel() {
 
 // ─── Panel: Developers ────────────────────────────────────────────────────────
 
-const DEV_DAYS = [
-  { label: "Mo", date: 13 },
-  { label: "Tu", date: 14 },
-  { label: "We", date: 15 },
-  { label: "Th", date: 16 },
-  { label: "Fr", date: 17 },
-] as const;
+type DevTab = "atoms" | "apiv2" | "webhooks";
+type CodeToken = { t: string; c: string };
+type CodeEntry = { id: string; tokens: CodeToken[] };
 
-const DEV_SLOTS = ["9:00", "10:00", "11:00", "14:00", "15:00"] as const;
+const kw = (t: string): CodeToken => ({ t, c: "text-sky-400" });
+const str = (t: string): CodeToken => ({ t, c: "text-orange-300" });
+const tag = (t: string): CodeToken => ({ t, c: "text-rose-400" });
+const att = (t: string): CodeToken => ({ t, c: "text-sky-300" });
+const pln = (t: string): CodeToken => ({ t, c: "text-slate-200" });
+const dim = (t: string): CodeToken => ({ t, c: "text-slate-400" });
 
-function DevelopersPanel() {
+const DEV_CODE: Record<DevTab, CodeEntry[]> = {
+  atoms: [
+    {
+      id: "a0",
+      tokens: [
+        kw("import"),
+        dim(" { "),
+        pln("CalProvider"),
+        dim(", "),
+        pln("Booker"),
+        dim(" } "),
+        kw("from"),
+        dim(" "),
+        str('"@calcom/atoms"'),
+      ],
+    },
+    { id: "a1", tokens: [] },
+    {
+      id: "a2",
+      tokens: [
+        tag("<CalProvider"),
+        dim(" "),
+        att("clientId"),
+        dim("={"),
+        pln("CAL_CLIENT_ID"),
+        dim("}>"),
+      ],
+    },
+    {
+      id: "a3",
+      tokens: [
+        dim("  "),
+        tag("<Booker"),
+        dim(" "),
+        att("username"),
+        dim("="),
+        str('"acme-health"'),
+      ],
+    },
+    {
+      id: "a4",
+      tokens: [
+        dim("      "),
+        att("eventSlug"),
+        dim("="),
+        str('"consult"'),
+        dim(" />"),
+      ],
+    },
+    { id: "a5", tokens: [tag("</CalProvider>")] },
+  ],
+  apiv2: [
+    {
+      id: "v0",
+      tokens: [
+        pln("curl"),
+        dim(" -X POST "),
+        str("https://api.cal.com/v2/bookings"),
+        dim(" \\"),
+      ],
+    },
+    {
+      id: "v1",
+      tokens: [dim("  -H "), str('"Authorization: Bearer $TOKEN"'), dim(" \\")],
+    },
+    {
+      id: "v2",
+      tokens: [
+        dim("  -d "),
+        att("eventTypeId"),
+        dim("="),
+        str("42"),
+        dim(" \\"),
+      ],
+    },
+    {
+      id: "v3",
+      tokens: [
+        dim("  -d "),
+        att("startTime"),
+        dim("="),
+        str('"2026-10-08T08:00:00Z"'),
+        dim(" \\"),
+      ],
+    },
+    {
+      id: "v4",
+      tokens: [
+        dim("  -d "),
+        att("bookerEmail"),
+        dim("="),
+        str('"kai@acme.co"'),
+        dim(" \\"),
+      ],
+    },
+    {
+      id: "v5",
+      tokens: [
+        dim("  -d "),
+        att("bookerName"),
+        dim("="),
+        str('"Kai Nakamura"'),
+        dim(" \\"),
+      ],
+    },
+    {
+      id: "v6",
+      tokens: [dim("  -d "), att("timeZone"), dim("="), str('"Asia/Tokyo"')],
+    },
+  ],
+  webhooks: [
+    {
+      id: "w0",
+      tokens: [
+        kw("export async function"),
+        dim(" "),
+        pln("POST"),
+        dim("("),
+        att("req"),
+        dim(": "),
+        pln("Request"),
+        dim(") {"),
+      ],
+    },
+    {
+      id: "w1",
+      tokens: [
+        dim("  "),
+        kw("const"),
+        dim(" { "),
+        pln("type"),
+        dim(", "),
+        pln("payload"),
+        dim(" } = "),
+        kw("await"),
+        dim(" req.json()"),
+      ],
+    },
+    {
+      id: "w2",
+      tokens: [
+        dim("  "),
+        kw("if"),
+        dim(" (type !== "),
+        str('"BOOKING_CREATED"'),
+        dim(") "),
+        kw("return"),
+      ],
+    },
+    { id: "w3", tokens: [dim("  "), kw("await"), dim(" crm.createVisit({")] },
+    {
+      id: "w4",
+      tokens: [
+        dim("    "),
+        att("contact"),
+        dim(": payload.attendees["),
+        pln("0"),
+        dim("],"),
+      ],
+    },
+    { id: "w5", tokens: [dim("  })")] },
+  ],
+};
+
+const DEV_TAB_LABELS: Record<DevTab, string> = {
+  atoms: "Atoms",
+  apiv2: "API v2",
+  webhooks: "Webhooks",
+};
+
+const DEV_TAB_FILES: Record<DevTab, string> = {
+  atoms: "BookConsult.tsx",
+  apiv2: "create-booking.sh",
+  webhooks: "api/cal-webhook.ts",
+};
+
+const DEV_ORDERED_TABS: DevTab[] = ["atoms", "apiv2", "webhooks"];
+const DEV_TIME_SLOTS = ["9:00", "9:30", "10:00"] as const;
+const DEV_SELECTED_SLOT = "10:00";
+
+function AtomsResult() {
   return (
-    <div className="flex flex-col gap-3">
-      {/* App shell */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {/* Chrome bar */}
-        <div className="flex items-center gap-2 border-b border-border bg-muted/60 px-3 py-2">
-          <div className="flex gap-1" aria-hidden="true">
-            <span className="size-2 rounded-full bg-border" />
-            <span className="size-2 rounded-full bg-border" />
-            <span className="size-2 rounded-full bg-border" />
-          </div>
-          <span className="ml-1 text-[10px] font-semibold text-muted-foreground">
-            Acme CRM
+    <div>
+      <div className="border-b border-border/60 px-3 py-2">
+        <div className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5">
+          <span className="text-[10px] text-muted-foreground">
+            app.acmehealth.com/visits/new
           </span>
-          <div className="ml-auto flex gap-3">
-            <span className="text-[10px] text-muted-foreground">Deals</span>
-            <span className="text-[10px] text-muted-foreground">Contacts</span>
-            <span className="text-[10px] font-semibold text-foreground underline underline-offset-2">
-              Schedule
-            </span>
-          </div>
         </div>
-
-        {/* Embedded booking */}
-        <div className="p-4">
-          <div className="mb-4 flex items-center gap-2.5">
-            <Avatar className="size-9 shrink-0">
-              <AvatarFallback className="bg-neutral-100 text-xs font-semibold text-neutral-700">
-                CS
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-xs font-semibold text-foreground">
-                Schedule with Customer Success
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                30 min · Video call
-              </p>
-            </div>
+      </div>
+      <div className="flex gap-2 p-3">
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex items-baseline gap-1">
+            <span className="text-[11px] font-bold text-foreground">
+              October
+            </span>
+            <span className="text-[11px] text-muted-foreground">2026</span>
           </div>
-
-          {/* Day strip */}
-          <div className="mb-3 flex gap-1" aria-hidden="true">
-            {DEV_DAYS.map(({ label, date }, i) => (
+          <div className="grid grid-cols-7" aria-hidden="true">
+            {CAL_DAYS.map((d) => (
               <div
-                key={label}
-                className={cn(
-                  "flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1.5",
-                  i === 1
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/80 text-muted-foreground",
-                )}
+                key={d}
+                className="pb-1 text-center text-[7px] font-medium text-muted-foreground/40"
               >
-                <span className="text-[9px] font-medium">{label}</span>
-                <span className="text-[11px] font-semibold">{date}</span>
+                {d[0]}
               </div>
             ))}
+            {OCT_CELLS.map((day, i) => {
+              if (day === null) {
+                // biome-ignore lint/suspicious/noArrayIndexKey: static calendar offset
+                return <div key={`ae-${i}`} className="py-[1.5px]" />;
+              }
+              const isSel = day === SELECTED_DAY;
+              const isAvail = AVAILABLE_DAYS.has(day);
+              return (
+                <div
+                  key={day}
+                  className="flex items-center justify-center py-[1.5px]"
+                >
+                  <div
+                    className={cn(
+                      "flex size-[18px] items-center justify-center rounded-full text-[8px]",
+                      isSel
+                        ? "bg-foreground font-semibold text-background"
+                        : isAvail
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground/30",
+                    )}
+                  >
+                    {day}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          {/* Time slots */}
-          <div className="flex flex-wrap gap-1.5" aria-hidden="true">
-            {DEV_SLOTS.map((slot, i) => (
-              <span
+        </div>
+        <div className="flex w-14 shrink-0 flex-col">
+          <p className="mb-1.5 text-[10px] font-bold text-foreground">Thu 08</p>
+          <div className="flex flex-col gap-1">
+            {DEV_TIME_SLOTS.map((slot) => (
+              <div
                 key={slot}
                 className={cn(
-                  "rounded-lg border px-2.5 py-1 text-[10px] font-medium",
-                  i === 1
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border text-muted-foreground",
+                  "rounded-md py-0.5 text-center text-[10px] font-medium",
+                  slot === DEV_SELECTED_SLOT
+                    ? "bg-foreground text-background"
+                    : "border border-border text-foreground",
                 )}
               >
                 {slot}
-              </span>
+              </div>
             ))}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Code hint */}
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
-        <Code2Icon
-          className="size-3.5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <code className="font-mono text-[11px] text-foreground">
-          {'<Cal namespace="support" />'}
-        </code>
-        <span className="ml-auto text-[9px] font-medium uppercase tracking-wide text-muted-foreground/60">
-          React
+function ApiV2Result() {
+  return (
+    <div className="flex flex-col gap-2 px-4 py-3.5">
+      <div className="flex items-center gap-2">
+        <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+          201 Created
         </span>
-        <ArrowRightIcon
-          className="size-3 text-muted-foreground/40"
+        <span className="text-[11px] text-muted-foreground">142 ms</span>
+      </div>
+      <div className="flex flex-col gap-1 font-mono text-[11px]">
+        <div>
+          <span className="text-muted-foreground">status: </span>
+          <span className="text-orange-400">"accepted"</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground">start (Tokyo): </span>
+          <span className="text-foreground">Thu 8 Oct, 17:00</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+        <VideoIcon
+          className="size-3 shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
+        <span className="truncate font-mono text-[10px] text-muted-foreground">
+          meet.cal.com/kai-nakamura/consult
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function WebhooksResult() {
+  return (
+    <div className="flex flex-col gap-2.5 px-4 py-3.5">
+      <div className="flex items-center gap-2">
+        <span className="relative flex size-2 shrink-0">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-75" />
+          <span className="relative inline-flex size-2 rounded-full bg-success" />
+        </span>
+        <span className="text-xs font-semibold text-foreground">
+          BOOKING_CREATED delivered
+        </span>
+        <span className="ml-auto rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success">
+          200
+        </span>
+      </div>
+      <p className="text-[10px] leading-snug text-muted-foreground">
+        Also:{" "}
+        <span className="text-foreground/60">
+          RESCHEDULED · CANCELLED · MEETING_ENDED
+        </span>
+      </p>
+    </div>
+  );
+}
+
+function DevelopersPanel({
+  isActive,
+  prefersReducedMotion,
+  onRestartProgress,
+}: {
+  isActive: boolean;
+  prefersReducedMotion: boolean;
+  onRestartProgress: () => void;
+}) {
+  const [activeDevTab, setActiveDevTab] = React.useState<DevTab>("atoms");
+  const [devKey, setDevKey] = React.useState(0);
+  const [visibleLines, setVisibleLines] = React.useState(0);
+  const [showResult, setShowResult] = React.useState(false);
+
+  // Reset to Atoms each time the outer Developers tab becomes active
+  React.useEffect(() => {
+    if (isActive) {
+      setActiveDevTab("atoms");
+      setDevKey((k) => k + 1);
+    }
+  }, [isActive]);
+
+  const lineCount = DEV_CODE[activeDevTab].length;
+
+  // Line-by-line reveal with cursor; auto-advances on each tab change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: devKey is an intentional restart trigger
+  React.useEffect(() => {
+    if (!isActive) {
+      setVisibleLines(0);
+      setShowResult(false);
+      return;
+    }
+    setVisibleLines(0);
+    setShowResult(false);
+    const count = DEV_CODE[activeDevTab].length;
+    if (prefersReducedMotion) {
+      setVisibleLines(count);
+      setShowResult(true);
+      return;
+    }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    for (let i = 0; i < count; i++) {
+      timers.push(setTimeout(() => setVisibleLines(i + 1), (i + 1) * 180));
+    }
+    timers.push(setTimeout(() => setShowResult(true), count * 180 + 200));
+    return () => {
+      for (const t of timers) clearTimeout(t);
+    };
+  }, [activeDevTab, devKey, isActive, prefersReducedMotion]);
+
+  function handleTabClick(tab: DevTab) {
+    setActiveDevTab(tab);
+    setDevKey((k) => k + 1);
+    onRestartProgress();
+  }
+
+  const allLinesVisible = visibleLines >= lineCount;
+  const showCursor =
+    !prefersReducedMotion && !allLinesVisible && visibleLines > 0;
+
+  return (
+    <div
+      style={
+        prefersReducedMotion
+          ? undefined
+          : {
+              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
+              transition: isActive ? "transform 450ms ease-out" : "none",
+            }
+      }
+    >
+      <div className="relative pb-14 pr-4">
+        {/* Code window */}
+        <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-lg">
+          {/* Tab + filename bar */}
+          <div className="flex items-center border-b border-neutral-700/60">
+            {DEV_ORDERED_TABS.map((tab) => {
+              const isActiveTab = activeDevTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => handleTabClick(tab)}
+                  className={cn(
+                    "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400",
+                    isActiveTab
+                      ? "rounded-t bg-neutral-800 text-neutral-100"
+                      : "text-neutral-500 hover:text-neutral-300",
+                  )}
+                >
+                  {DEV_TAB_LABELS[tab]}
+                </button>
+              );
+            })}
+            <span className="ml-auto pr-4 font-mono text-[10px] text-neutral-500">
+              {DEV_TAB_FILES[activeDevTab]}
+            </span>
+          </div>
+
+          {/* Code lines */}
+          <div className="min-h-[196px] px-4 py-4" aria-hidden="true">
+            {DEV_CODE[activeDevTab].map((entry, i) => (
+              <div
+                key={entry.id}
+                className="flex"
+                style={
+                  prefersReducedMotion
+                    ? undefined
+                    : {
+                        opacity: i < visibleLines ? 1 : 0,
+                        transition: "opacity 150ms ease-out",
+                      }
+                }
+              >
+                <span className="w-7 select-none pr-3 text-right font-mono text-[12px] leading-[1.7] text-neutral-600">
+                  {i + 1}
+                </span>
+                <span className="font-mono text-[12px] leading-[1.7]">
+                  {entry.tokens.map((tok, j) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: syntax tokens static per line
+                    <span key={j} className={tok.c}>
+                      {tok.t}
+                    </span>
+                  ))}
+                  {showCursor && i === visibleLines - 1 && (
+                    <span className="ml-0.5 inline-block h-[1em] w-[0.55em] translate-y-[1px] animate-pulse bg-neutral-400" />
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Result card — overlaps bottom-right of code window */}
+        <div
+          aria-live="polite"
+          className="pointer-events-none absolute bottom-0 right-0 z-10 w-[62%]"
+          style={
+            prefersReducedMotion
+              ? { opacity: showResult ? 1 : 0 }
+              : {
+                  opacity: showResult ? 1 : 0,
+                  transform: showResult ? "translateY(0)" : "translateY(8px)",
+                  transition:
+                    "opacity 500ms ease-out, transform 500ms ease-out",
+                }
+          }
+        >
+          <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-md">
+            {activeDevTab === "atoms" && <AtomsResult />}
+            {activeDevTab === "apiv2" && <ApiV2Result />}
+            {activeDevTab === "webhooks" && <WebhooksResult />}
+          </div>
+        </div>
       </div>
     </div>
   );

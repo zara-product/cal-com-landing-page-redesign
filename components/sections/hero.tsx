@@ -51,7 +51,7 @@ function PhLaurelRight({ className }: { className?: string }) {
 
 function AwardBadge({ category, rank }: { category: string; rank: string }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1">
       <PhLaurelLeft className="shrink-0 text-foreground/35" />
       <div className="flex flex-col items-center text-center">
         <span className="text-[8px] font-semibold uppercase leading-none tracking-[0.13em] text-muted-foreground/55">
@@ -71,13 +71,15 @@ function AwardBadge({ category, rank }: { category: string; rank: string }) {
 export function HeroSection() {
   return (
     <section aria-label="Hero" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10 pt-24 pb-16 lg:pt-32 lg:pb-24">
-        <div className="grid grid-cols-1 items-center gap-12 xl:grid-cols-2 xl:gap-16">
+      <div className="mx-auto max-w-[1200px] px-10 pt-20 pb-16 lg:pt-28 lg:pb-24">
+        <div className="grid grid-cols-1 items-start gap-12 xl:grid-cols-2 xl:gap-16">
           {/* Left: copy */}
           <div className="flex flex-col">
             {/* Eyebrow */}
             <a
-              href="#workflows-2"
+              href="https://cal.com/blog/calcom-v6-9"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs transition-colors hover:bg-muted"
             >
               <WorkflowIcon
@@ -98,7 +100,7 @@ export function HeroSection() {
             </a>
 
             {/* Headline */}
-            <h1 className="mt-8 text-[2.75rem] font-bold leading-[1.08] tracking-tight text-foreground xl:text-[3.5rem]">
+            <h1 className="mt-6 text-[2.75rem] font-bold leading-[1.08] tracking-tight text-foreground xl:text-[3.5rem]">
               Scheduling made simple.
             </h1>
 
@@ -110,10 +112,21 @@ export function HeroSection() {
             </p>
 
             {/* CTAs + reassurance grouped */}
-            <div className="mt-8 flex flex-col gap-3">
+            <div className="mt-7 flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button size="lg">Sign up for free</Button>
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  // biome-ignore lint/a11y/useAnchorContent: content is merged from Button children by Base UI render
+                  render={<a href="https://app.cal.com/signup" />}
+                >
+                  Sign up for free
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  // biome-ignore lint/a11y/useAnchorContent: content is merged from Button children by Base UI render
+                  render={<a href="https://cal.com/talk-to-sales" />}
+                >
                   Book a demo
                 </Button>
               </div>
@@ -138,7 +151,7 @@ export function HeroSection() {
         </div>
 
         {/* Product Hunt achievements — centred across full hero width */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {PH_AWARDS.map((award) => (
             <AwardBadge
               key={award.category}

@@ -73,7 +73,7 @@ export function CapabilitiesSection() {
             <div>
               <BentoCard
                 title="Scale with control"
-                description="Keep permissions and scheduling standards consistent as teams grow."
+                description="Keep permissions and scheduling standards consistent as you grow."
                 visual={<StayConsistentVisual />}
               />
             </div>
@@ -145,7 +145,7 @@ function RouteBookingsVisual() {
 
       {/* Rule pill + fallback — centred in row */}
       <div className="min-w-0 flex-1 self-center">
-        <div className="whitespace-nowrap rounded-full bg-foreground px-2 py-1 text-[11px] font-medium text-background">
+        <div className="whitespace-nowrap rounded-lg bg-foreground px-2 py-1 text-[11px] font-medium text-background">
           200+ → Enterprise
         </div>
         <p className="mt-1 px-1 text-[10px] text-muted-foreground">
@@ -161,7 +161,7 @@ function RouteBookingsVisual() {
       {/* Destination — stretches to same height as left card */}
       <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-1.5">
         <Avatar className="size-6 shrink-0">
-          <AvatarImage src="/avatars/marcus-lee.svg" alt="Marcus Lee" />
+          <AvatarImage src="/avatars/marcus-lee.png" alt="Marcus Lee" />
           <AvatarFallback className="bg-neutral-200" />
         </Avatar>
         <span className="truncate text-xs font-medium text-foreground">
@@ -218,10 +218,10 @@ function AutomateVisual() {
 }
 
 const TEAM_MEMBERS = [
-  { src: "/avatars/sofia.svg", name: "Sofia", active: true },
-  { src: "/avatars/james.svg", name: "James", active: false },
-  { src: "/avatars/alex.svg", name: "Alex", active: false },
-  { src: "/avatars/priya.svg", name: "Priya", active: false },
+  { src: "/avatars/sofia.png", name: "Sofia", active: true },
+  { src: "/avatars/man-one.png", name: "Man One", active: false },
+  { src: "/avatars/woman-one.png", name: "Woman One", active: false },
+  { src: "/avatars/man-two.png", name: "Man Two", active: false },
 ] as const;
 
 function CoordinateTeamsVisual() {

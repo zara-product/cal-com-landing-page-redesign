@@ -1,4 +1,5 @@
 import { CapabilitiesSection } from "@/components/sections/capabilities";
+import { CtaSection } from "@/components/sections/cta";
 import { HeroSection } from "@/components/sections/hero";
 import { IntegrationsSection } from "@/components/sections/integrations";
 import { LogoStripSection } from "@/components/sections/logo-strip";
@@ -29,6 +30,8 @@ export default function Home() {
       <WallOfLoveSection />
       <SectionDivider />
       <QuestionsSection />
+      <SectionDivider />
+      <CtaSection />
     </main>
   );
 }

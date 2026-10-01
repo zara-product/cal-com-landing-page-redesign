@@ -7,7 +7,6 @@ import {
   GlobeIcon,
   LinkIcon,
   MapPinIcon,
-  PhoneIcon,
   PlusIcon,
   XIcon,
 } from "lucide-react";
@@ -15,6 +14,45 @@ import NextImage from "next/image";
 import * as React from "react";
 import { SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
+
+// ─── Rail frame helpers ───────────────────────────────────────────────────────
+// Matches the PlusMarker in page-rail.tsx: 20×20, 16px arms, 1.25px stroke.
+
+function RailCorner({ style }: { style: React.CSSProperties }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        width: 20,
+        height: 20,
+        pointerEvents: "none",
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: 2,
+          right: 2,
+          top: 9.375,
+          height: 1.25,
+          background: "var(--color-frame-strong)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 2,
+          bottom: 2,
+          left: 9.375,
+          width: 1.25,
+          background: "var(--color-frame-strong)",
+        }}
+      />
+    </div>
+  );
+}
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -245,8 +283,59 @@ export function SetupSection() {
               })}
             </div>
 
-            {/* Product stage — fixed-height neutral frame; panels centred within */}
-            <div className="relative min-h-[520px] rounded-2xl bg-muted/30">
+            {/* Product stage — grey filled; rail frame inset 16px inside */}
+            <div className="relative min-h-[460px] rounded-2xl bg-muted/30">
+              {/* Rail frame — 16px inset from stage edge, lines stop 14px short of + marks */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 42,
+                    right: 42,
+                    top: 28,
+                    height: 1,
+                    background: "var(--color-frame)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 42,
+                    right: 42,
+                    bottom: 28,
+                    height: 1,
+                    background: "var(--color-frame)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 42,
+                    bottom: 42,
+                    left: 28,
+                    width: 1,
+                    background: "var(--color-frame)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 42,
+                    bottom: 42,
+                    right: 28,
+                    width: 1,
+                    background: "var(--color-frame)",
+                  }}
+                />
+                <RailCorner style={{ left: 18, top: 18 }} />
+                <RailCorner style={{ right: 18, top: 18 }} />
+                <RailCorner style={{ left: 18, bottom: 18 }} />
+                <RailCorner style={{ right: 18, bottom: 18 }} />
+              </div>
+
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
                 return (
@@ -257,22 +346,17 @@ export function SetupSection() {
                     aria-labelledby={`setup-tab-${step.id}`}
                     aria-hidden={!isActive}
                     className={cn(
-                      "absolute inset-0 flex items-center justify-center p-5",
+                      "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-[68px]",
                       "transition-[opacity,transform] duration-300 ease-out",
                       isActive
                         ? "z-10 translate-y-0 opacity-100"
-                        : "pointer-events-none z-0 translate-y-2 opacity-0",
+                        : "pointer-events-none z-0 translate-y-1 opacity-0",
                     )}
                     style={{
                       transition: prefersReducedMotion ? "none" : undefined,
                     }}
                   >
-                    <div
-                      className="w-full max-w-[440px]"
-                      style={{
-                        transform: "translateX(-26px) translateY(-18px)",
-                      }}
-                    >
+                    <div className="w-full max-w-[440px]">
                       {step.id === "connect" && (
                         <ConnectPanel isActive={isActive} />
                       )}
@@ -298,6 +382,9 @@ export function SetupSection() {
             <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
               Make it yours
             </span>
+            <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+              Your link. Your look. Your way to schedule.
+            </h2>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <MakeItYoursCard
@@ -396,11 +483,15 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
 
   React.useEffect(() => {
     if (!isActive) {
-      setEntered(false);
-      setGoogleOn(false);
-      setOutlookOn(false);
-      setShowConfirmation(false);
-      return;
+      // Delay reset until the 300ms wrapper fade completes so the outgoing
+      // composition holds its final state rather than snapping to empty.
+      const t = setTimeout(() => {
+        setEntered(false);
+        setGoogleOn(false);
+        setOutlookOn(false);
+        setShowConfirmation(false);
+      }, 300);
+      return () => clearTimeout(t);
     }
 
     const rafId = requestAnimationFrame(() => setEntered(true));
@@ -439,9 +530,8 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
           prefersReducedMotion
             ? undefined
             : {
-                opacity: entered ? 1 : 0,
                 transform: entered ? "none" : "translateY(6px) scale(0.98)",
-                transition: "opacity 350ms ease-out, transform 350ms ease-out",
+                transition: "transform 350ms ease-out",
               }
         }
       >
@@ -587,9 +677,11 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
 
   React.useEffect(() => {
     if (!isActive) {
-      setActiveDays(new Set());
-      setShowLimits(false);
-      return;
+      const t = setTimeout(() => {
+        setActiveDays(new Set());
+        setShowLimits(false);
+      }, 300);
+      return () => clearTimeout(t);
     }
 
     const weekdays = DAYS.filter((d) => d.start !== null);
@@ -838,24 +930,16 @@ const MEETING_TYPES: MeetingRow[] = [
     enabled: true,
   },
   {
-    key: "phone",
-    label: "Phone call",
-    description: "They call you, or you call them",
-    Icon: PhoneIcon as IconComponent,
-    isLogo: false,
-    enabled: true,
-  },
-  {
     key: "inperson",
     label: "In person",
     description: "Set a location",
     Icon: MapPinIcon as IconComponent,
     isLogo: false,
-    enabled: false,
+    enabled: true,
   },
 ];
 
-const MEET_ACTIVATE_KEYS = ["cal-video", "zoom", "phone"] as const;
+const MEET_ACTIVATE_KEYS = ["cal-video", "zoom", "inperson"] as const;
 
 // Booker card always shows Cal Video selected — it is a stable final state.
 const BOOKER_SELECTED = "cal-video" as const;
@@ -865,12 +949,14 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
   const [enabledRows, setEnabledRows] = React.useState<Set<string>>(new Set());
   const [showBookerCard, setShowBookerCard] = React.useState(false);
 
-  // Sequential activation: Cal Video → Zoom → Phone call → Booker card.
+  // Sequential activation: Cal Video → Zoom → In person → Booker card.
   React.useEffect(() => {
     if (!isActive) {
-      setEnabledRows(new Set());
-      setShowBookerCard(false);
-      return;
+      const t = setTimeout(() => {
+        setEnabledRows(new Set());
+        setShowBookerCard(false);
+      }, 300);
+      return () => clearTimeout(t);
     }
     if (prefersReducedMotion) {
       setEnabledRows(new Set(MEET_ACTIVATE_KEYS));
@@ -888,7 +974,10 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
       setTimeout(() => setEnabledRows((p) => new Set([...p, "zoom"])), 1000),
     );
     timers.push(
-      setTimeout(() => setEnabledRows((p) => new Set([...p, "phone"])), 1600),
+      setTimeout(
+        () => setEnabledRows((p) => new Set([...p, "inperson"])),
+        1600,
+      ),
     );
     timers.push(setTimeout(() => setShowBookerCard(true), 2200));
     return () => {
@@ -1004,13 +1093,13 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
               </span>
               Zoom
             </span>
-            {/* Phone — inactive option */}
+            {/* In person — inactive option */}
             <span className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground/70">
-              <PhoneIcon
+              <MapPinIcon
                 className="h-3.5 w-3.5 shrink-0 text-foreground/60"
                 aria-hidden="true"
               />
-              Phone
+              In person
             </span>
           </div>
         </div>
