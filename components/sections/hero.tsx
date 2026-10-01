@@ -71,7 +71,7 @@ function AwardBadge({ category, rank }: { category: string; rank: string }) {
 export function HeroSection() {
   return (
     <section aria-label="Hero" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10 pt-20 pb-16 lg:pt-28 lg:pb-24">
+      <div className="mx-auto max-w-[1200px] px-10 pt-14 pb-16 lg:pt-20 lg:pb-24">
         <div className="grid grid-cols-1 items-start gap-12 xl:grid-cols-2 xl:gap-16">
           {/* Left: copy */}
           <div className="flex flex-col">
@@ -151,7 +151,7 @@ export function HeroSection() {
         </div>
 
         {/* Product Hunt achievements — centred across full hero width */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {PH_AWARDS.map((award) => (
             <AwardBadge
               key={award.category}

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  CheckIcon,
   ChevronsUpDownIcon,
   CopyIcon,
   GlobeIcon,
@@ -138,7 +137,7 @@ export function SetupSection() {
       className="w-full bg-background"
     >
       <div className="mx-auto max-w-[1200px] px-10">
-        <div className="py-20 lg:py-28">
+        <div className="pt-20 pb-10 lg:pt-28 lg:pb-14">
           {/* Section header */}
           <div>
             <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
@@ -156,7 +155,7 @@ export function SetupSection() {
           </div>
 
           {/* Step nav + product stage */}
-          <div className="mt-14 grid grid-cols-1 items-start gap-6 lg:mt-16 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20">
+          <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:mt-10 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20">
             {/* Step nav */}
             <div
               role="tablist"
@@ -246,6 +245,22 @@ export function SetupSection() {
 
             {/* Product stage */}
             <div className="relative min-h-[460px]">
+              {/* Ripple rings — behind all product UI, clipped to stage bounds */}
+              {!prefersReducedMotion && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 overflow-hidden"
+                >
+                  {([0, 2, 4, 6] as const).map((delay) => (
+                    <div
+                      key={delay}
+                      className="animate-ss-ripple absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-foreground/[0.07]"
+                      style={{ animationDelay: `${delay}s` }}
+                    />
+                  ))}
+                </div>
+              )}
+
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
                 return (
@@ -256,7 +271,7 @@ export function SetupSection() {
                     aria-labelledby={`setup-tab-${step.id}`}
                     aria-hidden={!isActive}
                     className={cn(
-                      "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-[68px]",
+                      "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-8",
                       "transition-[opacity,transform] duration-300 ease-out",
                       isActive
                         ? "z-10 translate-y-0 opacity-100"
@@ -266,7 +281,7 @@ export function SetupSection() {
                       transition: prefersReducedMotion ? "none" : undefined,
                     }}
                   >
-                    <div className="w-full max-w-[440px]">
+                    <div className="w-full max-w-[500px]">
                       {step.id === "connect" && (
                         <ConnectPanel isActive={isActive} />
                       )}
@@ -456,7 +471,7 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
 
         <div className="divide-y divide-border/50">
           {calStates.map((cal) => (
-            <div key={cal.key} className="flex items-center gap-4 px-6 py-4">
+            <div key={cal.key} className="flex items-center gap-4 px-6 py-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70">
                 <span className="flex h-6 w-6">
                   <cal.Icon />
@@ -498,20 +513,25 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto flex w-64 items-start gap-3 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
-          <span
-            className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success-foreground"
-            aria-hidden="true"
-          >
-            <CheckIcon className="size-3" />
-          </span>
-          <div>
+        <div className="pointer-events-auto w-72 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-foreground">
               Calendars in sync
             </p>
-            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-              Busy times are hidden from your booking page
-            </p>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              Just now
+            </span>
+          </div>
+          <div className="my-2.5 border-t border-border" />
+          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-1.5">
+            <span
+              aria-hidden="true"
+              className="h-3.5 w-1 shrink-0 rounded-full bg-foreground/70"
+            />
+            <span className="text-xs font-medium text-foreground">Busy</span>
+            <span className="text-xs text-muted-foreground">
+              Thu 10:00 – 11:00 hidden
+            </span>
           </div>
         </div>
       </div>

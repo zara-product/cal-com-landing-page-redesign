@@ -152,6 +152,21 @@
       transform: translateX(-50%);
     }
   }
+  --animate-ss-ripple: ss-ripple 8s ease-out infinite;
+  @keyframes ss-ripple {
+    0% {
+      scale: 0.3;
+      opacity: 0;
+    }
+    20% {
+      scale: 0.46;
+      opacity: 1;
+    }
+    100% {
+      scale: 1.1;
+      opacity: 0;
+    }
+  }
 }
 
 :root {

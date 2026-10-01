@@ -277,7 +277,7 @@ export function IntegrationsSection() {
                 {ADDITIONAL_LOGOS.map(({ src, name, size }) => (
                   <div
                     key={name}
-                    className="flex size-12 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-border/80"
+                    className="flex size-12 items-center justify-center rounded-lg border border-border bg-card transition-transform duration-150 hover:-translate-y-px"
                     title={name}
                   >
                     <NextImage

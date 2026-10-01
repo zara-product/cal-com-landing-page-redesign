@@ -52,10 +52,8 @@ const MODE_ICONS: Record<Mode, React.ElementType> = {
 
 // ─── Individuals animation thresholds (% of MODE_DURATION.individuals = 4000ms) ──
 const IND_CALENDAR = 6.25; // 250ms — available dates illuminate; Oct 8 selected
-const IND_SLOTS = [22.5, 24.0, 25.5, 27.0, 28.5] as const; // 900–1140ms stagger
+const IND_SLOTS = [22.5, 24.0, 25.5, 27.0, 28.5, 30.0] as const; // 900–1200ms stagger
 const IND_SELECT = 38.75; // 1550ms — 10:00 selected
-const IND_CONFIRM = 55.0; // 2200ms — confirmation card fades in
-
 // ─── Teams animation thresholds (% of MODE_DURATION.teams = 4000ms) ──────────
 const TMS_SHUFFLE = 6.25; // 250ms  — activate shuffle node
 const TMS_SELECT = 25.0; // 1000ms — select Sofia (dim other avatars)
@@ -199,7 +197,7 @@ export function DemoPanel() {
   };
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-6">
+    <div ref={containerRef} className="flex flex-col gap-9">
       {/* Mode selector */}
       <div
         ref={tabsRef}
@@ -326,7 +324,14 @@ const AVAILABLE_DAYS = new Set([
   5, 6, 7, 9, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27,
 ]);
 const SELECTED_DAY = 8;
-const TIME_SLOTS = ["9:00", "9:30", "10:00", "10:30", "11:00"] as const;
+const TIME_SLOTS = [
+  "9:00",
+  "9:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+] as const;
 const SELECTED_SLOT = "10:00";
 
 function IndividualsPanel({
@@ -346,7 +351,6 @@ function IndividualsPanel({
       ? IND_SLOTS.filter((t) => progress >= t).length
       : 0;
   const slotSelected = instant || (isActive && progress >= IND_SELECT);
-  const showConfirmation = instant || (isActive && progress >= IND_CONFIRM);
 
   return (
     <div className="relative">
@@ -493,37 +497,6 @@ function IndividualsPanel({
           </div>
         </div>
       </div>
-
-      {/* Floating confirmation card */}
-      <div
-        aria-live="polite"
-        className="absolute -bottom-6 right-0 z-20 w-[56%]"
-        style={
-          prefersReducedMotion
-            ? { opacity: showConfirmation ? 1 : 0 }
-            : {
-                opacity: showConfirmation ? 1 : 0,
-                transform: showConfirmation
-                  ? "translateY(0)"
-                  : "translateY(8px)",
-                transition: "opacity 500ms ease-out, transform 500ms ease-out",
-              }
-        }
-      >
-        <div className="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-          <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-success/10">
-            <CheckIcon className="size-3 text-success" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground">
-              This meeting is scheduled
-            </p>
-            <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
-              Thu 8 Oct, 10:00 · invite sent to both of you
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -565,7 +538,7 @@ function TeamsPanel({
     >
       <div className="flex w-full max-w-[400px] flex-col items-center">
         {/* ── Top card ──────────────────────────────────────────── */}
-        <div className="w-full rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
+        <div className="w-full rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
           <div className="flex items-center gap-4">
             {/* Overlapping avatar stack */}
             <div className="flex shrink-0 -space-x-2.5">
@@ -1129,78 +1102,63 @@ const DEV_SELECTED_SLOT = "10:00";
 
 function AtomsResult() {
   return (
-    <div>
-      <div className="border-b border-border/60 px-3 py-2">
-        <div className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5">
-          <span className="text-[10px] text-muted-foreground">
-            app.acmehealth.com/visits/new
+    <div className="space-y-1.5 p-2">
+      {/* Browser chrome — proves component is running inside customer's own domain */}
+      <div className="flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1">
+        <div className="flex shrink-0 items-center gap-0.5" aria-hidden="true">
+          <span className="size-1.5 rounded-full bg-foreground/20" />
+          <span className="size-1.5 rounded-full bg-foreground/20" />
+          <span className="size-1.5 rounded-full bg-foreground/20" />
+        </div>
+        <div className="flex flex-1 justify-center">
+          <span className="rounded-full bg-background px-2 py-0.5 text-[9px] text-muted-foreground">
+            acmehealth.com/visits/new
           </span>
         </div>
       </div>
-      <div className="flex gap-2 p-3">
-        <div className="min-w-0 flex-1">
-          <div className="mb-1.5 flex items-baseline gap-1">
-            <span className="text-[11px] font-bold text-foreground">
-              October
-            </span>
-            <span className="text-[11px] text-muted-foreground">2026</span>
-          </div>
-          <div className="grid grid-cols-7" aria-hidden="true">
-            {CAL_DAYS.map((d) => (
-              <div
-                key={d}
-                className="pb-1 text-center text-[7px] font-medium text-muted-foreground/40"
-              >
-                {d[0]}
-              </div>
-            ))}
-            {OCT_CELLS.map((day, i) => {
-              if (day === null) {
-                // biome-ignore lint/suspicious/noArrayIndexKey: static calendar offset
-                return <div key={`ae-${i}`} className="py-[1.5px]" />;
-              }
-              const isSel = day === SELECTED_DAY;
-              const isAvail = AVAILABLE_DAYS.has(day);
-              return (
-                <div
-                  key={day}
-                  className="flex items-center justify-center py-[1.5px]"
-                >
-                  <div
-                    className={cn(
-                      "flex size-[18px] items-center justify-center rounded-full text-[8px]",
-                      isSel
-                        ? "bg-foreground font-semibold text-background"
-                        : isAvail
-                          ? "font-medium text-foreground"
-                          : "text-muted-foreground/30",
-                    )}
-                  >
-                    {day}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+
+      {/* Component tag — visually connects the code window to this rendered output */}
+      <div className="flex items-center justify-between rounded-md border border-dashed border-border px-2 py-1">
+        <div className="flex items-center gap-1">
+          <Code2Icon
+            className="size-3 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <span className="font-mono text-[10px] text-foreground">
+            &lt;Booker /&gt;
+          </span>
         </div>
-        <div className="flex w-14 shrink-0 flex-col">
-          <p className="mb-1.5 text-[10px] font-bold text-foreground">Thu 08</p>
-          <div className="flex flex-col gap-1">
-            {DEV_TIME_SLOTS.map((slot) => (
-              <div
-                key={slot}
-                className={cn(
-                  "rounded-md py-0.5 text-center text-[10px] font-medium",
-                  slot === DEV_SELECTED_SLOT
-                    ? "bg-foreground text-background"
-                    : "border border-border text-foreground",
-                )}
-              >
-                {slot}
-              </div>
-            ))}
-          </div>
+        <span className="text-[9px] text-muted-foreground">Cal.com Atoms</span>
+      </div>
+
+      {/* Days row — Thu 8 selected */}
+      <div className="flex gap-1.5">
+        <div className="flex-1 rounded-md bg-foreground py-1 text-center text-[10px] font-semibold text-background">
+          Thu 8
         </div>
+        <div className="flex-1 rounded-md border border-border py-1 text-center text-[10px] text-muted-foreground">
+          Fri 9
+        </div>
+        <div className="flex-1 rounded-md border border-border py-1 text-center text-[10px] text-muted-foreground">
+          Mon 12
+        </div>
+      </div>
+
+      {/* Time slots — 10:00 selected (crisp dark border) */}
+      <div className="flex gap-1.5">
+        {DEV_TIME_SLOTS.map((slot) => (
+          <div
+            key={slot}
+            className={cn(
+              "flex-1 rounded-md py-1 text-center text-[10px]",
+              slot === DEV_SELECTED_SLOT
+                ? "border-2 border-foreground font-semibold text-foreground"
+                : "border border-border text-foreground",
+            )}
+          >
+            {slot}
+          </div>
+        ))}
       </div>
     </div>
   );
