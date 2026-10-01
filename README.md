@@ -1,73 +1,235 @@
 # Cal.com homepage redesign
 
-A product-led redesign of the Cal.com homepage, exploring how the experience can preserve the simplicity of individual scheduling while revealing the product's depth across teams, organisations and developer use cases.
+A product-led redesign of Cal.com's homepage, completed as part of a Senior Product Design Engineer trial task.
+
+**Live site:** https://cal-com-landing-page-redesign.vercel.app/
 
 > **Preserve the simplicity of entering Cal.com. Reveal the power of growing with Cal.com.**
 
-## Live demo
+## What I found
 
-[View the live redesign](https://cal-com-landing-page-redesign.vercel.app/)
+From auditing the current homepage and product surfaces, I found that Cal.com communicates the individual scheduling use case very strongly.
 
-## The opportunity
+What is less immediate is the depth behind that entry point. Team distribution, routing, workflows, organisational controls and developer infrastructure are all part of the product, but they take more effort to discover and understand as a connected story.
 
-Cal.com is immediately understandable as a simple scheduling product, but its broader capabilities — team coordination, routing, workflows, organisational controls and developer infrastructure — are harder to understand from the homepage hierarchy.
+The opportunity was not to add more information.
 
-I focused the redesign on making that progression clearer without turning Cal.com into something visually unfamiliar.
+It was to surface more of Cal.com's value without making the product feel more complicated.
 
-The product story progresses through:
+I approached this as a **redesign, not a rebrand**.
 
-**Individuals → Teams → Organisations → Developers**
+## Before → after
 
-Rather than presenting those as disconnected feature groups, the experience shows how scheduling can become more sophisticated while the product remains approachable.
+**Before:** the homepage makes simple scheduling easy to understand, while deeper product value takes more effort to discover.
 
-## What I changed
+**After:** the entry point stays simple, but different types of users can recognise Cal.com's relevance earlier, while deeper capability is progressively revealed through the page.
 
-- Reworked the information architecture around a clearer progression from individual scheduling to more complex use cases.
-- Redesigned the hero around four working product demonstrations for Individuals, Teams, Organisations and Developers.
-- Preserved Cal.com's neutral, product-led visual language rather than treating the exercise as a rebrand.
-- Positioned Simple Scheduling as the entry point, then progressively introduced routing, automation, team coordination, organisational controls and developer tooling.
-- Used interaction and motion to explain product behaviour, including round-robin assignment, routing logic, booking states and developer workflows.
-- Refined social proof, integrations, FAQs and conversion points to support the page narrative.
-- Implemented the redesign as a responsive working webpage rather than stopping at static design.
+## Information architecture
 
-## Design-system approach
+I worked through the page story before designing individual sections.
 
-The implementation stays within the project's existing Cal.com / coss UI direction and Base UI foundation.
+The structure became:
 
-I prioritised:
+**Relevance → simplicity → deeper value → ease of adoption → proof → questions → conversion**
 
-- existing design tokens and primitives;
-- reusable patterns rather than one-off UI;
-- consistent spacing, states, borders, radii and motion;
-- semantic links and controls;
-- keyboard and focus behaviour;
-- reduced-motion support;
-- responsive behaviour across desktop and smaller screens;
-- avoiding unnecessary third-party component libraries.
+Conversion is also available from the beginning for users who already know what they want.
 
-## Motion with intent
+The goal was to let someone understand more of Cal.com progressively rather than asking them to learn the whole product at once.
 
-Motion is used to explain state and product logic rather than as decoration.
+## Hero — help more users recognise themselves
 
-Examples include:
+The hero needed to stay simple while allowing different kinds of Cal.com users to arrive and quickly think:
 
-- booking selection and confirmation;
-- round-robin team assignment;
-- attribute-based organisation routing;
-- developer code-to-result flows;
-- Simple Scheduling step transitions.
+**"Okay, this is talking to me too."**
 
-Where reduced motion is preferred, animated sequences resolve directly to their completed state.
+I introduced four lightweight audience views:
 
-## Built with
+**Individuals · Teams · Organisations · Developers**
+
+These are not the information architecture of the page. They are a compact way to signal the breadth of Cal.com without turning the hero into a heavy product explanation.
+
+Each view demonstrates a product behaviour:
+
+- Individuals — selecting and confirming a booking.
+- Teams — round-robin meeting distribution.
+- Organisations — attribute-based routing.
+- Developers — Atoms, API and webhook flows producing a scheduling outcome.
+
+The headline stays deliberately simple while the interaction carries more of the product depth.
+
+## Conversion strategy
+
+The existing hero offers different signup methods, but they ultimately serve the same self-serve intent.
+
+I asked whether the two primary CTA positions could instead serve two meaningfully different user intents:
+
+**Sign up for free** — for someone ready to start immediately.  
+**Book a demo** — for a team or organisation that may need a higher-consideration path.
+
+The global navigation also does not expose a prominent Book a demo or sales action, so the hero became a useful place to surface that path without adding another navigation item.
+
+The more specific signup options then appear at the end of the page:
+
+**Sign up with Google**  
+**Sign up with email**
+
+At that point, someone has already moved through the product story and decided they want to start.
+
+I would still treat this CTA change as a **conversion hypothesis**. With real conversion data, I would test it against Cal.com's existing one-click signup approach rather than assume the new version performs better.
+
+## Why I used motion
+
+Motion became a way to compress explanation.
+
+A round-robin workflow, for example, could require several static states, more copy, or another section entirely.
+
+Instead, a short sequence can show:
+
+**available team → distribution logic → selected host**
+
+The same applies to booking confirmation, organisational routing and developer workflows.
+
+The intention was to let someone understand deeper product value by watching it happen instead of asking them to study Cal.com.
+
+This allowed me to communicate more without making the homepage significantly denser.
+
+Motion is focused on product state and logic rather than decoration. Reduced-motion preferences resolve those sequences directly into their completed states.
+
+## Simple Scheduling — make starting feel easy
+
+After the hero establishes relevance, the next thing I wanted someone to understand was:
+
+**Cal.com is easy to start with.**
+
+The experience reduces back to three steps:
+
+1. Connect your calendar.
+2. Set your availability.
+3. Choose how to meet.
+
+For me, this section communicates:
+
+**This is where Cal.com starts, not what Cal.com is limited to.**
+
+The product can become much more capable without making the starting experience feel complicated.
+
+## Scheduling that grows with you — reveal deeper value
+
+Once the simple entry point is established, the page can reveal what happens as scheduling needs become more complex.
+
+That includes:
+
+- routing;
+- payments;
+- workflows and automation;
+- team distribution;
+- organisational controls;
+- embedded scheduling.
+
+The intention was not to create another flat feature list.
+
+It was to show how the same product can move from a simple booking link into something capable of handling increasingly complex scheduling problems.
+
+## Integrations — make adoption feel easy
+
+The integrations section has a different role.
+
+After showing that Cal.com can be both simple and powerful, it reassures someone that adopting it does not mean rebuilding the way they already work.
+
+Calendars, meeting platforms, communication tools and CRMs can continue to sit around the scheduling experience.
+
+The message is:
+
+**Cal.com can work with the stack you already have.**
+
+## Proof and questions
+
+Testimonials, review scores and Wall of Love provide external validation after the product story has been established.
+
+The FAQ then resolves remaining practical questions rather than introducing the product.
+
+## What I deliberately kept
+
+I did not want to change Cal.com simply to make the redesign look different.
+
+I retained its:
+
+- neutral, monochrome visual language;
+- product-led UI;
+- typography direction;
+- restrained borders and radii;
+- rail and grid language;
+- coss ui direction;
+- distinction between self-serve and sales.
+
+I also deliberately kept the global navigation structure.
+
+The navigation connects a wider information architecture than this homepage. Redesigning it responsibly would require auditing the destinations behind those links and understanding how they relate across the wider site.
+
+Without that work, changing it would have been a visual redesign of a system I had not fully investigated.
+
+## Design engineering
+
+I implemented the redesign as a working responsive Next.js experience rather than stopping at static designs.
+
+The implementation uses:
 
 - Next.js
 - React
 - TypeScript
 - Tailwind CSS
-- coss UI
+- coss ui
 - Base UI
-- Claude Code
+
+I worked within the existing component and primitive foundation rather than introducing another UI library.
+
+The final implementation pass included checks for:
+
+- semantic links and controls;
+- keyboard and focus behaviour;
+- reduced-motion support;
+- responsive behaviour;
+- design-token consistency;
+- dead and placeholder code;
+- TypeScript and production build errors.
+
+## Process
+
+I used:
+
+- ChatGPT for research synthesis, documentation and working through the information architecture;
+- Lovable and Figma for visual exploration and direction-setting;
+- ChatGPT image generation for supporting visual assets;
+- Claude Code for frontend implementation and refinement directly in code.
+
+The information architecture came before the visual redesign.
+
+I worked through what the homepage needed someone to understand, what Cal.com already communicates effectively, where deeper value should surface, what should remain simple, and which ideas could be demonstrated through interaction rather than explained with more copy.
+
+That strategy then informed the content hierarchy, interaction design, motion and implementation.
+
+## What I would test next
+
+I would treat this as the first iteration of a product hypothesis rather than a finished answer.
+
+The first thing I would test is whether people beyond the individual scheduling use case recognise Cal.com's relevance to them quickly.
+
+For example:
+
+- Does someone managing a team immediately understand that Cal.com can coordinate and distribute meetings?
+- Does an organisational user recognise routing, controls and scheduling standards as relevant to how they operate?
+- Does a developer quickly understand that Cal.com can become scheduling infrastructure inside their own product?
+
+I would also test:
+
+- whether the progression from simple entry to deeper capability increases understanding without increasing perceived complexity;
+- whether the hero interactions help different audiences recognise themselves;
+- whether motion improves comprehension compared with static explanation;
+- whether the hero CTA split between self-serve and sales performs better or worse than the current signup options;
+- movement from product understanding into signup or sales;
+- where users still need more or less information.
+
+Those findings would shape the next iteration.
 
 ## Run locally
 
