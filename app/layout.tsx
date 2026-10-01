@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/sections/site-footer";
-import { PageRails } from "@/components/ui/page-rail";
+import { SiteHeader } from "@/components/sections/site-header";
+import { PageRails, SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
 
 const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
@@ -38,10 +39,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         interHeading.variable,
       )}
     >
-      {/* `relative` on body gives PageRails its absolute positioning anchor */}
-      <body className="relative min-h-full flex flex-col">
-        <PageRails />
-        {children}
+      <body className="min-h-full flex flex-col">
+        {/* Rails wrapper gives PageRails its anchor and stops before footer */}
+        <div className="relative flex flex-1 flex-col">
+          <PageRails />
+          <SiteHeader />
+          {children}
+          <SectionDivider variant="plain" />
+        </div>
         <SiteFooter />
       </body>
     </html>

@@ -2,18 +2,18 @@
 
 import {
   CheckIcon,
+  ChevronsUpDownIcon,
   CopyIcon,
   GlobeIcon,
   LinkIcon,
   MapPinIcon,
-  MoonIcon,
   PhoneIcon,
   PlusIcon,
-  SunIcon,
   XIcon,
 } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
+import { SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -28,19 +28,6 @@ function usePrefersReducedMotion(): boolean {
     return () => mq.removeEventListener("change", handler);
   }, []);
   return reduced;
-}
-
-function useFadeIn(isActive: boolean): boolean {
-  const [visible, setVisible] = React.useState(isActive);
-  React.useEffect(() => {
-    if (!isActive) {
-      setVisible(false);
-      return;
-    }
-    const id = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(id);
-  }, [isActive]);
-  return visible;
 }
 
 // ─── Steps ────────────────────────────────────────────────────────────────────
@@ -151,7 +138,7 @@ export function SetupSection() {
       aria-label="Simple scheduling"
       className="w-full bg-background"
     >
-      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
+      <div className="mx-auto max-w-[1200px] px-10">
         <div className="py-20 lg:py-28">
           {/* Section header */}
           <div>
@@ -170,7 +157,7 @@ export function SetupSection() {
           </div>
 
           {/* Step nav + product stage */}
-          <div className="mt-14 grid grid-cols-1 items-start gap-6 lg:mt-16 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-10 xl:gap-14">
+          <div className="mt-14 grid grid-cols-1 items-start gap-6 lg:mt-16 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20">
             {/* Step nav */}
             <div
               role="tablist"
@@ -191,7 +178,7 @@ export function SetupSection() {
                     className={cn(
                       "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
-                        ? "bg-background shadow-sm"
+                        ? "bg-card shadow-sm"
                         : "bg-transparent hover:bg-muted/20",
                     )}
                   >
@@ -259,7 +246,7 @@ export function SetupSection() {
             </div>
 
             {/* Product stage — fixed-height neutral frame; panels centred within */}
-            <div className="relative min-h-[440px] rounded-2xl bg-muted/30">
+            <div className="relative min-h-[520px] rounded-2xl bg-muted/30">
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
                 return (
@@ -280,7 +267,12 @@ export function SetupSection() {
                       transition: prefersReducedMotion ? "none" : undefined,
                     }}
                   >
-                    <div className="w-full max-w-[440px]">
+                    <div
+                      className="w-full max-w-[440px]"
+                      style={{
+                        transform: "translateX(-26px) translateY(-18px)",
+                      }}
+                    >
                       {step.id === "connect" && (
                         <ConnectPanel isActive={isActive} />
                       )}
@@ -294,31 +286,35 @@ export function SetupSection() {
               })}
             </div>
           </div>
+        </div>
+      </div>
 
+      <SectionDivider />
+
+      <div className="mx-auto max-w-[1200px] px-10">
+        <div className="py-14">
           {/* ── Make it yours ── */}
-          <div className="mt-20 border-t border-border pt-14 lg:mt-24">
-            <div className="mb-10">
-              <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-                Make it yours
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <MakeItYoursCard
-                title="Your own booking link"
-                description="A short, clean link that's easy to share and remember."
-                visual={<BookingLinkVisual />}
-              />
-              <MakeItYoursCard
-                title="Your look"
-                description="Add your photo, brand colour and choose light or dark mode."
-                visual={<YourLookVisual />}
-              />
-              <MakeItYoursCard
-                title="A better booking experience"
-                description="Bookers see times in their own timezone and choose what works in a few clicks."
-                visual={<TimeSlotsVisual />}
-              />
-            </div>
+          <div className="mb-10">
+            <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              Make it yours
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <MakeItYoursCard
+              title="Your own booking link"
+              description="A short, clean link that's easy to share and remember."
+              visual={<BookingLinkVisual />}
+            />
+            <MakeItYoursCard
+              title="Your look"
+              description="Match your brand with custom colours, your logo and light or dark mode."
+              visual={<YourLookVisual />}
+            />
+            <MakeItYoursCard
+              title="A better booking experience"
+              description="Bookers see times in their own timezone and choose a time in a few clicks."
+              visual={<TimeSlotsVisual />}
+            />
           </div>
         </div>
       </div>
@@ -438,7 +434,7 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
     <div className="relative">
       {/* Calendar card */}
       <div
-        className="overflow-hidden rounded-xl border border-border bg-background"
+        className="overflow-hidden rounded-xl border border-border bg-card"
         style={
           prefersReducedMotion
             ? undefined
@@ -461,8 +457,10 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
         <div className="divide-y divide-border/50">
           {calStates.map((cal) => (
             <div key={cal.key} className="flex items-center gap-4 px-6 py-4">
-              <span className="flex h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border/50">
-                <cal.Icon />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70">
+                <span className="flex h-6 w-6">
+                  <cal.Icon />
+                </span>
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">
@@ -500,7 +498,7 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto flex w-56 items-start gap-3 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
+        <div className="pointer-events-auto flex w-64 items-start gap-3 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
           <span
             className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success-foreground"
             aria-hidden="true"
@@ -574,7 +572,7 @@ function VisualSwitch({ checked }: { checked: boolean }) {
     >
       <span
         className={cn(
-          "block h-[14px] w-[14px] rounded-full bg-background shadow-sm transition-transform duration-200",
+          "block h-[14px] w-[14px] rounded-full bg-card shadow-sm transition-transform duration-200",
           checked ? "translate-x-[12px]" : "translate-x-0",
         )}
       />
@@ -632,7 +630,7 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
   return (
     <div className="relative">
       {/* Main card */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
           <div>
@@ -669,81 +667,88 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
                   <span className="hidden sm:inline">{day.label}</span>
                   <span className="sm:hidden">{day.short}</span>
                 </span>
-                {unavailable ? (
-                  <span className="text-xs text-muted-foreground/40">
-                    Unavailable
-                  </span>
-                ) : (
-                  <div
-                    className="flex items-center gap-1.5 text-xs"
-                    style={
-                      prefersReducedMotion
-                        ? undefined
-                        : {
-                            opacity: on ? 1 : 0,
-                            transform: on ? "none" : "translateX(-6px)",
-                            transition:
-                              "opacity 250ms ease-out, transform 250ms ease-out",
-                          }
-                    }
-                  >
-                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
-                      {day.start}
+
+                {/* Middle: time controls or unavailable label */}
+                <div className="flex flex-1 items-center">
+                  {unavailable ? (
+                    <span className="text-xs text-muted-foreground/40">
+                      Unavailable
                     </span>
-                    <span className="text-muted-foreground/40">–</span>
-                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
-                      {day.end}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="ml-1 text-muted-foreground/30"
+                  ) : (
+                    <div
+                      className="flex items-center gap-1.5 text-xs"
+                      style={
+                        prefersReducedMotion
+                          ? undefined
+                          : {
+                              opacity: on ? 1 : 0,
+                              transform: on ? "none" : "translateX(-6px)",
+                              transition:
+                                "opacity 250ms ease-out, transform 250ms ease-out",
+                            }
+                      }
                     >
-                      <XIcon className="h-3 w-3" />
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="text-muted-foreground/30"
-                    >
-                      <PlusIcon className="h-3 w-3" />
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="text-muted-foreground/30"
-                    >
-                      <CopyIcon className="h-3 w-3" />
-                    </span>
-                  </div>
-                )}
+                      <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                        {day.start}
+                      </span>
+                      <span className="text-muted-foreground/40">–</span>
+                      <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                        {day.end}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="ml-1 text-muted-foreground/30"
+                      >
+                        <XIcon className="h-3 w-3" />
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right-side actions — always visible on every row */}
+                <div
+                  aria-hidden="true"
+                  className="flex shrink-0 items-center gap-1 text-muted-foreground/30"
+                >
+                  <PlusIcon className="h-3 w-3" />
+                  <CopyIcon className="h-3 w-3" />
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Floating Optional limits card — bottom-right corner, restrained right overhang */}
+      {/* Floating Optional limits card — bottom-right corner, consistent overlap offset */}
       <div
         aria-live="polite"
         className="pointer-events-none absolute z-10"
         style={
           prefersReducedMotion
-            ? { right: "-52px", bottom: "-28px", opacity: showLimits ? 1 : 0 }
+            ? { right: "-52px", bottom: "-36px", opacity: showLimits ? 1 : 0 }
             : {
                 right: "-52px",
-                bottom: "-28px",
+                bottom: "-36px",
                 opacity: showLimits ? 1 : 0,
                 transform: showLimits ? "translateY(0)" : "translateY(10px)",
                 transition: "opacity 400ms ease-out, transform 400ms ease-out",
               }
         }
       >
-        <div className="pointer-events-auto w-56 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
-          <p className="mb-2 text-xs font-semibold text-foreground">
+        <div className="pointer-events-auto rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <p className="mb-2.5 text-xs font-semibold text-foreground">
             Optional limits
           </p>
-          <div className="space-y-1 text-xs font-medium text-foreground">
-            <p>10 min buffer</p>
-            <p>Max 4 a day</p>
-            <p>2h notice</p>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
+              10-minute buffer
+            </span>
+            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
+              Max 4 a day
+            </span>
+            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
+              2-hour notice
+            </span>
           </div>
         </div>
       </div>
@@ -850,28 +855,50 @@ const MEETING_TYPES: MeetingRow[] = [
   },
 ];
 
+const MEET_ACTIVATE_KEYS = ["cal-video", "zoom", "phone"] as const;
+
+// Booker card always shows Cal Video selected — it is a stable final state.
+const BOOKER_SELECTED = "cal-video" as const;
+
 function MeetPanel({ isActive }: { isActive: boolean }) {
-  const visible = useFadeIn(isActive);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [enabledRows, setEnabledRows] = React.useState<Set<string>>(new Set());
   const [showBookerCard, setShowBookerCard] = React.useState(false);
 
+  // Sequential activation: Cal Video → Zoom → Phone call → Booker card.
   React.useEffect(() => {
     if (!isActive) {
+      setEnabledRows(new Set());
       setShowBookerCard(false);
       return;
     }
     if (prefersReducedMotion) {
+      setEnabledRows(new Set(MEET_ACTIVATE_KEYS));
       setShowBookerCard(true);
       return;
     }
-    // Appear after rows have animated in (5 rows × 80ms stagger + 300ms transition)
-    const t = setTimeout(() => setShowBookerCard(true), 900);
-    return () => clearTimeout(t);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    timers.push(
+      setTimeout(
+        () => setEnabledRows((p) => new Set([...p, "cal-video"])),
+        400,
+      ),
+    );
+    timers.push(
+      setTimeout(() => setEnabledRows((p) => new Set([...p, "zoom"])), 1000),
+    );
+    timers.push(
+      setTimeout(() => setEnabledRows((p) => new Set([...p, "phone"])), 1600),
+    );
+    timers.push(setTimeout(() => setShowBookerCard(true), 2200));
+    return () => {
+      for (const t of timers) clearTimeout(t);
+    };
   }, [isActive, prefersReducedMotion]);
 
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-xl border border-border bg-background">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="border-b border-border px-6 py-5">
           <p className="text-sm font-semibold text-foreground">
             How would you like to meet?
@@ -882,35 +909,22 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
         </div>
 
         <div className="divide-y divide-border/50">
-          {MEETING_TYPES.map((row, i) => {
+          {MEETING_TYPES.map((row) => {
             const Icon = row.Icon;
             return (
-              <div
-                key={row.key}
-                className="flex items-center gap-4 px-6 py-3"
-                style={{
-                  opacity: visible ? 1 : 0,
-                  transform: visible ? "none" : "translateY(6px)",
-                  transition: "opacity 300ms, transform 300ms",
-                  transitionDelay: visible ? `${i * 80}ms` : "0ms",
-                }}
-              >
-                {row.isLogo ? (
-                  <span className="flex h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border/50">
-                    <Icon />
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors",
-                      row.enabled
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                )}
+              <div key={row.key} className="flex items-center gap-4 px-6 py-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70">
+                  {row.isLogo ? (
+                    <span className="flex h-6 w-6">
+                      <Icon />
+                    </span>
+                  ) : (
+                    <Icon
+                      className="h-4 w-4 text-foreground/60"
+                      aria-hidden="true"
+                    />
+                  )}
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground">
                     {row.label}
@@ -919,14 +933,14 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
                     {row.description}
                   </p>
                 </div>
-                <VisualSwitch checked={row.enabled} />
+                <VisualSwitch checked={enabledRows.has(row.key)} />
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Floating Booker chooses card — bottom-right, consistent with other cards */}
+      {/* Floating Booker chooses card — bottom-right, consistent overlap offset */}
       <div
         aria-live="polite"
         className="pointer-events-none absolute z-10"
@@ -934,12 +948,12 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
           prefersReducedMotion
             ? {
                 right: "-52px",
-                bottom: "-32px",
+                bottom: "-36px",
                 opacity: showBookerCard ? 1 : 0,
               }
             : {
                 right: "-52px",
-                bottom: "-32px",
+                bottom: "-36px",
                 opacity: showBookerCard ? 1 : 0,
                 transform: showBookerCard
                   ? "translateY(0)"
@@ -948,14 +962,21 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto w-56 rounded-xl border border-border bg-background px-4 py-3.5 shadow-sm">
+        <div className="pointer-events-auto rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
           <p className="mb-2.5 text-xs font-semibold text-foreground">
             Booker chooses
           </p>
-          <div className="space-y-1">
-            {/* Cal Video — selected */}
-            <div className="flex items-center gap-2.5 rounded-lg bg-foreground px-3 py-1.5">
-              <span className="flex h-3.5 w-3.5 shrink-0 overflow-hidden rounded-sm">
+          <div className="flex items-center gap-1.5">
+            {/* Cal Video — always selected */}
+            <span
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+                BOOKER_SELECTED === "cal-video"
+                  ? "bg-foreground text-background"
+                  : "bg-muted/60 text-foreground/70",
+              )}
+            >
+              <span className="flex h-3.5 w-3.5 shrink-0">
                 <NextImage
                   src="/icons/cal-video.svg"
                   width={14}
@@ -966,26 +987,31 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
                   className="h-full w-full object-contain"
                 />
               </span>
-              <span className="text-xs font-medium text-background">
-                Cal Video
+              Cal Video
+            </span>
+            {/* Zoom — inactive option */}
+            <span className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground/70">
+              <span className="flex h-3.5 w-3.5 shrink-0">
+                <NextImage
+                  src="/icons/zoom.svg"
+                  width={14}
+                  height={14}
+                  unoptimized
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-contain"
+                />
               </span>
-            </div>
-            {/* Phone */}
-            <div className="flex items-center gap-2.5 px-3 py-1.5">
+              Zoom
+            </span>
+            {/* Phone — inactive option */}
+            <span className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground/70">
               <PhoneIcon
-                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                className="h-3.5 w-3.5 shrink-0 text-foreground/60"
                 aria-hidden="true"
               />
-              <span className="text-xs text-muted-foreground">Phone</span>
-            </div>
-            {/* In person */}
-            <div className="flex items-center gap-2.5 px-3 py-1.5">
-              <MapPinIcon
-                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <span className="text-xs text-muted-foreground">In person</span>
-            </div>
+              Phone
+            </span>
           </div>
         </div>
       </div>
@@ -1005,106 +1031,82 @@ function MakeItYoursCard({
   visual: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
-      <div className="mb-4 flex min-h-[88px] items-center">{visual}</div>
-      <p className="text-sm font-semibold leading-tight text-foreground">
-        {title}
-      </p>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-        {description}
-      </p>
+    <div className="flex flex-col rounded-2xl bg-card p-6">
+      <div className="flex h-7 w-full items-start">{visual}</div>
+      <div className="mt-6">
+        <p className="text-lg font-bold leading-snug text-foreground">
+          {title}
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
 
 function BookingLinkVisual() {
   return (
-    <div className="w-full space-y-2">
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
-        <LinkIcon
-          className="h-3 w-3 shrink-0 text-muted-foreground/50"
-          aria-hidden="true"
-        />
-        <span className="text-xs text-muted-foreground">
-          cal.com/
-          <span className="font-medium text-foreground">username</span>
-        </span>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2">
-        <LinkIcon
-          className="h-3 w-3 shrink-0 text-muted-foreground/30"
-          aria-hidden="true"
-        />
-        <span className="text-xs text-muted-foreground/50">
-          cal.com/username/
-          <span className="text-muted-foreground">30min</span>
-        </span>
-      </div>
+    <div className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1">
+      <LinkIcon
+        className="h-3 w-3 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <span className="text-xs">
+        <span className="text-muted-foreground">cal.com/</span>
+        <span className="font-semibold text-foreground">ewa</span>
+      </span>
     </div>
   );
 }
 
 function YourLookVisual() {
   return (
-    <div className="w-full space-y-3">
-      <div className="flex items-center gap-3">
-        {/* Avatar placeholder */}
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-muted">
-          <span className="text-[10px] font-semibold text-muted-foreground">
-            YN
-          </span>
-        </div>
-        {/* Brand colour swatches */}
-        <div className="flex gap-1.5">
-          <span className="h-5 w-5 rounded-full bg-indigo-500 ring-2 ring-indigo-500 ring-offset-1" />
-          <span className="h-5 w-5 rounded-full bg-sky-500" />
-          <span className="h-5 w-5 rounded-full bg-emerald-500" />
-          <span className="h-5 w-5 rounded-full bg-rose-500" />
-        </div>
-      </div>
-      {/* Light / dark toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <SunIcon className="h-3.5 w-3.5" aria-hidden="true" />
-          Light
-        </span>
-        <div className="flex h-5 w-9 items-center justify-end rounded-full bg-foreground pr-[3px]">
-          <span className="h-3.5 w-3.5 rounded-full bg-background" />
-        </div>
-        <span className="flex items-center gap-1.5">
-          Dark
-          <MoonIcon
-            className="h-3.5 w-3.5 text-foreground"
-            aria-hidden="true"
-          />
-        </span>
-      </div>
+    <div className="flex items-center gap-2">
+      {/* Black — selected */}
+      <span
+        aria-hidden="true"
+        className="block h-5 w-5 rounded-full bg-foreground ring-2 ring-foreground ring-offset-2"
+      />
+      {/* Dark grey */}
+      <span
+        aria-hidden="true"
+        className="block h-5 w-5 rounded-full bg-neutral-500"
+      />
+      {/* Light grey */}
+      <span
+        aria-hidden="true"
+        className="block h-5 w-5 rounded-full bg-neutral-300"
+      />
+      {/* White */}
+      <span
+        aria-hidden="true"
+        className="block h-5 w-5 rounded-full border border-border bg-card"
+      />
     </div>
   );
 }
 
-const MINI_SLOTS = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM"] as const;
-
 function TimeSlotsVisual() {
   return (
-    <div className="w-full">
-      <p className="mb-2.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/60">
-        Thu, 16 Oct · Europe / Berlin
-      </p>
-      <div className="grid grid-cols-2 gap-1.5">
-        {MINI_SLOTS.map((slot, i) => (
-          <div
-            key={slot}
-            className={cn(
-              "rounded-md border py-2 text-center text-[11px] font-medium",
-              i === 1
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-foreground",
-            )}
-          >
-            {slot}
-          </div>
-        ))}
+    <div className="flex w-full items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        <span className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground">
+          9:00
+        </span>
+        <span className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground">
+          9:30
+        </span>
+        <span className="rounded-lg bg-foreground px-2.5 py-1 text-xs font-medium text-background">
+          10:00
+        </span>
+      </div>
+      <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground">
+        <span>Europe/Warsaw</span>
+        <ChevronsUpDownIcon
+          className="h-3 w-3 text-muted-foreground"
+          aria-hidden="true"
+        />
       </div>
     </div>
   );

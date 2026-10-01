@@ -26,10 +26,10 @@ function PlusMarker() {
     <div
       style={{
         position: "absolute",
-        width: 14,
-        height: 14,
-        left: -7,
-        top: -7,
+        width: 20,
+        height: 20,
+        left: -10,
+        top: -10,
       }}
     >
       {/* Horizontal arm */}
@@ -38,7 +38,7 @@ function PlusMarker() {
           position: "absolute",
           left: 2,
           right: 2,
-          top: 6.375,
+          top: 9.375,
           height: 1.25,
           background: "var(--color-frame-strong)",
         }}
@@ -49,7 +49,7 @@ function PlusMarker() {
           position: "absolute",
           top: 2,
           bottom: 2,
-          left: 6.375,
+          left: 9.375,
           width: 1.25,
           background: "var(--color-frame-strong)",
         }}
@@ -100,9 +100,11 @@ export function SectionDivider({
   variant?: "default" | "plain";
 }) {
   return (
+    // z-[20] lifts above PageRails (z-10) so the gap strips and plus render
+    // in front of the vertical rail — creating real empty space at intersections.
     <div
       aria-hidden="true"
-      className="relative h-0"
+      className="relative z-[20] h-0"
       style={{ overflow: "visible" }}
     >
       <div
@@ -115,11 +117,22 @@ export function SectionDivider({
 
       {variant === "default" && (
         <>
-          {/* Left rail intersection — plus floats in the real gap */}
+          {/* Left rail intersection */}
           <div
             className="absolute"
             style={{ left: `calc(50% - ${RAIL_HALF}px)`, top: 0 }}
           >
+            {/* Vertical gap strip — covers rail through the intersection zone */}
+            <div
+              style={{
+                position: "absolute",
+                width: 3,
+                left: -1.5,
+                top: -GAP_HALF,
+                height: GAP_HALF * 2,
+                background: "var(--color-background)",
+              }}
+            />
             <PlusMarker />
           </div>
 
@@ -128,6 +141,17 @@ export function SectionDivider({
             className="absolute"
             style={{ left: `calc(50% + ${RAIL_HALF}px)`, top: 0 }}
           >
+            {/* Vertical gap strip */}
+            <div
+              style={{
+                position: "absolute",
+                width: 3,
+                left: -1.5,
+                top: -GAP_HALF,
+                height: GAP_HALF * 2,
+                background: "var(--color-background)",
+              }}
+            />
             <PlusMarker />
           </div>
         </>

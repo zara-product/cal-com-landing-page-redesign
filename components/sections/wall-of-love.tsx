@@ -35,6 +35,7 @@ const COLUMNS: ColumnConfig[] = [
       {
         id: "rotimi",
         name: "Rotimi Best",
+        avatar: "https://github.com/rotimi-best.png?size=400",
         username: "rotimi_best",
         platform: "X",
         quote:
@@ -68,7 +69,7 @@ const COLUMNS: ColumnConfig[] = [
   },
   {
     id: "col-2",
-    duration: "38s",
+    duration: "33s",
     delay: "-19s",
     height: 600,
     maskTop: 13,
@@ -76,6 +77,7 @@ const COLUMNS: ColumnConfig[] = [
       {
         id: "david-g",
         name: "David Guyon",
+        avatar: "https://github.com/DavidGuyon.png?size=400",
         username: "DavidGuyon",
         platform: "X",
         quote:
@@ -117,6 +119,7 @@ const COLUMNS: ColumnConfig[] = [
       {
         id: "jay",
         name: "Jay Fajardo",
+        avatar: "https://github.com/jayfajardo.png?size=400",
         username: "jayfajardo",
         platform: "X",
         quote: "Stoked to try out as a replacement for Calendly.",
@@ -124,6 +127,7 @@ const COLUMNS: ColumnConfig[] = [
       {
         id: "shivansh",
         name: "Shivansh",
+        avatar: "https://github.com/ShivanshC.png?size=400",
         username: "Shivansh_C",
         platform: "X",
         quote:
@@ -181,17 +185,17 @@ function CardAvatar({ name, src }: { name: string; src?: string }) {
       <img
         src={src}
         alt=""
-        width={32}
-        height={32}
+        width={40}
+        height={40}
         onError={() => setImgFailed(true)}
-        className="w-8 h-8 rounded-full object-cover shrink-0"
+        className="size-10 rounded-full object-cover shrink-0"
       />
     );
   }
 
   return (
     <span
-      className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-foreground/50 text-xs font-semibold shrink-0"
+      className="inline-flex items-center justify-center size-10 rounded-full bg-muted text-foreground/50 text-xs font-semibold shrink-0"
       aria-hidden="true"
     >
       {initials}
@@ -202,21 +206,22 @@ function CardAvatar({ name, src }: { name: string; src?: string }) {
 // ─── Wall card ─────────────────────────────────────────────────────────────────
 
 function WallCardItem({ card }: { card: WallCard }) {
-  const handleLine = [card.username && `@${card.username}`, card.platform]
-    .filter(Boolean)
-    .join(" · ");
+  const handle = card.username ? `@${card.username}` : undefined;
+  const metaLine = [handle, card.platform].filter(Boolean).join(" · ");
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
-      <div className="flex items-start gap-3 mb-3">
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div
+        className={`flex gap-3 mb-3 ${metaLine ? "items-start" : "items-center"}`}
+      >
         <CardAvatar name={card.name} src={card.avatar} />
         <div className="min-w-0">
           <span className="block text-sm font-semibold text-foreground leading-tight">
             {card.name}
           </span>
-          {handleLine && (
+          {metaLine && (
             <span className="block text-xs text-muted-foreground leading-tight mt-0.5">
-              {handleLine}
+              {metaLine}
             </span>
           )}
         </div>
@@ -312,21 +317,20 @@ export function WallOfLoveSection() {
   const reduced = usePrefersReducedMotion();
 
   return (
-    <section className="w-full bg-neutral-50 py-24 overflow-hidden">
+    <section className="w-full bg-background py-24 overflow-hidden">
       <div className="mx-auto max-w-[1200px] px-10">
         <div className="relative z-10 flex flex-col items-center text-center gap-4 mb-16">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-px bg-foreground" aria-hidden="true" />
             <span className="text-xs font-semibold tracking-widest uppercase text-foreground">
               Wall of love
             </span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground leading-[1.05] tracking-tight max-w-lg">
-            What people value about Cal.com.
+            Why our users love Cal.com.
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed max-w-md">
-            Real feedback from people using Cal.com to schedule, integrate and
-            build around the way they work.
+            Real feedback from people using Cal.com to schedule, coordinate and
+            build scheduling into their products.
           </p>
         </div>
 
@@ -336,10 +340,12 @@ export function WallOfLoveSection() {
               key={col.id}
               className={
                 i === 1
-                  ? "hidden sm:block"
-                  : i >= 2
-                    ? "hidden lg:block"
-                    : undefined
+                  ? "hidden sm:block lg:-translate-y-10"
+                  : i === 2
+                    ? "hidden lg:block lg:-translate-y-10"
+                    : i >= 3
+                      ? "hidden lg:block"
+                      : undefined
               }
             >
               <ScrollColumn col={col} reduced={reduced} />

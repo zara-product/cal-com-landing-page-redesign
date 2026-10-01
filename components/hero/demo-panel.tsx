@@ -3,11 +3,11 @@
 import {
   ArrowRightIcon,
   Building2Icon,
+  CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Code2Icon,
   GlobeIcon,
-  StarIcon,
   UserRoundIcon,
   UsersRoundIcon,
   VideoIcon,
@@ -22,7 +22,14 @@ import { cn } from "@/lib/utils";
 const MODES = ["individuals", "teams", "organizations", "developers"] as const;
 type Mode = (typeof MODES)[number];
 
-const DURATION = 4000;
+// Each mode gets its own display duration so Individuals has enough room for
+// the full booking choreography.
+const MODE_DURATION: Record<Mode, number> = {
+  individuals: 7000,
+  teams: 5000,
+  organizations: 5000,
+  developers: 5000,
+};
 
 const MODE_LABELS: Record<Mode, string> = {
   individuals: "Individuals",
@@ -45,6 +52,16 @@ const MODE_ICONS: Record<Mode, React.ElementType> = {
   developers: Code2Icon,
 };
 
+// ─── Individuals animation thresholds (% of MODE_DURATION.individuals) ────────
+// Each value is a progress% threshold at which a new animation phase begins.
+
+const IND_DATE_SELECT = 6; // 420 ms — date 14 highlights
+const IND_TIMES_HEADER = 12; // 840 ms — "Tue, Oct 14" header appears
+// Five time slots stagger in starting at 13%
+const IND_SLOTS = [13, 19, 25, 31, 37] as const;
+const IND_TIME_SELECT = 46; // 3 220 ms — 10:00 AM slot selected
+const IND_CONFIRM = 56; // 3 920 ms — confirmation card fades in
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 function usePrefersReducedMotion(): boolean {
@@ -65,21 +82,35 @@ export function DemoPanel() {
   const [activeMode, setActiveMode] = React.useState<Mode>("individuals");
   const [progress, setProgress] = React.useState(0);
   const [isPaused, setIsPaused] = React.useState(false);
+  const [inView, setInView] = React.useState(true); // hero is above-fold on load
   const prefersReducedMotion = usePrefersReducedMotion();
   const tabsRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const progressRef = React.useRef(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: activeMode resets the timer
+  // Pause auto-cycle when the hero is scrolled out of view.
   React.useEffect(() => {
-    if (prefersReducedMotion || isPaused) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
-    // Resume from saved progress position after pause
-    const startOffset = (progressRef.current / 100) * DURATION;
+  React.useEffect(() => {
+    if (prefersReducedMotion || isPaused || !inView) return;
+
+    const duration = MODE_DURATION[activeMode];
+    // Resume from saved progress position after pause / inView change.
+    const startOffset = (progressRef.current / 100) * duration;
     const startTime = performance.now() - startOffset;
 
     let raf: number;
     const tick = (now: number) => {
-      const p = Math.min(((now - startTime) / DURATION) * 100, 100);
+      const p = Math.min(((now - startTime) / duration) * 100, 100);
       progressRef.current = p;
       setProgress(p);
       if (p >= 100) {
@@ -92,7 +123,7 @@ export function DemoPanel() {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [activeMode, isPaused, prefersReducedMotion]);
+  }, [activeMode, isPaused, prefersReducedMotion, inView]);
 
   const switchMode = React.useCallback((mode: Mode) => {
     progressRef.current = 0;
@@ -132,6 +163,7 @@ export function DemoPanel() {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: pause/resume on hover is a UX enhancement only
     <div
+      ref={containerRef}
       className="flex flex-col gap-4"
       onMouseEnter={handlePause}
       onMouseLeave={handleResume}
@@ -142,7 +174,7 @@ export function DemoPanel() {
         }
       }}
     >
-      {/* Standalone mode selector */}
+      {/* Mode selector */}
       <div
         ref={tabsRef}
         role="tablist"
@@ -164,34 +196,32 @@ export function DemoPanel() {
               onKeyDown={(e) => handleKeyDown(e, mode)}
               tabIndex={isActive ? 0 : -1}
               className={cn(
-                "relative flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium transition-[color,background-color,box-shadow] duration-150",
+                "relative overflow-hidden flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium transition-[color,background-color,box-shadow] duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "bg-background text-foreground shadow-xs/5"
+                  ? "bg-card text-foreground shadow-xs/5"
                   : "text-muted-foreground hover:text-foreground/80",
               )}
             >
-              <Icon className="size-3.5 shrink-0" aria-hidden="true" />
-              <span className="hidden sm:inline">{MODE_LABELS[mode]}</span>
-              <span className="sm:hidden">{MODE_SHORT[mode]}</span>
-              {/* Progress line */}
-              {isActive && (
+              {/* Progress fill — moves left → right inside the active tab */}
+              {isActive && !prefersReducedMotion && (
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden rounded-b-md"
-                >
-                  <span
-                    className="absolute inset-y-0 left-0 bg-primary"
-                    style={{ width: `${progress}%` }}
-                  />
-                </span>
+                  className="pointer-events-none absolute inset-y-0 left-0 bg-foreground/[0.06]"
+                  style={{ width: `${progress}%` }}
+                />
               )}
+              <Icon className="relative size-3.5 shrink-0" aria-hidden="true" />
+              <span className="relative hidden sm:inline">
+                {MODE_LABELS[mode]}
+              </span>
+              <span className="relative sm:hidden">{MODE_SHORT[mode]}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Product stage — grid-stacked for crossfade without fixed container */}
+      {/* Product stage — grid-stacked for crossfade */}
       <div className="grid min-h-[340px]">
         {MODES.map((mode) => {
           const isActive = activeMode === mode;
@@ -210,67 +240,19 @@ export function DemoPanel() {
                   : "opacity-0 pointer-events-none z-0",
               )}
             >
-              {mode === "individuals" && <IndividualsPanel />}
+              {mode === "individuals" && (
+                <IndividualsPanel
+                  progress={isActive ? progress : 0}
+                  isActive={isActive}
+                  prefersReducedMotion={prefersReducedMotion}
+                />
+              )}
               {mode === "teams" && <TeamsPanel />}
               {mode === "organizations" && <OrgsPanel />}
               {mode === "developers" && <DevelopersPanel />}
             </div>
           );
         })}
-      </div>
-
-      {/* Trust row */}
-      <TrustRow />
-    </div>
-  );
-}
-
-// ─── Trust Row ────────────────────────────────────────────────────────────────
-
-function TrustRow() {
-  return (
-    <div className="flex items-center gap-4 border-t border-border pt-4">
-      <div className="flex flex-1 flex-col items-center gap-0.5">
-        <span className="text-[10px] font-semibold text-foreground">
-          #1 Product of the Month
-        </span>
-        <span className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
-          Product Hunt
-        </span>
-      </div>
-
-      <div className="h-7 w-px bg-border" aria-hidden="true" />
-
-      <div className="flex flex-1 flex-col items-center gap-0.5">
-        <div className="flex items-center gap-1">
-          <StarIcon
-            className="size-3 fill-foreground text-foreground"
-            aria-hidden="true"
-          />
-          <span className="text-[10px] font-semibold text-foreground">
-            4.6 / 5
-          </span>
-        </div>
-        <span className="text-[9px] text-muted-foreground">
-          G2 · 154 reviews
-        </span>
-      </div>
-
-      <div className="h-7 w-px bg-border" aria-hidden="true" />
-
-      <div className="flex flex-1 flex-col items-center gap-0.5">
-        <div className="flex items-center gap-1">
-          <StarIcon
-            className="size-3 fill-foreground text-foreground"
-            aria-hidden="true"
-          />
-          <span className="text-[10px] font-semibold text-foreground">
-            4.7 / 5
-          </span>
-        </div>
-        <span className="text-[9px] text-muted-foreground">
-          Trustpilot · 413 reviews
-        </span>
       </div>
     </div>
   );
@@ -294,9 +276,31 @@ const SELECTED_DAY = 14;
 const TIME_SLOTS = ["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:30 PM"];
 const SELECTED_SLOT = "10:00 AM";
 
-function IndividualsPanel() {
+function IndividualsPanel({
+  progress,
+  isActive,
+  prefersReducedMotion,
+}: {
+  progress: number;
+  isActive: boolean;
+  prefersReducedMotion: boolean;
+}) {
+  // Derive animation state from progress percentage.
+  // When prefersReducedMotion, show the completed state statically.
+  const instant = prefersReducedMotion && isActive;
+  const dateSelected = instant || (isActive && progress >= IND_DATE_SELECT);
+  const timesHeaderVisible =
+    instant || (isActive && progress >= IND_TIMES_HEADER);
+  const visibleSlotCount = instant
+    ? TIME_SLOTS.length
+    : isActive
+      ? IND_SLOTS.filter((t) => progress >= t).length
+      : 0;
+  const slotSelected = instant || (isActive && progress >= IND_TIME_SELECT);
+  const showConfirmation = instant || (isActive && progress >= IND_CONFIRM);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
+    <div className="relative overflow-hidden rounded-xl border border-border bg-card">
       {/* Host identity header */}
       <div className="border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
@@ -374,11 +378,13 @@ function IndividualsPanel() {
               <div
                 key={day !== null ? `day-${day}` : `empty-${i}`}
                 className={cn(
-                  "mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[11px]",
+                  "mx-auto flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-colors duration-300",
                   day === null
                     ? ""
                     : day === SELECTED_DAY
-                      ? "bg-primary font-semibold text-primary-foreground"
+                      ? dateSelected
+                        ? "bg-primary font-semibold text-primary-foreground"
+                        : "cursor-pointer text-foreground hover:bg-muted"
                       : AVAILABLE_DAYS.has(day)
                         ? "cursor-pointer text-foreground hover:bg-muted"
                         : "text-muted-foreground/30",
@@ -390,26 +396,65 @@ function IndividualsPanel() {
           </div>
         </div>
 
-        {/* Time slots */}
+        {/* Time slots — revealed progressively */}
         <div className="flex w-[108px] shrink-0 flex-col gap-1.5 px-3 py-4">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
+          <p
+            className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60 transition-opacity duration-200"
+            style={{ opacity: timesHeaderVisible ? 1 : 0 }}
+            aria-hidden="true"
+          >
             Tue, Oct 14
           </p>
-          {TIME_SLOTS.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              aria-pressed={slot === SELECTED_SLOT}
-              className={cn(
-                "w-full rounded-lg border py-1.5 text-center text-xs font-medium transition-colors",
-                slot === SELECTED_SLOT
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-foreground hover:bg-muted",
-              )}
-            >
-              {slot}
-            </button>
-          ))}
+          {TIME_SLOTS.map((slot, i) => {
+            const isVisible = i < visibleSlotCount;
+            const isSelected = slotSelected && slot === SELECTED_SLOT;
+            return (
+              <button
+                key={slot}
+                type="button"
+                aria-pressed={isSelected}
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "none" : "translateY(4px)",
+                  transition:
+                    "opacity 220ms ease-out, transform 220ms ease-out, background-color 250ms, border-color 250ms, color 250ms",
+                }}
+                className={cn(
+                  "w-full rounded-lg border py-1.5 text-center text-xs font-medium",
+                  isSelected
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-foreground",
+                )}
+              >
+                {slot}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Confirmation overlay — appears over the lower portion of the card */}
+      <div
+        aria-live="polite"
+        className="pointer-events-none absolute inset-x-3 bottom-3 z-20"
+        style={{
+          opacity: showConfirmation ? 1 : 0,
+          transform: showConfirmation ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 350ms ease-out, transform 350ms ease-out",
+        }}
+      >
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3 shadow-md">
+          <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
+            <CheckIcon className="size-3 text-success" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-foreground">
+              This meeting is scheduled
+            </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground">
+              Alex Morgan · Oct 14 · 10:00 AM
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -455,7 +500,7 @@ const TEAM_MEMBERS = [
 
 function TeamsPanel() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <div>
@@ -538,7 +583,7 @@ function TeamsPanel() {
 
 function OrgsPanel() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Header */}
       <div className="border-b border-border px-5 py-4">
         <p className="text-sm font-semibold text-foreground">Booking Router</p>
@@ -555,13 +600,13 @@ function OrgsPanel() {
             When
           </p>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground">
+            <span className="rounded border border-border bg-card px-2 py-0.5 text-xs font-medium text-foreground">
               Company size
             </span>
             <span className="text-xs text-muted-foreground">
               is greater than
             </span>
-            <span className="rounded border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground">
+            <span className="rounded border border-border bg-card px-2 py-0.5 text-xs font-medium text-foreground">
               50
             </span>
           </div>
@@ -620,7 +665,7 @@ function DevelopersPanel() {
   return (
     <div className="flex flex-col gap-3">
       {/* App shell */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {/* Chrome bar */}
         <div className="flex items-center gap-2 border-b border-border bg-muted/60 px-3 py-2">
           <div className="flex gap-1" aria-hidden="true">

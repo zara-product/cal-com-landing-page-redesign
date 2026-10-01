@@ -217,8 +217,13 @@ export function TestimonialsSection() {
   const [cardHovered, setCardHovered] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [containerW, setContainerW] = React.useState(1440);
+  const [inView, setInView] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+  const sectionRef = React.useRef<HTMLElement>(null);
   const containerRef = React.useRef<HTMLElement>(null);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressRafRef = React.useRef<number | null>(null);
+  const progressStartRef = React.useRef<number | null>(null);
   const dragStartX = React.useRef<number | null>(null);
   // Prevents overlapping transitions from rapid clicks / autoplay races.
   const transitioningRef = React.useRef(false);
@@ -237,11 +242,23 @@ export function TestimonialsSection() {
     return () => ro.disconnect();
   }, []);
 
+  // Pause autoplay and progress when the section is scrolled out of view.
+  React.useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   // Autoplay — restarts whenever slide changes or pause state changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: virtualActive restarts the countdown after each slide advance
   React.useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (isPaused || prefersReducedMotion) return;
+    if (isPaused || prefersReducedMotion || !inView) return;
     timerRef.current = setTimeout(() => {
       if (!transitioningRef.current) {
         transitioningRef.current = true;
@@ -252,7 +269,43 @@ export function TestimonialsSection() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [virtualActive, isPaused, prefersReducedMotion]);
+  }, [virtualActive, isPaused, prefersReducedMotion, inView]);
+
+  // Progress fill for the active pagination dot — mirrors the autoplay timer.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: displayActive resets progress on each real slide change
+  React.useEffect(() => {
+    if (progressRafRef.current !== null) {
+      cancelAnimationFrame(progressRafRef.current);
+      progressRafRef.current = null;
+    }
+    setProgress(0);
+    progressStartRef.current = null;
+
+    if (isPaused || prefersReducedMotion || !inView) return;
+
+    const tick = (now: number) => {
+      if (progressStartRef.current === null) progressStartRef.current = now;
+      const pct = Math.min(
+        ((now - progressStartRef.current) / AUTOPLAY_MS) * 100,
+        100,
+      );
+      setProgress(pct);
+      if (pct < 100) {
+        progressRafRef.current = requestAnimationFrame(tick);
+      } else {
+        progressRafRef.current = null;
+      }
+    };
+
+    progressRafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (progressRafRef.current !== null) {
+        cancelAnimationFrame(progressRafRef.current);
+        progressRafRef.current = null;
+      }
+    };
+  }, [displayActive, isPaused, prefersReducedMotion, inView]);
 
   // Re-enable transition on the frame after a silent snap; release the lock.
   React.useEffect(() => {
@@ -370,6 +423,7 @@ export function TestimonialsSection() {
 
   return (
     <section
+      ref={sectionRef}
       aria-label="Customer testimonials"
       className="relative w-full overflow-hidden bg-neutral-950"
     >
@@ -377,10 +431,9 @@ export function TestimonialsSection() {
       <TileCluster />
 
       {/* Section header — left-aligned */}
-      <div className="relative mx-auto max-w-[1200px] border-l border-r border-background/10 px-10">
+      <div className="relative mx-auto max-w-[1200px] px-10">
         <div className="pt-20 lg:pt-28">
           <div className="flex items-center gap-3">
-            <div className="h-px w-6 bg-background/35" aria-hidden="true" />
             <p className="text-[11px] font-semibold uppercase tracking-widest text-background/50">
               Testimonials
             </p>
@@ -487,7 +540,7 @@ export function TestimonialsSection() {
                   onMouseLeave={isActive ? handleCardMouseLeave : undefined}
                   style={{ width: `${cardW}px`, flexShrink: 0 }}
                   className={cn(
-                    "flex flex-col rounded-2xl bg-background sm:flex-row",
+                    "flex flex-col rounded-2xl bg-card sm:flex-row",
                     !prefersReducedMotion &&
                       animated &&
                       "transition-[opacity,transform] duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -561,12 +614,20 @@ export function TestimonialsSection() {
                 }
               }}
               className={cn(
-                "h-1.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
+                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
                 i === displayActive
-                  ? "w-6 bg-background"
-                  : "w-1.5 bg-background/30 hover:bg-background/50",
+                  ? "w-6 bg-card/30"
+                  : "w-1.5 bg-card/30 hover:bg-card/50",
               )}
-            />
+            >
+              {i === displayActive && !prefersReducedMotion && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 rounded-full bg-card"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </button>
           ))}
         </div>
       </section>

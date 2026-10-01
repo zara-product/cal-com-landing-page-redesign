@@ -23,9 +23,9 @@ export default function Home() {
       <TestimonialsSection />
       <SectionDivider variant="plain" />
       <IntegrationsSection />
-      <SectionDivider />
+      <SectionDivider variant="plain" />
       <ReviewProofBanner />
-      <SectionDivider />
+      <SectionDivider variant="plain" />
       <WallOfLoveSection />
       <SectionDivider />
       <QuestionsSection />

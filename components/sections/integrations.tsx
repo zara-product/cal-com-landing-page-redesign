@@ -1,352 +1,301 @@
-import { ArrowRightIcon, CheckIcon } from "lucide-react";
-import type * as React from "react";
+"use client";
 
-// ─── SVG Logos ────────────────────────────────────────────────────────────────
+import { ArrowRightIcon } from "lucide-react";
+import NextImage from "next/image";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-function GoogleCalendarLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <rect
-        x="6"
-        y="6"
-        width="36"
-        height="36"
-        rx="4"
-        fill="#fff"
-        stroke="#e0e0e0"
-        strokeWidth="1"
-      />
-      <rect x="6" y="14" width="36" height="4" fill="#4285F4" />
-      <rect x="6" y="18" width="36" height="24" rx="0" fill="#fff" />
-      <rect x="6" y="14" width="36" height="8" fill="#4285F4" />
-      <rect x="14" y="6" width="4" height="12" rx="2" fill="#4285F4" />
-      <rect x="30" y="6" width="4" height="12" rx="2" fill="#4285F4" />
-      <text
-        x="24"
-        y="38"
-        textAnchor="middle"
-        fontSize="14"
-        fontWeight="700"
-        fill="#4285F4"
-        fontFamily="sans-serif"
-      >
-        31
-      </text>
-    </svg>
-  );
+// ─── Hub data ─────────────────────────────────────────────────────────────────
+
+// All six outer containers are uniform — Cal centre node remains dominant.
+const CONTAINER_SIZE = 64;
+
+const HUB_SPOKES = [
+  {
+    src: "/icons/google-calendar.svg",
+    name: "Google Calendar",
+    left: "26%",
+    top: "22%",
+    iconSize: 32,
+  },
+  {
+    src: "/icons/zoom.svg",
+    name: "Zoom",
+    left: "74%",
+    top: "22%",
+    iconSize: 30,
+  },
+  {
+    src: "/icons/slack.svg",
+    name: "Slack",
+    left: "16%",
+    top: "50%",
+    iconSize: 30,
+  },
+  {
+    src: "/icons/salesforce.svg",
+    name: "Salesforce",
+    left: "84%",
+    top: "50%",
+    iconSize: 32,
+  },
+  {
+    src: "/icons/hubspot.svg",
+    name: "HubSpot",
+    left: "26%",
+    top: "78%",
+    iconSize: 26,
+  },
+  {
+    src: "/icons/microsoft-teams.svg",
+    name: "Microsoft Teams",
+    left: "74%",
+    top: "78%",
+    iconSize: 30,
+  },
+] as const;
+
+// Per-icon sizes calibrated for optical consistency inside the 48×48 tile.
+const ADDITIONAL_LOGOS = [
+  { src: "/icons/outlook-calendar.svg", name: "Outlook Calendar", size: 22 },
+  { src: "/icons/google-meet.svg", name: "Google Meet", size: 24 },
+  { src: "/icons/apple-calendar.svg", name: "Apple Calendar", size: 22 },
+  { src: "/icons/zapier.svg", name: "Zapier", size: 22 },
+  { src: "/icons/notion.svg", name: "Notion", size: 19 },
+  { src: "/icons/whatsapp.svg", name: "WhatsApp", size: 28 },
+  { src: "/icons/stripe.svg", name: "Stripe", size: 22 },
+  { src: "/icons/intercom.svg", name: "Intercom", size: 22 },
+  { src: "/icons/google-sheets.svg", name: "Google Sheets", size: 20 },
+] as const;
+
+// 1600ms heartbeat — calmer sequential cadence, no travelling elements.
+const CYCLE_MS = 1600;
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
 }
 
-function ZoomLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <rect width="48" height="48" rx="10" fill="#2D8CFF" />
-      <path
-        d="M8 17a4 4 0 014-4h14a4 4 0 014 4v14a4 4 0 01-4 4H12a4 4 0 01-4-4V17z"
-        fill="#fff"
-      />
-      <path d="M30 21l8-5v16l-8-5V21z" fill="#fff" />
-    </svg>
-  );
-}
+// ─── Hub visual ───────────────────────────────────────────────────────────────
 
-function SlackLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <path
-        d="M18 6a4 4 0 00-4 4v2H10a4 4 0 000 8h2v4H10a4 4 0 000 8h2v2a4 4 0 008 0v-2h4v2a4 4 0 008 0v-2h2a4 4 0 000-8h-2v-4h2a4 4 0 000-8h-2v-2a4 4 0 00-8 0v2h-4V10a4 4 0 00-4-4z"
-        fill="none"
-      />
-      <rect x="14" y="6" width="8" height="20" rx="4" fill="#E01E5A" />
-      <rect x="26" y="22" width="8" height="20" rx="4" fill="#ECB22E" />
-      <rect x="6" y="26" width="20" height="8" rx="4" fill="#36C5F0" />
-      <rect x="22" y="14" width="20" height="8" rx="4" fill="#2EB67D" />
-    </svg>
-  );
-}
+function IntegrationsHub() {
+  const [activeSpoke, setActiveSpoke] = React.useState(0);
+  const [liftedSpoke, setLiftedSpoke] = React.useState<number | null>(null);
+  const [inView, setInView] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-function SalesforceLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <ellipse cx="18" cy="26" rx="10" ry="12" fill="#00A1E0" />
-      <ellipse cx="24" cy="20" rx="8" ry="10" fill="#00A1E0" />
-      <ellipse cx="30" cy="24" rx="9" ry="11" fill="#00A1E0" />
-      <ellipse cx="36" cy="28" rx="7" ry="9" fill="#00A1E0" />
-      <ellipse cx="24" cy="26" rx="14" ry="10" fill="#00A1E0" />
-    </svg>
-  );
-}
+  // Pause when section scrolls out of view.
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-function HubSpotLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <rect width="48" height="48" rx="8" fill="#FF7A59" />
-      <circle cx="32" cy="16" r="5" fill="#fff" />
-      <path
-        d="M32 21v6M20 24a8 8 0 1016 0 8 8 0 00-16 0z"
-        stroke="#fff"
-        strokeWidth="3"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx="24" cy="24" r="5" fill="#fff" />
-    </svg>
-  );
-}
+  // Sequential heartbeat — advances one spoke every CYCLE_MS while in view.
+  React.useEffect(() => {
+    if (prefersReducedMotion || !inView) return;
+    const id = setInterval(() => {
+      setActiveSpoke((s) => (s + 1) % HUB_SPOKES.length);
+    }, CYCLE_MS);
+    return () => clearInterval(id);
+  }, [prefersReducedMotion, inView]);
 
-function TeamsLogo() {
-  return (
-    <svg viewBox="0 0 48 48" className="w-8 h-8" aria-hidden="true">
-      <rect width="48" height="48" rx="8" fill="#5059C9" />
-      <circle cx="30" cy="16" r="5" fill="#fff" opacity="0.9" />
-      <rect x="22" y="22" width="18" height="16" rx="4" fill="#7B83EB" />
-      <circle cx="18" cy="18" r="6" fill="#fff" />
-      <rect x="8" y="25" width="20" height="15" rx="4" fill="#fff" />
-    </svg>
-  );
-}
+  // Delayed lift — 500ms after spoke becomes active, lift logo and show name.
+  React.useEffect(() => {
+    setLiftedSpoke(null);
+    if (prefersReducedMotion || !inView) return;
+    const t = setTimeout(() => setLiftedSpoke(activeSpoke), 500);
+    return () => clearTimeout(t);
+  }, [activeSpoke, prefersReducedMotion, inView]);
 
-function CalLogo() {
+  const animated = !prefersReducedMotion;
+
   return (
     <div
-      className="w-12 h-12 rounded-xl bg-[var(--color-fg-default)] flex items-center justify-center"
-      aria-hidden="true"
+      ref={containerRef}
+      className="relative h-[400px] w-full lg:h-[440px]"
+      role="img"
+      aria-label="Cal.com connects to Google Calendar, Zoom, Slack, Salesforce, HubSpot and Microsoft Teams"
     >
-      <span className="text-[var(--color-bg-default)] font-bold text-lg tracking-tight">
-        Cal
-      </span>
-    </div>
-  );
-}
-
-// ─── Integration card ──────────────────────────────────────────────────────────
-
-function IntegrationCard({
-  name,
-  status,
-  logo,
-}: {
-  name: string;
-  status: string;
-  logo: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3 bg-[var(--color-bg-default)] border border-[var(--color-border-subtle)] rounded-xl px-4 py-3 shadow-sm min-w-[200px]">
-      <div className="shrink-0">{logo}</div>
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-sm font-semibold text-[var(--color-fg-default)] leading-tight truncate">
-          {name}
-        </span>
-        <span className="flex items-center gap-1 text-xs text-[var(--color-fg-subtle)]">
-          <CheckIcon
-            className="w-3 h-3 text-[var(--color-accent-emphasis)] shrink-0"
-            aria-hidden="true"
+      {/* All six connectors remain dashed. Active spoke deepens opacity ~25%→~60% over 500ms. */}
+      <svg
+        className="absolute inset-0 h-full w-full pointer-events-none z-0"
+        aria-hidden="true"
+        preserveAspectRatio="none"
+      >
+        <title>Integration connector lines</title>
+        {HUB_SPOKES.map(({ name, left, top }, i) => (
+          <line
+            key={name}
+            x1="50%"
+            y1="50%"
+            x2={left}
+            y2={top}
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeDasharray="2 5"
+            style={{
+              stroke:
+                animated && i === activeSpoke
+                  ? "color-mix(in srgb, var(--color-muted-foreground) 60%, transparent)"
+                  : "color-mix(in srgb, var(--color-muted-foreground) 25%, transparent)",
+              transition: "stroke 500ms ease",
+            }}
           />
-          {status}
-        </span>
-      </div>
-    </div>
-  );
-}
+        ))}
+      </svg>
 
-// ─── Connector lines (SVG) ─────────────────────────────────────────────────────
-
-function ConnectorLines() {
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      aria-hidden="true"
-      preserveAspectRatio="none"
-    >
-      {/* Center point ~ 50% 50% */}
-      {/* top-left card center ~ 22% 22% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="22%"
-        y2="22%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-      {/* top-right card ~ 78% 22% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="78%"
-        y2="22%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-      {/* mid-left ~ 12% 50% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="12%"
-        y2="50%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-      {/* mid-right ~ 88% 50% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="88%"
-        y2="50%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-      {/* bottom-left ~ 22% 78% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="22%"
-        y2="78%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-      {/* bottom-right ~ 78% 78% */}
-      <line
-        x1="50%"
-        y1="50%"
-        x2="78%"
-        y2="78%"
-        stroke="var(--color-border-subtle)"
-        strokeWidth="1"
-        strokeDasharray="4 4"
-      />
-    </svg>
-  );
-}
-
-// ─── Visual panel ──────────────────────────────────────────────────────────────
-
-function IntegrationsVisual() {
-  return (
-    <div className="relative w-full h-[480px] bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl overflow-hidden">
-      <ConnectorLines />
-
-      {/* Centre card */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="flex flex-col items-center gap-3 bg-[var(--color-bg-default)] border border-[var(--color-border-subtle)] rounded-2xl px-8 py-6 shadow-md min-w-[220px] text-center">
-          <CalLogo />
-          <div>
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <span
-                className="w-2 h-2 rounded-full bg-emerald-500 inline-block"
-                aria-hidden="true"
-              />
-              <span className="text-sm font-semibold text-[var(--color-fg-default)]">
-                Meeting booked
-              </span>
-            </div>
-            <p className="text-xs text-[var(--color-fg-subtle)] max-w-[160px] leading-relaxed">
-              Automatically keeps your tools in sync
-            </p>
-          </div>
+      {/* Cal.com centre — dominant node, at true vertical centre of hub div */}
+      <div
+        className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+        style={{ left: "50%", top: "50%" }}
+      >
+        <div className="drop-shadow-md">
+          <NextImage
+            src="/icons/cal-logo.svg"
+            alt="Cal.com"
+            width={80}
+            height={80}
+          />
         </div>
       </div>
 
-      {/* Top-left: Google Calendar */}
-      <div className="absolute top-[10%] left-[4%]">
-        <IntegrationCard
-          name="Google Calendar"
-          status="Event added"
-          logo={<GoogleCalendarLogo />}
-        />
-      </div>
-
-      {/* Top-right: Zoom */}
-      <div className="absolute top-[10%] right-[4%]">
-        <IntegrationCard
-          name="Zoom"
-          status="Meeting link created"
-          logo={<ZoomLogo />}
-        />
-      </div>
-
-      {/* Mid-left: Slack */}
-      <div className="absolute top-1/2 -translate-y-1/2 left-[4%]">
-        <IntegrationCard
-          name="Slack"
-          status="Team notified"
-          logo={<SlackLogo />}
-        />
-      </div>
-
-      {/* Mid-right: Salesforce */}
-      <div className="absolute top-1/2 -translate-y-1/2 right-[4%]">
-        <IntegrationCard
-          name="Salesforce"
-          status="Activity updated"
-          logo={<SalesforceLogo />}
-        />
-      </div>
-
-      {/* Bottom-left: HubSpot */}
-      <div className="absolute bottom-[10%] left-[4%]">
-        <IntegrationCard
-          name="HubSpot"
-          status="Contact synced"
-          logo={<HubSpotLogo />}
-        />
-      </div>
-
-      {/* Bottom-right: Microsoft Teams */}
-      <div className="absolute bottom-[10%] right-[4%]">
-        <IntegrationCard
-          name="Microsoft Teams"
-          status="Meeting created"
-          logo={<TeamsLogo />}
-        />
-      </div>
+      {/* Integration logos — 500ms after spoke activates: lifts 2px, name appears */}
+      {HUB_SPOKES.map(({ src, name, left, top, iconSize }, i) => {
+        const isLifted = animated && liftedSpoke === i;
+        return (
+          <div
+            key={name}
+            className={cn(
+              "absolute -translate-x-1/2 -translate-y-1/2",
+              isLifted ? "z-20" : "z-10",
+            )}
+            style={{ left, top }}
+          >
+            <div className="relative">
+              <div
+                className={cn(
+                  "flex items-center justify-center rounded-2xl border border-border bg-card",
+                  isLifted ? "shadow-md" : "shadow-sm",
+                )}
+                style={{
+                  width: CONTAINER_SIZE,
+                  height: CONTAINER_SIZE,
+                  transform: isLifted ? "translateY(-2px)" : "translateY(0)",
+                  transition: "transform 500ms ease, box-shadow 500ms ease",
+                }}
+              >
+                <NextImage
+                  src={src}
+                  alt={name}
+                  width={iconSize}
+                  height={iconSize}
+                  className="object-contain"
+                />
+              </div>
+              {/* Name label — appears below card when lifted */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-1/2 whitespace-nowrap"
+                style={{
+                  top: "calc(100% + 8px)",
+                  opacity: isLifted ? 1 : 0,
+                  transform: isLifted
+                    ? "translateX(-50%) translateY(0)"
+                    : "translateX(-50%) translateY(-4px)",
+                  transition: "opacity 500ms ease, transform 500ms ease",
+                }}
+              >
+                <span className="rounded-lg bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
+                  {name}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-// ─── Section ───────────────────────────────────────────────────────────────────
+// ─── Section ─────────────────────────────────────────────────────────────────
 
 export function IntegrationsSection() {
   return (
-    <section className="w-full py-24">
-      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Left: copy */}
-          <div className="flex flex-col gap-8">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-6 h-px bg-[var(--color-fg-default)]"
-                aria-hidden="true"
-              />
-              <span className="text-xs font-semibold tracking-widest uppercase text-[var(--color-fg-default)]">
+    <section aria-label="Integrations" className="w-full bg-background">
+      <div className="mx-auto max-w-[1200px] px-10">
+        <div className="py-20 lg:py-28">
+          {/* Two-column: copy | hub */}
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-8">
+            {/* Left: copy */}
+            <div className="flex flex-col gap-6 lg:gap-7">
+              <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
                 Integrations
               </span>
+
+              <h2 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+                Keep your meetings in sync with the tools you already use.
+              </h2>
+
+              <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
+                Bring Slack, Salesforce, Google Calendar, Zoom and the rest of
+                your stack into every booking.
+              </p>
+
+              <a
+                href="https://app.cal.com/apps"
+                className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-foreground transition-opacity hover:opacity-70"
+              >
+                Explore apps
+                <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+              </a>
             </div>
 
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-[var(--color-fg-default)] leading-[1.05] tracking-tight max-w-md">
-              Your meetings, connected to the tools that keep work moving.
-            </h2>
-
-            <p className="text-base text-[var(--color-fg-subtle)] leading-relaxed max-w-sm">
-              Sync calendars, create meeting links, update CRM records and keep
-              your team in the loop — automatically from every booking.
-            </p>
-
-            <a
-              href="/apps"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-fg-default)] hover:opacity-70 transition-opacity"
-            >
-              Explore apps
-              <ArrowRightIcon className="w-4 h-4" aria-hidden="true" />
-            </a>
+            {/* Right: hub */}
+            <div>
+              <IntegrationsHub />
+            </div>
           </div>
 
-          {/* Right: visual */}
-          <div>
-            <IntegrationsVisual />
+          {/* Additional row — py-2/-my-2 gives shadow room without adding visible space */}
+          <div className="mt-12 -my-2 flex justify-center overflow-x-auto py-2 lg:mt-12">
+            <div className="flex items-center gap-4">
+              <span className="shrink-0 text-sm text-muted-foreground">
+                And 100+ more apps
+              </span>
+              <div className="flex flex-wrap gap-2 lg:flex-nowrap">
+                {ADDITIONAL_LOGOS.map(({ src, name, size }) => (
+                  <div
+                    key={name}
+                    className="flex size-12 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-[box-shadow,transform,border-color] duration-150 hover:-translate-y-px hover:border-border/80 hover:shadow-md"
+                    title={name}
+                  >
+                    <NextImage
+                      src={src}
+                      alt={name}
+                      width={size}
+                      height={size}
+                      className="object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

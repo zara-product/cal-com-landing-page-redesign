@@ -1,5 +1,73 @@
 import type * as React from "react";
 
+// ─── Tile cluster constants (mirrors Testimonials motif) ──────────────────────
+
+const TILE_SIZE = 96;
+const TILE_GAP = 12;
+const TILE_COLS = 9;
+const TILE_ROWS = 5;
+
+function tileOpacity(row: number, col: number): number {
+  const v = (row * 7 + col * 13) % 17;
+  if (v < 2) return 0.07;
+  if (v < 5) return 0.04;
+  return 0.02;
+}
+
+function tileBorder(row: number, col: number): number {
+  const v = (row * 7 + col * 13) % 17;
+  if (v < 2) return 0.07;
+  if (v < 5) return 0.05;
+  return 0.04;
+}
+
+// ─── Left-side tile cluster ───────────────────────────────────────────────────
+// Same rounded-square tiles as Testimonials, positioned left with rightward fade.
+
+function BannerTileCluster() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-y-0 left-0 w-[52%] overflow-hidden"
+      style={{
+        maskImage:
+          "radial-gradient(ellipse 80% 90% at 0% 50%, black 10%, transparent 65%)",
+        WebkitMaskImage:
+          "radial-gradient(ellipse 80% 90% at 0% 50%, black 10%, transparent 65%)",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: "-12%",
+          top: "50%",
+          transform: "translateY(-50%) rotate(-8deg)",
+          display: "grid",
+          gridTemplateColumns: `repeat(${TILE_COLS}, ${TILE_SIZE}px)`,
+          gap: `${TILE_GAP}px`,
+        }}
+      >
+        {Array.from({ length: TILE_ROWS * TILE_COLS }).map((_, idx) => {
+          const row = Math.floor(idx / TILE_COLS);
+          const col = idx % TILE_COLS;
+          return (
+            <div
+              key={`${row}-${col}`}
+              style={{
+                width: `${TILE_SIZE}px`,
+                height: `${TILE_SIZE}px`,
+                borderRadius: "16px",
+                background: `rgba(255,255,255,${tileOpacity(row, col)})`,
+                border: `1px solid rgba(255,255,255,${tileBorder(row, col)})`,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Source marks ──────────────────────────────────────────────────────────────
 
 function G2Mark() {
@@ -57,15 +125,15 @@ function Stars({ count = 5 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static decorative display
         // biome-ignore lint/a11y/noSvgWithoutTitle: parent span is aria-hidden
-        <svg key={i} viewBox="0 0 16 16" width="14" height="14" fill="#F59E0B">
-          <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.13L8 10.25l-3.71 1.16.71-4.13-3-2.93 4.15-.6z" />
+        <svg key={i} viewBox="0 0 16 16" width="13" height="13" fill="#F59E0B">
+          <path d="M8 1.5L9.47 5.98L14.18 5.99L10.38 8.77L11.82 13.26L8 10.5L4.18 13.26L5.62 8.77L1.82 5.99L6.53 5.98Z" />
         </svg>
       ))}
     </span>
   );
 }
 
-// ─── Source entry ──────────────────────────────────────────────────────────────
+// ─── Review item: mark | rating value | stacked(stars + count) ───────────────
 
 function ReviewSource({
   mark,
@@ -76,18 +144,21 @@ function ReviewSource({
   score: string;
   label: string;
 }) {
+  const [main, denom] = score.split("/");
   return (
     <div className="flex items-center gap-3">
       {mark}
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-extrabold text-background leading-none tracking-tight">
-            {score.split("/")[0]}
-          </span>
-          <span className="text-sm text-background/50 leading-none">/5</span>
-          <Stars />
-        </div>
-        <span className="text-xs text-background/50">{label}</span>
+      <span className="flex items-baseline gap-0.5">
+        <span className="text-[1.625rem] font-extrabold leading-none tracking-tight text-background">
+          {main}
+        </span>
+        <span className="text-sm font-medium leading-none text-background/40">
+          /{denom}
+        </span>
+      </span>
+      <div className="flex flex-col gap-1">
+        <Stars />
+        <span className="text-xs leading-none text-background/50">{label}</span>
       </div>
     </div>
   );
@@ -97,31 +168,34 @@ function ReviewSource({
 
 export function ReviewProofBanner() {
   return (
-    <div className="w-full bg-foreground py-6 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1200px] border-l border-r border-background/10 px-10 flex flex-wrap items-center justify-center gap-10 sm:gap-16">
-        <ReviewSource
-          mark={<G2Mark />}
-          score="4.6/5"
-          label="154 reviews on G2"
-        />
-        <div
-          className="hidden sm:block w-px h-8 bg-background/10"
-          aria-hidden="true"
-        />
-        <ReviewSource
-          mark={<TrustpilotMark />}
-          score="4.7/5"
-          label="413 reviews on Trustpilot"
-        />
-        <div
-          className="hidden sm:block w-px h-8 bg-background/10"
-          aria-hidden="true"
-        />
-        <ReviewSource
-          mark={<ProductHuntMark />}
-          score="4.8/5"
-          label="86 reviews on Product Hunt"
-        />
+    <div className="relative w-full overflow-hidden bg-neutral-950 py-10">
+      <BannerTileCluster />
+      <div className="relative mx-auto max-w-[1200px] px-10">
+        <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16">
+          <ReviewSource
+            mark={<G2Mark />}
+            score="4.6/5"
+            label="154 reviews on G2"
+          />
+          <div
+            className="hidden sm:block w-px h-8 bg-background/10"
+            aria-hidden="true"
+          />
+          <ReviewSource
+            mark={<TrustpilotMark />}
+            score="4.7/5"
+            label="413 reviews on Trustpilot"
+          />
+          <div
+            className="hidden sm:block w-px h-8 bg-background/10"
+            aria-hidden="true"
+          />
+          <ReviewSource
+            mark={<ProductHuntMark />}
+            score="4.8/5"
+            label="86 reviews on Product Hunt"
+          />
+        </div>
       </div>
     </div>
   );
