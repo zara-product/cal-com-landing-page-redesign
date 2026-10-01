@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -210,20 +210,6 @@ function WallCardItem({ card }: { card: WallCard }) {
   );
 }
 
-// ─── Reduced-motion hook ───────────────────────────────────────────────────────
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
-}
-
 // ─── Scroll column ─────────────────────────────────────────────────────────────
 
 function ScrollColumn({
@@ -303,7 +289,7 @@ function ScrollColumn({
 // ─── Section ───────────────────────────────────────────────────────────────────
 
 export function WallOfLoveSection() {
-  const reduced = usePrefersReducedMotion();
+  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
 
   return (
     <section className="w-full bg-background py-24 overflow-hidden">

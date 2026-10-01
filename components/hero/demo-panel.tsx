@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -60,20 +61,6 @@ const TMS_SELECT = 25.0; // 1000ms — select Sofia (dim other avatars)
 const TMS_REVEAL = 43.75; // 1750ms — reveal result card
 const SOFIA_INDEX = 2; // 3rd avatar in the stack (0-based)
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
-function usePrefersReducedMotion(): boolean {
-  const [prefers, setPrefers] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefers(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefers(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return prefers;
-}
-
 // ─── FadeOutBar ───────────────────────────────────────────────────────────────
 // Renders a progress fill at a fixed width and fades it out over 175ms.
 // Mounts at opacity 1, transitions to 0 after the first paint, then calls onDone.
@@ -110,7 +97,9 @@ export function DemoPanel() {
     mode: Mode;
     width: number;
   } | null>(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const tabsRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const progressRef = React.useRef(0);
@@ -1234,6 +1223,7 @@ function DevelopersPanel({
   const [devKey, setDevKey] = React.useState(0);
   const [visibleLines, setVisibleLines] = React.useState(0);
   const [showResult, setShowResult] = React.useState(false);
+  const devTabsRef = React.useRef<HTMLDivElement>(null);
 
   // Reset to Atoms each time the outer Developers tab becomes active
   React.useEffect(() => {
@@ -1277,6 +1267,35 @@ function DevelopersPanel({
     onRestartProgress();
   }
 
+  function handleDevKeyDown(
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    tab: DevTab,
+  ) {
+    const idx = DEV_ORDERED_TABS.indexOf(tab);
+    const buttons =
+      devTabsRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']");
+    const go = (i: number) => {
+      const next = DEV_ORDERED_TABS[i];
+      setActiveDevTab(next);
+      setDevKey((k) => k + 1);
+      onRestartProgress();
+      buttons?.[i]?.focus();
+    };
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      go((idx + 1) % DEV_ORDERED_TABS.length);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      go((idx - 1 + DEV_ORDERED_TABS.length) % DEV_ORDERED_TABS.length);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      go(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      go(DEV_ORDERED_TABS.length - 1);
+    }
+  }
+
   const allLinesVisible = visibleLines >= lineCount;
   const showCursor =
     !prefersReducedMotion && !allLinesVisible && visibleLines > 0;
@@ -1297,25 +1316,38 @@ function DevelopersPanel({
         <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-sm">
           {/* Tab + filename bar */}
           <div className="flex items-center border-b border-neutral-700/60">
-            {DEV_ORDERED_TABS.map((tab) => {
-              const isActiveTab = activeDevTab === tab;
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => handleTabClick(tab)}
-                  className={cn(
-                    "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    isActiveTab
-                      ? "rounded-t bg-neutral-800 text-neutral-100"
-                      : "text-neutral-500 hover:text-neutral-300",
-                  )}
-                >
-                  {DEV_TAB_LABELS[tab]}
-                </button>
-              );
-            })}
+            <div
+              ref={devTabsRef}
+              role="tablist"
+              aria-label="Developer examples"
+              className="flex"
+            >
+              {DEV_ORDERED_TABS.map((tab) => {
+                const isActiveTab = activeDevTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActiveTab}
+                    aria-controls="dev-panel"
+                    id={`dev-tab-${tab}`}
+                    tabIndex={isActiveTab ? 0 : -1}
+                    onClick={() => handleTabClick(tab)}
+                    onKeyDown={(e) => handleDevKeyDown(e, tab)}
+                    className={cn(
+                      "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isActiveTab
+                        ? "rounded-t bg-neutral-800 text-neutral-100"
+                        : "text-neutral-500 hover:text-neutral-300",
+                    )}
+                  >
+                    {DEV_TAB_LABELS[tab]}
+                  </button>
+                );
+              })}
+            </div>
             <span className="ml-auto pr-4 font-mono text-[10px] text-neutral-500">
               {DEV_TAB_FILES[activeDevTab]}
             </span>
@@ -1357,6 +1389,9 @@ function DevelopersPanel({
 
         {/* Result card — overlaps bottom-right of code window */}
         <div
+          role="tabpanel"
+          id="dev-panel"
+          aria-labelledby={`dev-tab-${activeDevTab}`}
           aria-live="polite"
           className="pointer-events-none absolute bottom-0 right-0 z-10 w-[62%]"
           style={

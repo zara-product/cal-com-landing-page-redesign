@@ -12,21 +12,8 @@ import {
 import NextImage from "next/image";
 import * as React from "react";
 import { SectionDivider } from "@/components/ui/page-rail";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
-
-// ─── Hooks ────────────────────────────────────────────────────────────────────
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
-}
 
 // ─── Steps ────────────────────────────────────────────────────────────────────
 
@@ -64,8 +51,11 @@ export function SetupSection() {
   const [activeStep, setActiveStep] = React.useState<StepId>("connect");
   const [progress, setProgress] = React.useState(0);
   const [inView, setInView] = React.useState(false);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const sectionRef = React.useRef<HTMLElement>(null);
+  const tabsRef = React.useRef<HTMLDivElement>(null);
   const rafRef = React.useRef<number | null>(null);
   const startTimeRef = React.useRef<number | null>(null);
 
@@ -130,6 +120,32 @@ export function SetupSection() {
     setActiveStep(id);
   }
 
+  function handleStepKeyDown(
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    id: StepId,
+  ) {
+    const idx = STEP_IDS.indexOf(id);
+    const buttons =
+      tabsRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']");
+    const go = (i: number) => {
+      setActiveStep(STEP_IDS[i]);
+      buttons?.[i]?.focus();
+    };
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      go((idx + 1) % STEP_IDS.length);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      go((idx - 1 + STEP_IDS.length) % STEP_IDS.length);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      go(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      go(STEP_IDS.length - 1);
+    }
+  }
+
   return (
     <section
       ref={sectionRef}
@@ -158,6 +174,7 @@ export function SetupSection() {
           <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:mt-10 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20">
             {/* Step nav */}
             <div
+              ref={tabsRef}
               role="tablist"
               aria-label="Setup steps"
               className="flex flex-col gap-1"
@@ -172,7 +189,9 @@ export function SetupSection() {
                     aria-selected={isActive}
                     aria-controls={`setup-panel-${step.id}`}
                     id={`setup-tab-${step.id}`}
+                    tabIndex={isActive ? 0 : -1}
                     onClick={() => handleStepClick(step.id)}
+                    onKeyDown={(e) => handleStepKeyDown(e, step.id)}
                     className={cn(
                       "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
@@ -403,7 +422,9 @@ const CONNECT_CALENDARS = [
 ] as const;
 
 function ConnectPanel({ isActive }: { isActive: boolean }) {
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const [entered, setEntered] = React.useState(false);
   const [googleOn, setGoogleOn] = React.useState(false);
   const [outlookOn, setOutlookOn] = React.useState(false);
@@ -604,7 +625,9 @@ function VisualSwitch({ checked }: { checked: boolean }) {
 }
 
 function AvailabilityPanel({ isActive }: { isActive: boolean }) {
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const [activeDays, setActiveDays] = React.useState<Set<string>>(new Set());
 
   React.useEffect(() => {
@@ -827,7 +850,9 @@ const MEET_ACTIVATE_KEYS = ["cal-video", "zoom", "inperson"] as const;
 const BOOKER_SELECTED = "cal-video" as const;
 
 function MeetPanel({ isActive }: { isActive: boolean }) {
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const [enabledRows, setEnabledRows] = React.useState<Set<string>>(new Set());
   const [showBookerCard, setShowBookerCard] = React.useState(false);
 

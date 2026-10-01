@@ -2,6 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -156,20 +157,6 @@ function TileCluster() {
   );
 }
 
-// ─── usePrefersReducedMotion ──────────────────────────────────────────────────
-
-function usePrefersReducedMotion(): boolean {
-  const [prefers, setPrefers] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefers(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefers(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return prefers;
-}
-
 // ─── PortraitSlot ─────────────────────────────────────────────────────────────
 // Priority: genuine portrait image → company-name wordmark fallback.
 // The wordmark fallback is intentional design, not a placeholder —
@@ -227,7 +214,9 @@ export function TestimonialsSection() {
   const dragStartX = React.useRef<number | null>(null);
   // Prevents overlapping transitions from rapid clicks / autoplay races.
   const transitioningRef = React.useRef(false);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
 
   const isPaused = cardHovered || isDragging;
   // displayActive: 0–5, maps virtual position to real testimonial for pagination

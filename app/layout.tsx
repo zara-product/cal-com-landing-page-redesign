@@ -6,8 +6,6 @@ import { SiteHeader } from "@/components/sections/site-header";
 import { PageRails, SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
 
-const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
-
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
@@ -37,7 +35,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         geistMono.variable,
         "font-sans",
         inter.variable,
-        interHeading.variable,
       )}
     >
       <body className="min-h-full flex flex-col">

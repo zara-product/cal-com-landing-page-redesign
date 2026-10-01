@@ -170,6 +170,7 @@
 }
 
 :root {
+  --font-heading: var(--font-sans);
   --frame: --alpha(var(--color-neutral-500) / 21%);
   --frame-strong: --alpha(var(--color-neutral-500) / 52%);
   --destructive-foreground: var(--color-red-700);

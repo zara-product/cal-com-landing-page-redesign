@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, MenuIcon } from "lucide-react";
 import * as React from "react";
 import {
   Menu,
@@ -8,6 +8,7 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@/components/ui/menu";
+import { Sheet, SheetPopup, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 // ─── Nav data ─────────────────────────────────────────────────────────────────
@@ -167,6 +168,7 @@ function NavDropdown({
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = React.useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   React.useEffect(() => {
     const update = () => setScrolled(window.scrollY > 80);
@@ -240,6 +242,68 @@ export function SiteHeader() {
               Go to app
               <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
             </a>
+
+            {/* Mobile nav — visible below lg only */}
+            <div className="lg:hidden">
+              <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+                <SheetTrigger
+                  className="flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Open navigation menu"
+                >
+                  <MenuIcon className="size-5" aria-hidden="true" />
+                </SheetTrigger>
+                <SheetPopup side="left" showCloseButton={true}>
+                  <nav
+                    aria-label="Mobile navigation"
+                    className="flex flex-col gap-5 overflow-y-auto px-6 pt-14 pb-8"
+                  >
+                    {NAV_ITEMS.map((item) =>
+                      item.items ? (
+                        <div key={item.label}>
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
+                            {item.label}
+                          </p>
+                          <div className="flex flex-col">
+                            {item.items.map((child) => (
+                              <a
+                                key={child.label}
+                                href={child.href}
+                                onClick={() => setMobileNavOpen(false)}
+                                className="rounded-md px-2 py-2 text-sm text-foreground transition-colors hover:bg-accent"
+                              >
+                                {child.label}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <a
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setMobileNavOpen(false)}
+                          className="text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
+                        >
+                          {item.label}
+                        </a>
+                      ),
+                    )}
+                    <div className="border-t border-border pt-4">
+                      <a
+                        href="https://app.cal.com"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Go to app
+                        <ChevronRightIcon
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </div>
+                  </nav>
+                </SheetPopup>
+              </Sheet>
+            </div>
           </div>
         </div>
       </header>

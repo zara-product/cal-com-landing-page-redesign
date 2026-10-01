@@ -3,6 +3,7 @@
 import { ArrowRightIcon } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 // ─── Hub data ─────────────────────────────────────────────────────────────────
@@ -71,20 +72,6 @@ const ADDITIONAL_LOGOS = [
 // 1600ms heartbeat — calmer sequential cadence, no travelling elements.
 const CYCLE_MS = 1600;
 
-// ─── Hooks ────────────────────────────────────────────────────────────────────
-
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
-}
-
 // ─── Hub visual ───────────────────────────────────────────────────────────────
 
 function IntegrationsHub() {
@@ -92,7 +79,9 @@ function IntegrationsHub() {
   const [liftedSpoke, setLiftedSpoke] = React.useState<number | null>(null);
   const [inView, setInView] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
 
   // Pause when section scrolls out of view.
   React.useEffect(() => {
