@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cal.com homepage redesign
 
-## Getting Started
+A product-led redesign of the Cal.com homepage, exploring how the experience can preserve the simplicity of individual scheduling while revealing the product's depth across teams, organisations and developer use cases.
 
-First, run the development server:
+> **Preserve the simplicity of entering Cal.com. Reveal the power of growing with Cal.com.**
+
+## Live demo
+
+[View the live redesign](https://cal-com-landing-page-redesign.vercel.app/)
+
+## The opportunity
+
+Cal.com is immediately understandable as a simple scheduling product, but its broader capabilities — team coordination, routing, workflows, organisational controls and developer infrastructure — are harder to understand from the homepage hierarchy.
+
+I focused the redesign on making that progression clearer without turning Cal.com into something visually unfamiliar.
+
+The product story progresses through:
+
+**Individuals → Teams → Organisations → Developers**
+
+Rather than presenting those as disconnected feature groups, the experience shows how scheduling can become more sophisticated while the product remains approachable.
+
+## What I changed
+
+- Reworked the information architecture around a clearer progression from individual scheduling to more complex use cases.
+- Redesigned the hero around four working product demonstrations for Individuals, Teams, Organisations and Developers.
+- Preserved Cal.com's neutral, product-led visual language rather than treating the exercise as a rebrand.
+- Positioned Simple Scheduling as the entry point, then progressively introduced routing, automation, team coordination, organisational controls and developer tooling.
+- Used interaction and motion to explain product behaviour, including round-robin assignment, routing logic, booking states and developer workflows.
+- Refined social proof, integrations, FAQs and conversion points to support the page narrative.
+- Implemented the redesign as a responsive working webpage rather than stopping at static design.
+
+## Design-system approach
+
+The implementation stays within the project's existing Cal.com / coss UI direction and Base UI foundation.
+
+I prioritised:
+
+- existing design tokens and primitives;
+- reusable patterns rather than one-off UI;
+- consistent spacing, states, borders, radii and motion;
+- semantic links and controls;
+- keyboard and focus behaviour;
+- reduced-motion support;
+- responsive behaviour across desktop and smaller screens;
+- avoiding unnecessary third-party component libraries.
+
+## Motion with intent
+
+Motion is used to explain state and product logic rather than as decoration.
+
+Examples include:
+
+- booking selection and confirmation;
+- round-robin team assignment;
+- attribute-based organisation routing;
+- developer code-to-result flows;
+- Simple Scheduling step transitions.
+
+Where reduced motion is preferred, animated sequences resolve directly to their completed state.
+
+## Built with
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- coss UI
+- Base UI
+- Claude Code
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
 bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
