@@ -255,7 +255,10 @@ export function SetupSection() {
                     <div
                       key={delay}
                       className="animate-ss-ripple absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-foreground/[0.07]"
-                      style={{ animationDelay: `${delay}s` }}
+                      style={{
+                        animationDelay: `${delay}s`,
+                        animationFillMode: "backwards",
+                      }}
                     />
                   ))}
                 </div>
@@ -513,12 +516,12 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto w-72 rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+        <div className="pointer-events-auto w-[264px] rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-xs font-semibold text-foreground">
               Calendars in sync
             </p>
-            <span className="shrink-0 text-xs text-muted-foreground">
+            <span className="shrink-0 text-[10px] text-muted-foreground">
               Just now
             </span>
           </div>
@@ -603,13 +606,11 @@ function VisualSwitch({ checked }: { checked: boolean }) {
 function AvailabilityPanel({ isActive }: { isActive: boolean }) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [activeDays, setActiveDays] = React.useState<Set<string>>(new Set());
-  const [showLimits, setShowLimits] = React.useState(false);
 
   React.useEffect(() => {
     if (!isActive) {
       const t = setTimeout(() => {
         setActiveDays(new Set());
-        setShowLimits(false);
       }, 300);
       return () => clearTimeout(t);
     }
@@ -618,7 +619,6 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
 
     if (prefersReducedMotion) {
       setActiveDays(new Set(weekdays.map((d) => d.key)));
-      setShowLimits(true);
       return;
     }
 
@@ -636,143 +636,95 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
       );
     }
 
-    // Show limits card after all weekdays active + a beat
-    timers.push(
-      setTimeout(
-        () => setShowLimits(true),
-        350 + (weekdays.length - 1) * 380 + 600,
-      ),
-    );
-
     return () => {
       for (const t of timers) clearTimeout(t);
     };
   }, [isActive, prefersReducedMotion]);
 
   return (
-    <div className="relative">
-      {/* Main card */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
-          <div>
-            <p className="text-sm font-semibold text-foreground">
-              Your availability
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              When can people book time with you?
-            </p>
-          </div>
-          <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
-            <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
-            Europe / Berlin
-          </span>
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Your availability
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            When can people book time with you?
+          </p>
         </div>
-
-        {/* Day rows — weekdays activate sequentially; weekend stays muted */}
-        <div className="divide-y divide-border/50">
-          {DAYS.map((day) => {
-            const unavailable = day.start === null;
-            const on = !unavailable && activeDays.has(day.key);
-            return (
-              <div
-                key={day.key}
-                className="flex items-center gap-3 px-6 py-1.5"
-              >
-                <VisualSwitch checked={on} />
-                <span
-                  className={cn(
-                    "w-24 shrink-0 text-sm font-medium transition-colors duration-300",
-                    on ? "text-foreground" : "text-muted-foreground/40",
-                  )}
-                >
-                  <span className="hidden sm:inline">{day.label}</span>
-                  <span className="sm:hidden">{day.short}</span>
-                </span>
-
-                {/* Middle: time controls or unavailable label */}
-                <div className="flex flex-1 items-center">
-                  {unavailable ? (
-                    <span className="text-xs text-muted-foreground/40">
-                      Unavailable
-                    </span>
-                  ) : (
-                    <div
-                      className="flex items-center gap-1.5 text-xs"
-                      style={
-                        prefersReducedMotion
-                          ? undefined
-                          : {
-                              opacity: on ? 1 : 0,
-                              transform: on ? "none" : "translateX(-6px)",
-                              transition:
-                                "opacity 250ms ease-out, transform 250ms ease-out",
-                            }
-                      }
-                    >
-                      <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
-                        {day.start}
-                      </span>
-                      <span className="text-muted-foreground/40">–</span>
-                      <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
-                        {day.end}
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="ml-1 text-muted-foreground/30"
-                      >
-                        <XIcon className="size-3" />
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right-side actions — always visible on every row */}
-                <div
-                  aria-hidden="true"
-                  className="flex shrink-0 items-center gap-1 text-muted-foreground/30"
-                >
-                  <PlusIcon className="size-3" />
-                  <CopyIcon className="size-3" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
+          <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
+          Europe / Berlin
+        </span>
       </div>
 
-      {/* Floating Optional limits card — bottom-right corner, consistent overlap offset */}
-      <div
-        aria-live="polite"
-        className="pointer-events-none absolute z-10"
-        style={
-          prefersReducedMotion
-            ? { right: "-52px", bottom: "-36px", opacity: showLimits ? 1 : 0 }
-            : {
-                right: "-52px",
-                bottom: "-36px",
-                opacity: showLimits ? 1 : 0,
-                transform: showLimits ? "translateY(0)" : "translateY(10px)",
-                transition: "opacity 400ms ease-out, transform 400ms ease-out",
-              }
-        }
-      >
-        <div className="pointer-events-auto rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
-          <p className="mb-2.5 text-xs font-semibold text-foreground">
-            Optional limits
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
-              10-minute buffer
-            </span>
-            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
-              Max 4 a day
-            </span>
-            <span className="rounded-full bg-muted/70 px-2.5 py-1 text-xs font-medium text-foreground/70">
-              2-hour notice
-            </span>
-          </div>
-        </div>
+      {/* Day rows — weekdays activate sequentially; weekend stays muted */}
+      <div className="divide-y divide-border/50">
+        {DAYS.map((day) => {
+          const unavailable = day.start === null;
+          const on = !unavailable && activeDays.has(day.key);
+          return (
+            <div key={day.key} className="flex items-center gap-3 px-6 py-1.5">
+              <VisualSwitch checked={on} />
+              <span
+                className={cn(
+                  "w-24 shrink-0 text-sm font-medium transition-colors duration-300",
+                  on ? "text-foreground" : "text-muted-foreground/40",
+                )}
+              >
+                <span className="hidden sm:inline">{day.label}</span>
+                <span className="sm:hidden">{day.short}</span>
+              </span>
+
+              {/* Middle: time controls or unavailable label */}
+              <div className="flex flex-1 items-center">
+                {unavailable ? (
+                  <span className="text-xs text-muted-foreground/40">
+                    Unavailable
+                  </span>
+                ) : (
+                  <div
+                    className="flex items-center gap-1.5 text-xs"
+                    style={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            opacity: on ? 1 : 0,
+                            transform: on ? "none" : "translateX(-6px)",
+                            transition:
+                              "opacity 250ms ease-out, transform 250ms ease-out",
+                          }
+                    }
+                  >
+                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                      {day.start}
+                    </span>
+                    <span className="text-muted-foreground/40">–</span>
+                    <span className="rounded border border-border px-2 py-0.5 font-medium text-foreground">
+                      {day.end}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="ml-1 text-muted-foreground/30"
+                    >
+                      <XIcon className="size-3" />
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right-side actions — always visible on every row */}
+              <div
+                aria-hidden="true"
+                className="flex shrink-0 items-center gap-1 text-muted-foreground/30"
+              >
+                <PlusIcon className="size-3" />
+                <CopyIcon className="size-3" />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -981,11 +933,11 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+        <div className="pointer-events-auto w-[264px] rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
           <p className="mb-2.5 text-xs font-semibold text-foreground">
-            Booker chooses
+            Booker's choice
           </p>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {/* Cal Video — always selected */}
             <span
               className={cn(
