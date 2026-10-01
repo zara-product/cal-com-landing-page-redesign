@@ -2,14 +2,11 @@
 
 import {
   Building2Icon,
-  CalendarIcon,
   CheckIcon,
   ClockIcon,
   Code2Icon,
   GlobeIcon,
-  ShieldIcon,
   ShuffleIcon,
-  SplitIcon,
   UserRoundIcon,
   UsersRoundIcon,
   VideoIcon,
@@ -64,11 +61,6 @@ const TMS_SHUFFLE = 6.25; // 250ms  — activate shuffle node
 const TMS_SELECT = 25.0; // 1000ms — select Sofia (dim other avatars)
 const TMS_REVEAL = 43.75; // 1750ms — reveal result card
 const SOFIA_INDEX = 2; // 3rd avatar in the stack (0-based)
-
-// ─── Organizations animation thresholds (% of MODE_DURATION.organizations = 4000ms) ─
-const ORG_ROUTE = 6.25; // 250ms  — activate routing node
-const ORG_RESOLVE = 25.0; // 1000ms — result card fades in
-const ORG_ASSIGN = 43.75; // 1750ms — final assignment + security line
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -213,7 +205,7 @@ export function DemoPanel() {
         ref={tabsRef}
         role="tablist"
         aria-label="Product modes"
-        className="flex gap-0.5 rounded-lg bg-muted p-0.5"
+        className="flex gap-0.5 rounded-lg bg-muted/30 p-0.5"
       >
         {MODES.map((mode) => {
           const isActive = activeMode === mode;
@@ -464,7 +456,7 @@ function IndividualsPanel({
           </div>
 
           {/* Right — time slots */}
-          <div className="flex w-[76px] shrink-0 flex-col bg-neutral-50 px-2.5 pb-2.5 pt-4">
+          <div className="flex w-[76px] shrink-0 flex-col bg-muted/50 px-2.5 pb-2.5 pt-4">
             <p className="mb-4 text-xs" aria-hidden="true">
               <span className="font-normal text-muted-foreground">Thu </span>
               <span className="font-semibold text-foreground">08</span>
@@ -518,7 +510,7 @@ function IndividualsPanel({
               }
         }
       >
-        <div className="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-md">
+        <div className="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
           <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-success/10">
             <CheckIcon className="size-3 text-success" aria-hidden="true" />
           </div>
@@ -730,8 +722,54 @@ function TeamsPanel({
 
 // ─── Panel: Organizations ─────────────────────────────────────────────────────
 
+const ORG_MEETING_DELAYS = [
+  250, 510, 770, 1030, 1290, 1550, 1810, 2070,
+] as const;
+
+type OrgTeam = "sales" | "support" | "hiring";
+
+const ORG_MEETINGS: Array<{
+  id: number;
+  day: number;
+  startHour: number;
+  span: number;
+  team: OrgTeam;
+  label: string;
+}> = [
+  { id: 1, day: 1, startHour: 9, span: 2, team: "sales", label: "Demo" },
+  {
+    id: 2,
+    day: 2,
+    startHour: 10,
+    span: 1,
+    team: "support",
+    label: "Onboarding",
+  },
+  { id: 3, day: 3, startHour: 9, span: 1, team: "hiring", label: "Interview" },
+  { id: 4, day: 4, startHour: 11, span: 2, team: "sales", label: "Discovery" },
+  { id: 5, day: 5, startHour: 9, span: 1, team: "support", label: "Check-in" },
+  { id: 6, day: 2, startHour: 12, span: 1, team: "hiring", label: "Interview" },
+  { id: 7, day: 3, startHour: 11, span: 1, team: "support", label: "Support" },
+  { id: 8, day: 5, startHour: 11, span: 2, team: "sales", label: "Demo" },
+];
+
+const ORG_TEAM_BLOCK: Record<OrgTeam, string> = {
+  sales: "bg-foreground text-background",
+  support: "bg-neutral-100 text-foreground",
+  hiring: "border border-border bg-card text-foreground",
+};
+
+const ORG_LEGEND_SWATCH: Record<OrgTeam, string> = {
+  sales: "bg-foreground",
+  support: "bg-neutral-200",
+  hiring: "border border-border bg-card",
+};
+
+const ORG_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
+const ORG_HOUR_LABELS = [9, 10, 11, 12] as const;
+
 function OrgsPanel({
-  progress,
+  progress: _progress,
   isActive,
   prefersReducedMotion,
 }: {
@@ -739,190 +777,157 @@ function OrgsPanel({
   isActive: boolean;
   prefersReducedMotion: boolean;
 }) {
-  const instant = prefersReducedMotion && isActive;
-  const routeActive = instant || (isActive && progress >= ORG_ROUTE);
-  const resultRevealed = instant || (isActive && progress >= ORG_RESOLVE);
-  const assigned = instant || (isActive && progress >= ORG_ASSIGN);
+  const [visibleCount, setVisibleCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!isActive) {
+      const t = setTimeout(() => setVisibleCount(0), 300);
+      return () => clearTimeout(t);
+    }
+
+    setVisibleCount(0);
+
+    if (prefersReducedMotion) {
+      setVisibleCount(ORG_MEETINGS.length);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    for (let i = 0; i < ORG_MEETING_DELAYS.length; i++) {
+      const idx = i;
+      timers.push(
+        setTimeout(() => setVisibleCount(idx + 1), ORG_MEETING_DELAYS[idx]),
+      );
+    }
+    return () => {
+      for (const t of timers) clearTimeout(t);
+    };
+  }, [isActive, prefersReducedMotion]);
 
   return (
-    <div
-      className="flex justify-center py-1"
-      style={
-        prefersReducedMotion
-          ? undefined
-          : {
-              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
-              transition: isActive ? "transform 450ms ease-out" : "none",
-            }
-      }
-    >
-      <div className="flex w-full max-w-[400px] flex-col items-center">
-        {/* ── Top form card ─────────────────────────────────────── */}
-        <div className="w-full rounded-2xl border border-border bg-card shadow-sm">
-          {/* Browser chrome */}
-          <div className="flex items-center border-b border-border/60 px-4 py-2.5">
-            <div className="flex gap-1" aria-hidden="true">
-              <span className="size-2 rounded-full bg-neutral-200" />
-              <span className="size-2 rounded-full bg-neutral-200" />
-              <span className="size-2 rounded-full bg-neutral-200" />
+    <div className="flex justify-center">
+      <div
+        className="w-full max-w-[460px] overflow-hidden rounded-2xl border border-border bg-card"
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                transform: isActive ? "none" : "translateY(6px) scale(0.98)",
+                transition: isActive ? "transform 450ms ease-out" : "none",
+              }
+        }
+      >
+        {/* Top bar */}
+        <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <div
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-foreground"
+              aria-hidden="true"
+            >
+              <span className="text-[9px] font-bold text-background">A</span>
             </div>
-            <div className="flex flex-1 justify-center">
-              <span className="rounded-full bg-muted px-3 py-0.5 text-[11px] text-muted-foreground">
-                acme.cal.com/sales
+            <span className="truncate text-xs font-medium text-foreground">
+              Acme ·{" "}
+              <span className="font-normal text-muted-foreground">
+                Week of 5 Oct
               </span>
-            </div>
-            {/* Invisible spacer balances the three dots */}
-            <div className="flex gap-1" aria-hidden="true">
-              <span className="size-2 opacity-0" />
-              <span className="size-2 opacity-0" />
-              <span className="size-2 opacity-0" />
-            </div>
+            </span>
           </div>
-          {/* Content */}
-          <div className="px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">
-              Talk to sales
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Company size{" "}
-              <span className="font-semibold text-foreground">1,000+</span>
-              {" · "}Country{" "}
-              <span className="font-semibold text-foreground">Germany</span>
-            </p>
+          <div className="flex shrink-0 items-center gap-3" aria-hidden="true">
+            {(["sales", "support", "hiring"] as OrgTeam[]).map((team) => (
+              <div key={team} className="flex items-center gap-1">
+                <span
+                  className={cn(
+                    "h-2.5 w-2.5 shrink-0 rounded-sm",
+                    ORG_LEGEND_SWATCH[team],
+                  )}
+                />
+                <span className="text-[10px] capitalize text-muted-foreground">
+                  {team}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ── Centre pipeline ───────────────────────────────────── */}
-        <div
-          className="relative flex w-full flex-col items-center"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, oklch(0 0 0 / 0.055) 1px, transparent 1px)",
-            backgroundSize: "14px 14px",
-          }}
-        >
-          <div className="h-7 border-l border-dashed border-border" />
-
-          {/* Routing node */}
+        {/* Calendar */}
+        <div className="px-3 pb-3 pt-2">
+          {/* Day header row */}
           <div
-            className="flex size-10 items-center justify-center rounded-xl bg-card shadow-sm"
+            className="grid"
+            style={{ gridTemplateColumns: "24px repeat(5, 1fr)" }}
+          >
+            <div />
+            {ORG_DAY_LABELS.map((day) => (
+              <div
+                key={day}
+                className="pb-1.5 text-center text-[10px] font-medium text-muted-foreground/60"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Body: time labels + meeting grid */}
+          <div
+            className="relative grid"
             style={{
-              border: `1px solid ${routeActive ? "var(--border)" : "oklch(0 0 0 / 0.1)"}`,
-              transform:
-                routeActive && !resultRevealed ? "scale(1.05)" : "scale(1)",
-              transition: prefersReducedMotion
-                ? undefined
-                : "transform 500ms ease-out, border-color 500ms ease-out",
+              gridTemplateColumns: "24px repeat(5, 1fr)",
+              gridTemplateRows: "repeat(4, 34px)",
             }}
           >
-            <SplitIcon
-              className="size-4"
-              style={{
-                opacity: routeActive ? 1 : 0.35,
-                transition: prefersReducedMotion
-                  ? undefined
-                  : "opacity 500ms ease-out",
-              }}
-              aria-hidden="true"
-            />
-          </div>
+            {/* Background cells — grid structure and borders */}
+            {ORG_HOUR_LABELS.flatMap((_, rowIdx) =>
+              [1, 2, 3, 4, 5].map((dayIdx) => (
+                <div
+                  key={`bg-${rowIdx}-${dayIdx}`}
+                  style={{ gridColumn: dayIdx + 1, gridRow: rowIdx + 1 }}
+                  className="border-l border-t border-border/[0.12]"
+                />
+              )),
+            )}
 
-          <div className="h-7 border-l border-dashed border-border" />
-        </div>
-
-        {/* ── Bottom result card ────────────────────────────────── */}
-        <div
-          className="w-full rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
-          style={
-            prefersReducedMotion
-              ? undefined
-              : {
-                  opacity: resultRevealed ? 1 : 0.4,
-                  transform: resultRevealed
-                    ? "translateY(0)"
-                    : "translateY(8px)",
-                  transition:
-                    "opacity 500ms ease-out, transform 500ms ease-out",
-                }
-          }
-        >
-          <div className="flex items-center gap-3">
-            {/* Calendar icon tile */}
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
-              <CalendarIcon
-                className="size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Text */}
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground">
-                Routed to Enterprise AE · DACH
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {assigned
-                  ? "Marcus Lee · Thu 10:00 booked"
-                  : "Matching by attributes…"}
-              </p>
-            </div>
-
-            {/* Avatar stack — A (top), B (Marcus Lee / middle), C (bottom) */}
-            <div className="flex shrink-0 flex-col items-center gap-0.5">
-              <Avatar className="size-4 opacity-40">
-                <AvatarImage src="/avatars/orgs-ae-a.png" alt="" />
-                <AvatarFallback className="bg-neutral-200" />
-              </Avatar>
-              <div className="h-2 border-l border-dashed border-border/60" />
-              {/* Middle (B) — enlarges and gets selection ring on assign */}
-              <Avatar
-                style={{
-                  width: assigned ? 24 : 16,
-                  height: assigned ? 24 : 16,
-                  opacity: assigned ? 1 : 0.4,
-                  outlineWidth: "2px",
-                  outlineStyle: "solid",
-                  outlineColor: assigned
-                    ? "var(--color-foreground)"
-                    : "transparent",
-                  outlineOffset: "1px",
-                  transition: prefersReducedMotion
-                    ? undefined
-                    : "width 300ms ease-out, height 300ms ease-out, opacity 300ms ease-out, outline-color 300ms ease-out",
-                }}
+            {/* Time labels */}
+            {ORG_HOUR_LABELS.map((hour, i) => (
+              <div
+                key={hour}
+                style={{ gridColumn: 1, gridRow: i + 1 }}
+                className="flex items-start pt-0.5 text-[10px] leading-none text-muted-foreground/50"
               >
-                <AvatarImage src="/avatars/orgs-ae-b.png" alt="" />
-                <AvatarFallback className="bg-neutral-300" />
-              </Avatar>
-              <div className="h-2 border-l border-dashed border-border/60" />
-              <Avatar className="size-4 opacity-40">
-                <AvatarImage src="/avatars/orgs-ae-c.png" alt="" />
-                <AvatarFallback className="bg-neutral-200" />
-              </Avatar>
-            </div>
-          </div>
-        </div>
+                {hour}
+              </div>
+            ))}
 
-        {/* ── Security line ─────────────────────────────────────── */}
-        <div
-          aria-hidden={!assigned}
-          className="mt-4 flex items-center gap-2"
-          style={
-            prefersReducedMotion
-              ? { opacity: assigned ? 1 : 0 }
-              : {
-                  opacity: assigned ? 1 : 0,
-                  transition: "opacity 500ms ease-out",
-                }
-          }
-        >
-          <ShieldIcon
-            className="size-3.5 shrink-0 text-success"
-            aria-hidden="true"
-          />
-          <span className="text-xs text-muted-foreground">
-            SAML SSO and SCIM across every team
-          </span>
+            {/* Meeting blocks */}
+            {ORG_MEETINGS.map((meeting, idx) => {
+              const isVisible = visibleCount > idx;
+              return (
+                <div
+                  key={meeting.id}
+                  style={{
+                    gridColumn: meeting.day + 1,
+                    gridRow: `${meeting.startHour - 8} / span ${meeting.span}`,
+                    padding: "2px 3px",
+                    zIndex: 1,
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? "none" : "translateY(4px)",
+                    transition: prefersReducedMotion
+                      ? "none"
+                      : "opacity 500ms ease-out, transform 500ms ease-out",
+                  }}
+                >
+                  <div
+                    className={cn(
+                      "flex h-full w-full items-start rounded-sm px-1.5 py-1 text-[9px] font-semibold leading-tight",
+                      ORG_TEAM_BLOCK[meeting.team],
+                    )}
+                  >
+                    {meeting.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -1331,7 +1336,7 @@ function DevelopersPanel({
     >
       <div className="relative pb-14 pr-4">
         {/* Code window */}
-        <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-lg">
+        <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-sm">
           {/* Tab + filename bar */}
           <div className="flex items-center border-b border-neutral-700/60">
             {DEV_ORDERED_TABS.map((tab) => {
@@ -1343,7 +1348,7 @@ function DevelopersPanel({
                   onClick={() => handleTabClick(tab)}
                   className={cn(
                     "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
-                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-400",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActiveTab
                       ? "rounded-t bg-neutral-800 text-neutral-100"
                       : "text-neutral-500 hover:text-neutral-300",
@@ -1407,7 +1412,7 @@ function DevelopersPanel({
                 }
           }
         >
-          <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-md">
+          <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             {activeDevTab === "atoms" && <AtomsResult />}
             {activeDevTab === "apiv2" && <ApiV2Result />}
             {activeDevTab === "webhooks" && <WebhooksResult />}

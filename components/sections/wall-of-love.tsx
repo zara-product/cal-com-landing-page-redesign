@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -167,54 +168,30 @@ const COLUMNS: ColumnConfig[] = [
   },
 ];
 
-// ─── Card avatar ───────────────────────────────────────────────────────────────
-
-function CardAvatar({ name, src }: { name: string; src?: string }) {
-  const [imgFailed, setImgFailed] = React.useState(false);
-
-  const parts = name.trim().split(" ");
-  const initials = (
-    parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
-      : parts[0].slice(0, 2)
-  ).toUpperCase();
-
-  if (src && !imgFailed) {
-    return (
-      // biome-ignore lint/performance/noImgElement: portrait thumbnails; no remote pattern config needed for v1
-      <img
-        src={src}
-        alt=""
-        width={40}
-        height={40}
-        onError={() => setImgFailed(true)}
-        className="size-10 rounded-full object-cover shrink-0"
-      />
-    );
-  }
-
-  return (
-    <span
-      className="inline-flex items-center justify-center size-10 rounded-full bg-muted text-foreground/50 text-xs font-semibold shrink-0"
-      aria-hidden="true"
-    >
-      {initials}
-    </span>
-  );
-}
-
 // ─── Wall card ─────────────────────────────────────────────────────────────────
 
 function WallCardItem({ card }: { card: WallCard }) {
   const handle = card.username ? `@${card.username}` : undefined;
   const metaLine = [handle, card.platform].filter(Boolean).join(" · ");
 
+  const nameParts = card.name.trim().split(" ");
+  const initials = (
+    nameParts.length >= 2
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
+      : nameParts[0].slice(0, 2)
+  ).toUpperCase();
+
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div
         className={`flex gap-3 mb-3 ${metaLine ? "items-start" : "items-center"}`}
       >
-        <CardAvatar name={card.name} src={card.avatar} />
+        <Avatar className="size-10 shrink-0">
+          <AvatarImage src={card.avatar} alt="" />
+          <AvatarFallback className="bg-muted text-xs font-semibold text-foreground/50">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0">
           <span className="block text-sm font-semibold text-foreground leading-tight">
             {card.name}

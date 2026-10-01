@@ -165,14 +165,12 @@ function IntegrationsHub() {
         className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
         style={{ left: "50%", top: "50%" }}
       >
-        <div className="drop-shadow-md">
-          <NextImage
-            src="/icons/cal-logo.svg"
-            alt="Cal.com"
-            width={80}
-            height={80}
-          />
-        </div>
+        <NextImage
+          src="/icons/cal-logo.svg"
+          alt="Cal.com"
+          width={80}
+          height={80}
+        />
       </div>
 
       {/* Integration logos — 500ms after spoke activates: lifts 2px, name appears */}
@@ -189,15 +187,12 @@ function IntegrationsHub() {
           >
             <div className="relative">
               <div
-                className={cn(
-                  "flex items-center justify-center rounded-2xl border border-border bg-card",
-                  isLifted ? "shadow-md" : "shadow-sm",
-                )}
+                className="flex items-center justify-center rounded-2xl border border-border bg-card"
                 style={{
                   width: CONTAINER_SIZE,
                   height: CONTAINER_SIZE,
                   transform: isLifted ? "translateY(-2px)" : "translateY(0)",
-                  transition: "transform 500ms ease, box-shadow 500ms ease",
+                  transition: "transform 500ms ease",
                 }}
               >
                 <NextImage
@@ -282,7 +277,7 @@ export function IntegrationsSection() {
                 {ADDITIONAL_LOGOS.map(({ src, name, size }) => (
                   <div
                     key={name}
-                    className="flex size-12 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-[box-shadow,transform,border-color] duration-150 hover:-translate-y-px hover:border-border/80 hover:shadow-md"
+                    className="flex size-12 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-[transform,border-color] duration-150 hover:-translate-y-px hover:border-border/80"
                     title={name}
                   >
                     <NextImage

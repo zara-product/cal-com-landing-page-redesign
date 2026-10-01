@@ -15,45 +15,6 @@ import * as React from "react";
 import { SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
 
-// ─── Rail frame helpers ───────────────────────────────────────────────────────
-// Matches the PlusMarker in page-rail.tsx: 20×20, 16px arms, 1.25px stroke.
-
-function RailCorner({ style }: { style: React.CSSProperties }) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        width: 20,
-        height: 20,
-        pointerEvents: "none",
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: 2,
-          right: 2,
-          top: 9.375,
-          height: 1.25,
-          background: "var(--color-frame-strong)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          top: 2,
-          bottom: 2,
-          left: 9.375,
-          width: 1.25,
-          background: "var(--color-frame-strong)",
-        }}
-      />
-    </div>
-  );
-}
-
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
 function usePrefersReducedMotion(): boolean {
@@ -283,59 +244,8 @@ export function SetupSection() {
               })}
             </div>
 
-            {/* Product stage — grey filled; rail frame inset 16px inside */}
-            <div className="relative min-h-[460px] rounded-2xl bg-muted/30">
-              {/* Rail frame — 16px inset from stage edge, lines stop 14px short of + marks */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    left: 42,
-                    right: 42,
-                    top: 28,
-                    height: 1,
-                    background: "var(--color-frame)",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    left: 42,
-                    right: 42,
-                    bottom: 28,
-                    height: 1,
-                    background: "var(--color-frame)",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 42,
-                    bottom: 42,
-                    left: 28,
-                    width: 1,
-                    background: "var(--color-frame)",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 42,
-                    bottom: 42,
-                    right: 28,
-                    width: 1,
-                    background: "var(--color-frame)",
-                  }}
-                />
-                <RailCorner style={{ left: 18, top: 18 }} />
-                <RailCorner style={{ right: 18, top: 18 }} />
-                <RailCorner style={{ left: 18, bottom: 18 }} />
-                <RailCorner style={{ right: 18, bottom: 18 }} />
-              </div>
-
+            {/* Product stage */}
+            <div className="relative min-h-[460px]">
               {STEPS.map((step) => {
                 const isActive = activeStep === step.id;
                 return (
@@ -593,7 +503,7 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
             className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success/15 text-success-foreground"
             aria-hidden="true"
           >
-            <CheckIcon className="h-3 w-3" />
+            <CheckIcon className="size-3" />
           </span>
           <div>
             <p className="text-sm font-semibold text-foreground">
@@ -734,7 +644,7 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
             </p>
           </div>
           <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
-            <GlobeIcon className="h-3 w-3 opacity-60" aria-hidden="true" />
+            <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
             Europe / Berlin
           </span>
         </div>
@@ -791,7 +701,7 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
                         aria-hidden="true"
                         className="ml-1 text-muted-foreground/30"
                       >
-                        <XIcon className="h-3 w-3" />
+                        <XIcon className="size-3" />
                       </span>
                     </div>
                   )}
@@ -802,8 +712,8 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
                   aria-hidden="true"
                   className="flex shrink-0 items-center gap-1 text-muted-foreground/30"
                 >
-                  <PlusIcon className="h-3 w-3" />
-                  <CopyIcon className="h-3 w-3" />
+                  <PlusIcon className="size-3" />
+                  <CopyIcon className="size-3" />
                 </div>
               </div>
             );
@@ -1009,7 +919,7 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
                     </span>
                   ) : (
                     <Icon
-                      className="h-4 w-4 text-foreground/60"
+                      className="size-4 text-foreground/60"
                       aria-hidden="true"
                     />
                   )}
@@ -1096,7 +1006,7 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
             {/* In person — inactive option */}
             <span className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground/70">
               <MapPinIcon
-                className="h-3.5 w-3.5 shrink-0 text-foreground/60"
+                className="size-3.5 shrink-0 text-foreground/60"
                 aria-hidden="true"
               />
               In person
@@ -1138,7 +1048,7 @@ function BookingLinkVisual() {
   return (
     <div className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1">
       <LinkIcon
-        className="h-3 w-3 shrink-0 text-muted-foreground"
+        className="size-3 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
       <span className="text-xs">
@@ -1193,7 +1103,7 @@ function TimeSlotsVisual() {
       <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground">
         <span>Europe/Warsaw</span>
         <ChevronsUpDownIcon
-          className="h-3 w-3 text-muted-foreground"
+          className="size-3 text-muted-foreground"
           aria-hidden="true"
         />
       </div>

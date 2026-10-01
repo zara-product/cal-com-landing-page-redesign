@@ -112,7 +112,7 @@ function BentoCard({
       )}
     >
       {/* Inner visual panel */}
-      <div className="flex flex-1 items-center justify-center rounded-xl bg-neutral-50 p-4">
+      <div className="flex flex-1 items-center justify-center rounded-xl bg-muted/50 p-4">
         {visual}
       </div>
       <div className="mt-4 shrink-0">
@@ -139,7 +139,7 @@ function RouteBookingsVisual() {
       </div>
 
       <ArrowRightIcon
-        className="h-3 w-3 shrink-0 self-center text-muted-foreground/30"
+        className="size-3 shrink-0 self-center text-muted-foreground/30"
         aria-hidden="true"
       />
 
@@ -154,7 +154,7 @@ function RouteBookingsVisual() {
       </div>
 
       <ArrowRightIcon
-        className="h-3 w-3 shrink-0 self-center text-muted-foreground/30"
+        className="size-3 shrink-0 self-center text-muted-foreground/30"
         aria-hidden="true"
       />
 
@@ -205,7 +205,7 @@ function AutomateVisual() {
         >
           <div className="flex items-center gap-2.5">
             <Icon
-              className="h-3.5 w-3.5 text-muted-foreground/60"
+              className="size-3.5 text-muted-foreground/60"
               aria-hidden="true"
             />
             <span className="text-xs text-foreground">{label}</span>
@@ -231,10 +231,7 @@ function CoordinateTeamsVisual() {
         {TEAM_MEMBERS.map(({ src, name, active }) => (
           <Avatar
             key={name}
-            className={cn(
-              "size-10 border-2 border-neutral-50",
-              !active && "opacity-40",
-            )}
+            className={cn("size-10 ring-2 ring-card", !active && "opacity-40")}
           >
             <AvatarImage src={src} alt={name} />
             <AvatarFallback className="bg-neutral-300" />
@@ -243,7 +240,7 @@ function CoordinateTeamsVisual() {
       </div>
       <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
         <CheckCircle2Icon
-          className="h-3.5 w-3.5 shrink-0 text-success"
+          className="size-3.5 shrink-0 text-success"
           aria-hidden="true"
         />
         <span className="text-xs text-foreground">
@@ -269,7 +266,7 @@ function StayConsistentVisual() {
           </span>
         </div>
         <ShieldIcon
-          className="h-3.5 w-3.5 text-muted-foreground/40"
+          className="size-3.5 text-muted-foreground/40"
           aria-hidden="true"
         />
       </div>

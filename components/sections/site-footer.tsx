@@ -3,6 +3,7 @@
 import { ChevronDownIcon, GlobeIcon } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Menu,
   MenuLinkItem,
@@ -314,11 +315,11 @@ function LanguageSelector() {
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
       >
-        <GlobeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+        <GlobeIcon className="size-3.5" aria-hidden="true" />
         <span>English</span>
         <ChevronDownIcon
           className={cn(
-            "h-3 w-3 transition-transform duration-200",
+            "size-3 transition-transform duration-200",
             open && "rotate-180",
           )}
           aria-hidden="true"
@@ -352,18 +353,21 @@ export function SiteFooter() {
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2.5">
-              <a
-                href="https://cal.com/sales"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-primary bg-primary px-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              <Button
+                size="sm"
+                // biome-ignore lint/a11y/useAnchorContent: content is merged from Button children by Base UI render
+                render={<a href="https://cal.com/sales" />}
               >
                 Get a demo
-              </a>
-              <a
-                href="https://cal.com/sales"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-input bg-popover px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                // biome-ignore lint/a11y/useAnchorContent: content is merged from Button children by Base UI render
+                render={<a href="https://cal.com/sales" />}
               >
                 Talk to sales
-              </a>
+              </Button>
             </div>
 
             <div className="mt-8">
@@ -462,7 +466,7 @@ export function SiteFooter() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <span
-                className="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                className="h-1.5 w-1.5 rounded-full bg-success"
                 aria-hidden="true"
               />
               All systems operational

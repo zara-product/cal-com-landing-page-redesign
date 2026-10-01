@@ -545,7 +545,7 @@ export function TestimonialsSection() {
                       animated &&
                       "transition-[opacity,transform] duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
                     isActive
-                      ? "scale-100 cursor-default opacity-100 shadow-2xl"
+                      ? "scale-100 cursor-default opacity-100"
                       : isAdjacent
                         ? "scale-[0.93] cursor-pointer opacity-35 hover:opacity-45"
                         : "scale-[0.88] cursor-pointer opacity-15",

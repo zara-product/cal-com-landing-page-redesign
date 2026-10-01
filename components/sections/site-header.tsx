@@ -139,7 +139,7 @@ function NavDropdown({
           {label}
           <ChevronDownIcon
             className={cn(
-              "h-3 w-3 transition-transform duration-200",
+              "size-3 transition-transform duration-200",
               open && "rotate-180",
             )}
             aria-hidden="true"
