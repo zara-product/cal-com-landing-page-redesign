@@ -264,8 +264,8 @@ export function DemoPanel() {
         })}
       </div>
 
-      {/* Product stage — grid-stacked for crossfade */}
-      <div className="grid min-h-[340px]">
+      {/* Product stage — fixed height contains all panel states including Orgs final state (~356px) */}
+      <div className="grid h-[400px]">
         {MODES.map((mode) => {
           const isActive = activeMode === mode;
           return (
