@@ -195,7 +195,7 @@ export function SetupSection() {
                     onClick={() => handleStepClick(step.id)}
                     onKeyDown={(e) => handleStepKeyDown(e, step.id)}
                     className={cn(
-                      "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActive
                         ? "bg-card shadow-sm"
                         : "bg-transparent hover:bg-muted/20",
@@ -234,7 +234,7 @@ export function SetupSection() {
                         </span>
                         <span
                           className={cn(
-                            "grid overflow-hidden transition-all duration-500",
+                            "grid overflow-hidden transition-all duration-450",
                             isActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
                           )}
                           style={
@@ -245,7 +245,7 @@ export function SetupSection() {
                         >
                           <span
                             className={cn(
-                              "min-h-0 text-sm leading-relaxed text-muted-foreground transition-opacity duration-300",
+                              "min-h-0 text-sm leading-relaxed text-muted-foreground transition-opacity duration-250",
                               isActive ? "opacity-100 mt-2" : "opacity-0",
                             )}
                             style={
@@ -297,7 +297,7 @@ export function SetupSection() {
                     inert={!isActive}
                     className={cn(
                       "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-8",
-                      "transition-[opacity,transform] duration-300 ease-out",
+                      "transition-[opacity,transform] duration-250 ease-out",
                       isActive
                         ? "z-10 translate-y-0 opacity-100"
                         : "pointer-events-none z-0 translate-y-1 opacity-0",
@@ -475,14 +475,14 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
     <div className="relative">
       {/* Calendar card */}
       <div
-        className="overflow-hidden rounded-xl border border-border bg-card"
+        className={cn(
+          "overflow-hidden rounded-xl border border-border bg-card",
+          !prefersReducedMotion && "transition-transform duration-450 ease-out",
+        )}
         style={
           prefersReducedMotion
             ? undefined
-            : {
-                transform: entered ? "none" : "translateY(6px) scale(0.98)",
-                transition: "transform 350ms ease-out",
-              }
+            : { transform: entered ? "none" : "translateY(6px) scale(0.98)" }
         }
       >
         <div className="border-b border-border px-6 py-5">
@@ -519,7 +519,11 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
       {/* Floating confirmation card — bottom-right corner, restrained right overhang */}
       <div
         aria-live="polite"
-        className="pointer-events-none absolute z-10"
+        className={cn(
+          "pointer-events-none absolute z-10",
+          !prefersReducedMotion &&
+            "transition-[opacity,transform] duration-450 ease-out",
+        )}
         style={
           prefersReducedMotion
             ? {
@@ -534,7 +538,6 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
                 transform: showConfirmation
                   ? "translateY(0)"
                   : "translateY(10px)",
-                transition: "opacity 400ms ease-out, transform 400ms ease-out",
               }
         }
       >
@@ -611,13 +614,13 @@ function VisualSwitch({ checked }: { checked: boolean }) {
     <span
       aria-hidden="true"
       className={cn(
-        "inline-flex h-[18px] w-[30px] shrink-0 items-center rounded-full p-[2px] transition-colors duration-200",
+        "inline-flex h-[18px] w-[30px] shrink-0 items-center rounded-full p-[2px] transition-colors duration-250",
         checked ? "bg-foreground" : "bg-border",
       )}
     >
       <span
         className={cn(
-          "block h-[14px] w-[14px] rounded-full bg-card shadow-sm transition-transform duration-200",
+          "block h-[14px] w-[14px] rounded-full bg-card shadow-sm transition-transform duration-250",
           checked ? "translate-x-[12px]" : "translate-x-0",
         )}
       />
@@ -693,7 +696,7 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
               <VisualSwitch checked={on} />
               <span
                 className={cn(
-                  "w-24 shrink-0 text-sm font-medium transition-colors duration-300",
+                  "w-24 shrink-0 text-sm font-medium transition-colors duration-250",
                   on ? "text-foreground" : "text-muted-foreground/40",
                 )}
               >
@@ -709,15 +712,17 @@ function AvailabilityPanel({ isActive }: { isActive: boolean }) {
                   </span>
                 ) : (
                   <div
-                    className="flex items-center gap-1.5 text-xs"
+                    className={cn(
+                      "flex items-center gap-1.5 text-xs",
+                      !prefersReducedMotion &&
+                        "transition-[opacity,transform] duration-250 ease-out",
+                    )}
                     style={
                       prefersReducedMotion
                         ? undefined
                         : {
                             opacity: on ? 1 : 0,
                             transform: on ? "none" : "translateX(-6px)",
-                            transition:
-                              "opacity 250ms ease-out, transform 250ms ease-out",
                           }
                     }
                   >
@@ -940,7 +945,11 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
       {/* Floating Booker chooses card — bottom-right, consistent overlap offset */}
       <div
         aria-live="polite"
-        className="pointer-events-none absolute z-10"
+        className={cn(
+          "pointer-events-none absolute z-10",
+          !prefersReducedMotion &&
+            "transition-[opacity,transform] duration-450 ease-out",
+        )}
         style={
           prefersReducedMotion
             ? {
@@ -955,7 +964,6 @@ function MeetPanel({ isActive }: { isActive: boolean }) {
                 transform: showBookerCard
                   ? "translateY(0)"
                   : "translateY(10px)",
-                transition: "opacity 400ms ease-out, transform 400ms ease-out",
               }
         }
       >

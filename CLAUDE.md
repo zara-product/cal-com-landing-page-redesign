@@ -112,6 +112,8 @@ Use motion only when it communicates cause and effect, state change, continuity,
 
 Prefer CSS transitions for simple states.
 
+Durations: 150ms (hover/colour), 250ms (content fade), 450ms (card/panel), 700ms (carousel); easings: `ease-out` (all) and `ease-emphasized` (`cubic-bezier(0.22, 1, 0.36, 1)`) for the carousel.
+
 Do not add an animation dependency unless the approved interaction requires capabilities that justify it.
 
 ## Quality gates

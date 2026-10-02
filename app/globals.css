@@ -9,6 +9,9 @@
   --text-stat: 1.625rem;
   --text-display: 2.75rem;
   --text-display-xl: 3.5rem;
+  --duration-250: 250ms;
+  --duration-450: 450ms;
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @custom-variant dark (&:is(.dark *));

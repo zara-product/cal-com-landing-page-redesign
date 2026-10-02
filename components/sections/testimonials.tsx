@@ -500,7 +500,7 @@ export function TestimonialsSection() {
               "flex select-none items-stretch py-4",
               !prefersReducedMotion &&
                 animated &&
-                "transition-transform duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "transition-transform duration-700 ease-emphasized",
             )}
             style={{
               gap: `${GAP}px`,
@@ -534,7 +534,7 @@ export function TestimonialsSection() {
                     "flex flex-col rounded-2xl bg-card sm:flex-row",
                     !prefersReducedMotion &&
                       animated &&
-                      "transition-[opacity,transform] duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      "transition-[opacity,transform] duration-700 ease-emphasized",
                     isActive
                       ? "scale-100 cursor-default opacity-100"
                       : isAdjacent
@@ -605,7 +605,7 @@ export function TestimonialsSection() {
                 }
               }}
               className={cn(
-                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
+                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
                 i === displayActive
                   ? "w-6 bg-card/30"
                   : "w-1.5 bg-card/30 hover:bg-card/50",

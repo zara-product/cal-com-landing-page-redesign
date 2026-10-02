@@ -109,7 +109,7 @@ function BentoCard({
   return (
     <div
       className={cn(
-        "flex h-full min-h-[320px] flex-col rounded-2xl border border-border bg-card p-4 transition-shadow duration-200 hover:shadow-sm",
+        "flex h-full min-h-[320px] flex-col rounded-2xl border border-border bg-card p-4 transition-shadow duration-250 hover:shadow-sm",
         className,
       )}
     >

@@ -147,7 +147,7 @@ function IntegrationsHub() {
                 animated && i === activeSpoke
                   ? "color-mix(in srgb, var(--color-muted-foreground) 60%, transparent)"
                   : "color-mix(in srgb, var(--color-muted-foreground) 25%, transparent)",
-              transition: "stroke 500ms ease",
+              transition: "stroke 450ms ease-out",
             }}
           />
         ))}
@@ -180,12 +180,11 @@ function IntegrationsHub() {
           >
             <div className="relative">
               <div
-                className="flex items-center justify-center rounded-2xl border border-border bg-card"
+                className="flex items-center justify-center rounded-2xl border border-border bg-card transition-transform duration-450 ease-out"
                 style={{
                   width: CONTAINER_SIZE,
                   height: CONTAINER_SIZE,
                   transform: isLifted ? "translateY(-2px)" : "translateY(0)",
-                  transition: "transform 500ms ease",
                 }}
               >
                 <NextImage
@@ -199,14 +198,13 @@ function IntegrationsHub() {
               {/* Name label — appears below card when lifted */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 whitespace-nowrap"
+                className="pointer-events-none absolute left-1/2 whitespace-nowrap transition-[opacity,transform] duration-450 ease-out"
                 style={{
                   top: "calc(100% + 8px)",
                   opacity: isLifted ? 1 : 0,
                   transform: isLifted
                     ? "translateX(-50%) translateY(0)"
                     : "translateX(-50%) translateY(-4px)",
-                  transition: "opacity 500ms ease, transform 500ms ease",
                 }}
               >
                 <span className="rounded-lg bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">

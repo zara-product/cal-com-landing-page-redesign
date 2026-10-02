@@ -140,7 +140,7 @@ function NavDropdown({
           {label}
           <ChevronDownIcon
             className={cn(
-              "size-3 transition-transform duration-200",
+              "size-3 transition-transform duration-250",
               open && "rotate-180",
             )}
             aria-hidden="true"
@@ -185,21 +185,20 @@ export function SiteHeader() {
       <header className="fixed inset-x-0 top-0 z-50">
         {/* Outer wrapper — px-5 is always present so content positions match in both states */}
         <div
-          className={cn("px-5", scrolled ? "pt-2" : "")}
-          style={{ transition: "padding-top 300ms ease-out" }}
+          className={cn(
+            "px-5 transition-[padding-top] duration-250 ease-out",
+            scrolled ? "pt-2" : "",
+          )}
         >
           {/* Inner bar — transitions to floating pill on scroll; same max-w/px in both states */}
           <div
             className={cn(
               "mx-auto flex h-14 items-center justify-between max-w-[1160px] px-6",
+              "transition-[background-color,border-color,border-radius,box-shadow] duration-250 ease-out",
               scrolled
                 ? "rounded-2xl border border-border bg-card shadow-sm"
                 : "",
             )}
-            style={{
-              transition:
-                "background-color 300ms ease-out, border-color 300ms ease-out, border-radius 300ms ease-out, box-shadow 300ms ease-out",
-            }}
           >
             {/* Logo — wordmark only, no icon mark */}
             <a

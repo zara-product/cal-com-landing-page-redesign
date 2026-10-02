@@ -76,11 +76,10 @@ function FadeOutBar({ width, onDone }: { width: number; onDone: () => void }) {
   return (
     <span
       aria-hidden="true"
-      className="pointer-events-none absolute inset-y-0 left-0 bg-foreground/[0.06]"
+      className="pointer-events-none absolute inset-y-0 left-0 bg-foreground/[0.06] transition-opacity duration-150 ease-out"
       style={{
         width: `${width}%`,
         opacity: gone ? 0 : 1,
-        transition: "opacity 175ms ease-out",
       }}
       onTransitionEnd={onDone}
     />
@@ -353,12 +352,14 @@ function IndividualsPanel({
         style={
           prefersReducedMotion
             ? undefined
-            : {
-                transform: isActive ? "none" : "translateY(6px) scale(0.98)",
-                transition: isActive ? "transform 450ms ease-out" : "none",
-              }
+            : { transform: isActive ? "none" : "translateY(6px) scale(0.98)" }
         }
-        className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+        className={cn(
+          "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
+          !prefersReducedMotion &&
+            isActive &&
+            "transition-transform duration-450 ease-out",
+        )}
       >
         {/* Mobile-only compact host row */}
         <div className="flex items-center gap-2.5 border-b border-border p-3 sm:hidden">
@@ -461,7 +462,7 @@ function IndividualsPanel({
                   >
                     <div
                       className={cn(
-                        "flex size-5 items-center justify-center rounded-lg text-2xs transition-all duration-300 sm:size-7 sm:rounded-xl sm:text-micro",
+                        "flex size-5 items-center justify-center rounded-lg text-2xs transition-all duration-250 sm:size-7 sm:rounded-xl sm:text-micro",
                         isSelected
                           ? calIlluminated
                             ? "bg-foreground font-semibold text-background"
@@ -500,12 +501,12 @@ function IndividualsPanel({
                         : {
                             opacity: isVisible ? 1 : 0,
                             transform: isVisible ? "none" : "translateY(4px)",
-                            transition:
-                              "opacity 200ms ease-out, transform 200ms ease-out, background-color 250ms, color 250ms",
                           }
                     }
                     className={cn(
                       "rounded-lg py-1 text-center text-micro font-medium",
+                      !prefersReducedMotion &&
+                        "transition-[opacity,transform,background-color,color] duration-250 ease-out",
                       isSelected
                         ? "bg-foreground text-background"
                         : "border border-border bg-card text-foreground shadow-xs",
@@ -548,14 +549,16 @@ function TeamsPanel({
 
   return (
     <div
-      className="flex justify-center py-1"
+      className={cn(
+        "flex justify-center py-1",
+        !prefersReducedMotion &&
+          isActive &&
+          "transition-transform duration-450 ease-out",
+      )}
       style={
         prefersReducedMotion
           ? undefined
-          : {
-              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
-              transition: isActive ? "transform 450ms ease-out" : "none",
-            }
+          : { transform: isActive ? "none" : "translateY(6px) scale(0.98)" }
       }
     >
       <div className="flex w-full max-w-[400px] flex-col items-center">
@@ -567,13 +570,14 @@ function TeamsPanel({
               {TEAM_AVATARS.map(({ key, src }, i) => (
                 <div
                   key={key}
-                  className="relative"
+                  className={cn(
+                    "relative",
+                    !prefersReducedMotion &&
+                      "transition-opacity duration-450 ease-out",
+                  )}
                   style={{
                     zIndex: TEAM_AVATARS.length - i,
                     opacity: sofiaSelected ? (i === SOFIA_INDEX ? 1 : 0.4) : 1,
-                    transition: prefersReducedMotion
-                      ? undefined
-                      : "opacity 500ms ease-out",
                   }}
                 >
                   <Avatar className="size-8 ring-2 ring-card">
@@ -615,23 +619,23 @@ function TeamsPanel({
 
           {/* Shuffle node */}
           <div
-            className="flex size-10 items-center justify-center rounded-full bg-card shadow-sm"
+            className={cn(
+              "flex size-10 items-center justify-center rounded-full bg-card shadow-sm",
+              !prefersReducedMotion &&
+                "transition-[transform,border-color] duration-450 ease-out",
+            )}
             style={{
               border: `1px solid ${shuffleActive ? "var(--border)" : "oklch(0 0 0 / 0.1)"}`,
               transform: shuffleActive ? "scale(1.05)" : "scale(1)",
-              transition: prefersReducedMotion
-                ? undefined
-                : "transform 500ms ease-out, border-color 500ms ease-out",
             }}
           >
             <ShuffleIcon
-              className="size-4"
-              style={{
-                opacity: shuffleActive ? 1 : 0.35,
-                transition: prefersReducedMotion
-                  ? undefined
-                  : "opacity 500ms ease-out",
-              }}
+              className={cn(
+                "size-4",
+                !prefersReducedMotion &&
+                  "transition-opacity duration-450 ease-out",
+              )}
+              style={{ opacity: shuffleActive ? 1 : 0.35 }}
               aria-hidden="true"
             />
           </div>
@@ -641,7 +645,11 @@ function TeamsPanel({
 
         {/* ── Bottom result card ────────────────────────────────── */}
         <div
-          className="w-full rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
+          className={cn(
+            "w-full rounded-2xl border border-border bg-card px-4 py-4 shadow-sm",
+            !prefersReducedMotion &&
+              "transition-[opacity,transform] duration-450 ease-out",
+          )}
           style={
             prefersReducedMotion
               ? undefined
@@ -650,8 +658,6 @@ function TeamsPanel({
                   transform: resultRevealed
                     ? "translateY(0)"
                     : "translateY(8px)",
-                  transition:
-                    "opacity 500ms ease-out, transform 500ms ease-out",
                 }
           }
         >
@@ -802,14 +808,16 @@ function OrgsPanel({
   return (
     <div className="flex justify-center">
       <div
-        className="w-full max-w-[460px] overflow-hidden rounded-2xl border border-border bg-card"
+        className={cn(
+          "w-full max-w-[460px] overflow-hidden rounded-2xl border border-border bg-card",
+          !prefersReducedMotion &&
+            isActive &&
+            "transition-transform duration-450 ease-out",
+        )}
         style={
           prefersReducedMotion
             ? undefined
-            : {
-                transform: isActive ? "none" : "translateY(6px) scale(0.98)",
-                transition: isActive ? "transform 450ms ease-out" : "none",
-              }
+            : { transform: isActive ? "none" : "translateY(6px) scale(0.98)" }
         }
       >
         {/* Top bar */}
@@ -899,6 +907,10 @@ function OrgsPanel({
               return (
                 <div
                   key={meeting.id}
+                  className={cn(
+                    !prefersReducedMotion &&
+                      "transition-[opacity,transform] duration-450 ease-out",
+                  )}
                   style={{
                     gridColumn: meeting.day + 1,
                     gridRow: `${meeting.startHour - 8} / span ${meeting.span}`,
@@ -906,9 +918,6 @@ function OrgsPanel({
                     zIndex: 1,
                     opacity: isVisible ? 1 : 0,
                     transform: isVisible ? "none" : "translateY(4px)",
-                    transition: prefersReducedMotion
-                      ? "none"
-                      : "opacity 500ms ease-out, transform 500ms ease-out",
                   }}
                 >
                   <div
@@ -1350,13 +1359,15 @@ function DevelopersPanel({
 
   return (
     <div
+      className={cn(
+        !prefersReducedMotion &&
+          isActive &&
+          "transition-transform duration-450 ease-out",
+      )}
       style={
         prefersReducedMotion
           ? undefined
-          : {
-              transform: isActive ? "none" : "translateY(6px) scale(0.98)",
-              transition: isActive ? "transform 450ms ease-out" : "none",
-            }
+          : { transform: isActive ? "none" : "translateY(6px) scale(0.98)" }
       }
     >
       <div className="relative pb-32 pr-4">
@@ -1406,14 +1417,15 @@ function DevelopersPanel({
             {DEV_CODE[activeDevTab].map((entry, i) => (
               <div
                 key={entry.id}
-                className="flex"
+                className={cn(
+                  "flex",
+                  !prefersReducedMotion &&
+                    "transition-opacity duration-150 ease-out",
+                )}
                 style={
                   prefersReducedMotion
                     ? undefined
-                    : {
-                        opacity: i < visibleLines ? 1 : 0,
-                        transition: "opacity 150ms ease-out",
-                      }
+                    : { opacity: i < visibleLines ? 1 : 0 }
                 }
               >
                 <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-neutral-600">
@@ -1441,15 +1453,17 @@ function DevelopersPanel({
           id="dev-panel"
           aria-labelledby={`dev-tab-${activeDevTab}`}
           aria-live="polite"
-          className="pointer-events-none absolute bottom-0 right-0 z-10 w-[62%]"
+          className={cn(
+            "pointer-events-none absolute bottom-0 right-0 z-10 w-[62%]",
+            !prefersReducedMotion &&
+              "transition-[opacity,transform] duration-450 ease-out",
+          )}
           style={
             prefersReducedMotion
               ? { opacity: showResult ? 1 : 0 }
               : {
                   opacity: showResult ? 1 : 0,
                   transform: showResult ? "translateY(0)" : "translateY(8px)",
-                  transition:
-                    "opacity 500ms ease-out, transform 500ms ease-out",
                 }
           }
         >

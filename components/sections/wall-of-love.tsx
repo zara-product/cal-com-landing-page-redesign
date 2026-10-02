@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   SectionEyebrow,
@@ -20,7 +21,6 @@ interface WallCard {
 
 interface ColumnConfig {
   id: string;
-  duration: string;
   delay: string;
   height?: number;
   maskTop?: number; // percent, default 13
@@ -32,7 +32,6 @@ interface ColumnConfig {
 const COLUMNS: ColumnConfig[] = [
   {
     id: "col-1",
-    duration: "32s",
     delay: "-8s",
     height: 860,
     maskTop: 10,
@@ -74,7 +73,6 @@ const COLUMNS: ColumnConfig[] = [
   },
   {
     id: "col-2",
-    duration: "33s",
     delay: "-19s",
     height: 600,
     maskTop: 13,
@@ -107,7 +105,6 @@ const COLUMNS: ColumnConfig[] = [
   },
   {
     id: "col-3",
-    duration: "35s",
     delay: "-4s",
     height: 600,
     maskTop: 13,
@@ -142,7 +139,6 @@ const COLUMNS: ColumnConfig[] = [
   },
   {
     id: "col-4",
-    duration: "41s",
     delay: "-24s",
     height: 860,
     maskTop: 10,
@@ -216,6 +212,8 @@ function WallCardItem({ card }: { card: WallCard }) {
 
 // ─── Scroll column ─────────────────────────────────────────────────────────────
 
+const PX_PER_SECOND = 34;
+
 function ScrollColumn({
   col,
   reduced,
@@ -223,6 +221,21 @@ function ScrollColumn({
   col: ColumnConfig;
   reduced: boolean;
 }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [animDuration, setAnimDuration] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (reduced) return;
+    const el = trackRef.current;
+    if (!el) return;
+    const compute = () =>
+      setAnimDuration(`${(el.offsetHeight / 2 / PX_PER_SECOND).toFixed(1)}s`);
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [reduced]);
+
   if (reduced) {
     return (
       <div className="flex flex-col gap-4">
@@ -262,9 +275,12 @@ function ScrollColumn({
 
       {/* Animated track — hidden from assistive tech */}
       <div
+        ref={trackRef}
         aria-hidden="true"
         style={{
-          animation: `scroll-up ${col.duration} linear ${col.delay} infinite`,
+          animation: animDuration
+            ? `scroll-up ${animDuration} linear ${col.delay} infinite`
+            : undefined,
         }}
       >
         {/* Set 1 — two reps so set height > clip height */}

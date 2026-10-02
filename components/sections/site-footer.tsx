@@ -319,7 +319,7 @@ function LanguageSelector() {
         <span>English</span>
         <ChevronDownIcon
           className={cn(
-            "size-3 transition-transform duration-200",
+            "size-3 transition-transform duration-250",
             open && "rotate-180",
           )}
           aria-hidden="true"

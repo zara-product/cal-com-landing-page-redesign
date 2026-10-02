@@ -68,7 +68,7 @@ function FaqTrigger({ question }: { question: string }) {
         </span>
         <PlusIcon
           data-slot="faq-indicator"
-          className="pointer-events-none size-4 shrink-0 opacity-80 transition-transform duration-200 ease-in-out"
+          className="pointer-events-none size-4 shrink-0 opacity-80 transition-transform duration-250 ease-out"
           aria-hidden="true"
         />
       </AccordionPrimitive.Trigger>
