@@ -46,8 +46,8 @@ export function CtaSection() {
             Start simple. Grow from there.
           </h2>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
-            Free for individuals. Built for teams and organizations. Ready to
-            embed directly into your product.
+            Free for individuals. Built to scale with teams and organisations.
+            Developer-ready when scheduling becomes part of your product.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button
