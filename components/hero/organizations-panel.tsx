@@ -1,56 +1,37 @@
 "use client";
 
 import * as React from "react";
+import type { OrgsContent, OrgTeamKey } from "@/content/hero";
 import { cn } from "@/lib/utils";
 
 const ORG_MEETING_DELAYS = [
   250, 510, 770, 1030, 1290, 1550, 1810, 2070,
 ] as const;
 
-type OrgTeam = "sales" | "support" | "hiring";
-
-const ORG_MEETINGS: Array<{
-  id: number;
-  day: number;
-  startHour: number;
-  span: number;
-  team: OrgTeam;
-  label: string;
-}> = [
-  { id: 1, day: 1, startHour: 9, span: 2, team: "sales", label: "Demo" },
-  { id: 2, day: 2, startHour: 10, span: 1, team: "support", label: "Intro" },
-  { id: 3, day: 3, startHour: 9, span: 1, team: "hiring", label: "Screen" },
-  { id: 4, day: 4, startHour: 11, span: 2, team: "sales", label: "Discovery" },
-  { id: 5, day: 5, startHour: 9, span: 1, team: "support", label: "Check" },
-  { id: 6, day: 2, startHour: 12, span: 1, team: "hiring", label: "Offer" },
-  { id: 7, day: 3, startHour: 11, span: 1, team: "support", label: "Assist" },
-  { id: 8, day: 5, startHour: 11, span: 2, team: "sales", label: "Demo" },
-];
-
-const ORG_TEAM_BLOCK: Record<OrgTeam, string> = {
+const ORG_TEAM_BLOCK: Record<OrgTeamKey, string> = {
   sales: "bg-foreground text-background",
   support: "bg-muted text-foreground",
   hiring: "border border-border bg-card text-foreground",
 };
 
-const ORG_LEGEND_SWATCH: Record<OrgTeam, string> = {
+const ORG_LEGEND_SWATCH: Record<OrgTeamKey, string> = {
   sales: "bg-foreground",
   support: "bg-input",
   hiring: "border border-border bg-card",
 };
 
-const ORG_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
-const ORG_HOUR_LABELS = [9, 10, 11, 12] as const;
-
 export function OrgsPanel({
   isActive,
   prefersReducedMotion,
+  content,
 }: {
   isActive: boolean;
   prefersReducedMotion: boolean;
+  content: OrgsContent;
 }) {
   const [visibleCount, setVisibleCount] = React.useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: content is a stable module constant
   React.useEffect(() => {
     if (!isActive) {
       const t = setTimeout(() => setVisibleCount(0), 300);
@@ -60,7 +41,7 @@ export function OrgsPanel({
     setVisibleCount(0);
 
     if (prefersReducedMotion) {
-      setVisibleCount(ORG_MEETINGS.length);
+      setVisibleCount(content.meetings.length);
       return;
     }
 
@@ -98,17 +79,19 @@ export function OrgsPanel({
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-foreground"
               aria-hidden="true"
             >
-              <span className="text-micro font-bold text-background">A</span>
+              <span className="text-micro font-bold text-background">
+                {content.orgInitial}
+              </span>
             </div>
             <span className="truncate text-xs font-medium text-foreground">
-              Acme ·{" "}
+              {content.orgName} ·{" "}
               <span className="font-normal text-muted-foreground">
-                Week of 5 Oct
+                {content.weekLabel}
               </span>
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-3" aria-hidden="true">
-            {(["sales", "support", "hiring"] as OrgTeam[]).map((team) => (
+            {content.teams.map((team) => (
               <div key={team} className="flex items-center gap-1">
                 <span
                   className={cn(
@@ -132,7 +115,7 @@ export function OrgsPanel({
             style={{ gridTemplateColumns: "24px repeat(5, 1fr)" }}
           >
             <div />
-            {ORG_DAY_LABELS.map((day) => (
+            {content.dayLabels.map((day) => (
               <div
                 key={day}
                 className="pb-1.5 text-center text-2xs font-medium text-muted-foreground"
@@ -151,7 +134,7 @@ export function OrgsPanel({
             }}
           >
             {/* Background cells — grid structure and borders */}
-            {ORG_HOUR_LABELS.flatMap((_, rowIdx) =>
+            {content.hourLabels.flatMap((_, rowIdx) =>
               [1, 2, 3, 4, 5].map((dayIdx) => (
                 <div
                   key={`bg-${rowIdx}-${dayIdx}`}
@@ -162,7 +145,7 @@ export function OrgsPanel({
             )}
 
             {/* Time labels */}
-            {ORG_HOUR_LABELS.map((hour, i) => (
+            {content.hourLabels.map((hour, i) => (
               <div
                 key={hour}
                 style={{ gridColumn: 1, gridRow: i + 1 }}
@@ -173,7 +156,7 @@ export function OrgsPanel({
             ))}
 
             {/* Meeting blocks */}
-            {ORG_MEETINGS.map((meeting, idx) => {
+            {content.meetings.map((meeting, idx) => {
               const isVisible = visibleCount > idx;
               return (
                 <div
@@ -193,7 +176,7 @@ export function OrgsPanel({
                 >
                   <div
                     className={cn(
-                      "flex h-full w-full items-start overflow-hidden rounded-sm px-1 py-1 text-micro font-semibold leading-tight",
+                      "h-full w-full overflow-hidden rounded-sm px-1 py-1 text-micro font-semibold leading-tight truncate",
                       ORG_TEAM_BLOCK[meeting.team],
                     )}
                   >

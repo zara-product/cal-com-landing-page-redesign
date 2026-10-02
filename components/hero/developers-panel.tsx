@@ -3,223 +3,24 @@
 import { Code2Icon, VideoIcon } from "lucide-react";
 import * as React from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import type {
+  ApiV2ResultContent,
+  AtomsResultContent,
+  DevContent,
+  DevTabKey,
+  WebhooksResultContent,
+} from "@/content/hero";
 import { cn } from "@/lib/utils";
-
-type DevTab = "atoms" | "apiv2" | "webhooks";
-type CodeToken = { t: string; c: string };
-type CodeEntry = { id: string; tokens: CodeToken[] };
-
-const kw = (t: string): CodeToken => ({ t, c: "text-code-keyword" });
-const str = (t: string): CodeToken => ({ t, c: "text-code-string" });
-const tag = (t: string): CodeToken => ({ t, c: "text-code-tag" });
-const att = (t: string): CodeToken => ({ t, c: "text-code-attr" });
-const pln = (t: string): CodeToken => ({ t, c: "text-code-plain" });
-const dim = (t: string): CodeToken => ({ t, c: "text-code-muted" });
-
-const DEV_CODE: Record<DevTab, CodeEntry[]> = {
-  atoms: [
-    {
-      id: "a0",
-      tokens: [
-        kw("import"),
-        dim(" { "),
-        pln("CalProvider"),
-        dim(", "),
-        pln("Booker"),
-        dim(" } "),
-        kw("from"),
-        dim(" "),
-        str('"@calcom/atoms"'),
-      ],
-    },
-    { id: "a1", tokens: [] },
-    {
-      id: "a2",
-      tokens: [
-        tag("<CalProvider"),
-        dim(" "),
-        att("clientId"),
-        dim("={"),
-        pln("CAL_CLIENT_ID"),
-        dim("}>"),
-      ],
-    },
-    {
-      id: "a3",
-      tokens: [
-        dim("  "),
-        tag("<Booker"),
-        dim(" "),
-        att("username"),
-        dim("="),
-        str('"acme-health"'),
-      ],
-    },
-    {
-      id: "a4",
-      tokens: [
-        dim("      "),
-        att("eventSlug"),
-        dim("="),
-        str('"consult"'),
-        dim(" />"),
-      ],
-    },
-    { id: "a5", tokens: [tag("</CalProvider>")] },
-  ],
-  apiv2: [
-    {
-      id: "v0",
-      tokens: [
-        pln("curl"),
-        dim(" -X POST "),
-        str("https://api.cal.com/v2/bookings"),
-        dim(" \\"),
-      ],
-    },
-    {
-      id: "v1",
-      tokens: [dim("  -H "), str('"Authorization: Bearer $TOKEN"'), dim(" \\")],
-    },
-    {
-      id: "v2",
-      tokens: [dim("  -H "), str('"cal-api-version: 2026-02-25"'), dim(" \\")],
-    },
-    {
-      id: "v3",
-      tokens: [
-        dim("  -H "),
-        str('"Content-Type: application/json"'),
-        dim(" \\"),
-      ],
-    },
-    {
-      id: "v4",
-      tokens: [
-        dim("  -d '"),
-        dim("{"),
-        att('"start"'),
-        dim(":"),
-        str('"2026-10-08T08:00:00Z"'),
-        dim(","),
-      ],
-    },
-    {
-      id: "v5",
-      tokens: [
-        dim("    "),
-        att('"eventTypeId"'),
-        dim(":"),
-        pln("42"),
-        dim(","),
-        att('"attendee"'),
-        dim(":{"),
-      ],
-    },
-    {
-      id: "v6",
-      tokens: [
-        dim("    "),
-        att('"name"'),
-        dim(":"),
-        str('"Kai Nakamura"'),
-        dim(","),
-        att('"email"'),
-        dim(":"),
-        str('"kai@acme.co"'),
-        dim(","),
-      ],
-    },
-    {
-      id: "v7",
-      tokens: [
-        dim("    "),
-        att('"timeZone"'),
-        dim(":"),
-        str('"Asia/Tokyo"'),
-        dim("}}}'"),
-      ],
-    },
-  ],
-  webhooks: [
-    {
-      id: "w0",
-      tokens: [
-        kw("export async function"),
-        dim(" "),
-        pln("POST"),
-        dim("("),
-        att("req"),
-        dim(": "),
-        pln("Request"),
-        dim(") {"),
-      ],
-    },
-    {
-      id: "w1",
-      tokens: [
-        dim("  "),
-        kw("const"),
-        dim(" { "),
-        pln("triggerEvent"),
-        dim(", "),
-        pln("payload"),
-        dim(" } = "),
-        kw("await"),
-        dim(" req.json()"),
-      ],
-    },
-    {
-      id: "w2",
-      tokens: [
-        dim("  "),
-        kw("if"),
-        dim(" (triggerEvent !== "),
-        str('"BOOKING_CREATED"'),
-        dim(") "),
-        kw("return"),
-      ],
-    },
-    { id: "w3", tokens: [dim("  "), kw("await"), dim(" crm.createVisit({")] },
-    {
-      id: "w4",
-      tokens: [
-        dim("    "),
-        att("contact"),
-        dim(": payload.attendees["),
-        pln("0"),
-        dim("],"),
-      ],
-    },
-    { id: "w5", tokens: [dim("  })")] },
-  ],
-};
-
-const DEV_TAB_LABELS: Record<DevTab, string> = {
-  atoms: "Atoms",
-  apiv2: "API v2",
-  webhooks: "Webhooks",
-};
-
-const DEV_TAB_FILES: Record<DevTab, string> = {
-  atoms: "BookConsult.tsx",
-  apiv2: "create-booking.sh",
-  webhooks: "api/cal-webhook.ts",
-};
-
-const DEV_ORDERED_TABS: DevTab[] = ["atoms", "apiv2", "webhooks"];
 
 // Result card bottom offset per tab — atoms/webhooks have 6 lines vs 8 for apiv2,
 // so their code window has empty space at the bottom that the card can overlap.
-const TAB_RESULT_BOTTOM: Record<DevTab, string> = {
+const TAB_RESULT_BOTTOM: Record<DevTabKey, string> = {
   atoms: "bottom-10",
   apiv2: "bottom-0",
   webhooks: "bottom-16",
 } as const;
-const DEV_TIME_SLOTS = ["9:00", "9:30", "10:00"] as const;
-const DEV_SELECTED_SLOT = "10:00";
 
-function AtomsResult() {
+function AtomsResult({ content }: { content: AtomsResultContent }) {
   return (
     <div className="space-y-1.5 p-2">
       <div className="flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1">
@@ -230,7 +31,7 @@ function AtomsResult() {
         </div>
         <div className="flex flex-1 justify-center">
           <span className="rounded-full bg-background px-2 py-0.5 text-micro text-muted-foreground">
-            acmehealth.com/visits/new
+            {content.browserUrl}
           </span>
         </div>
       </div>
@@ -245,28 +46,34 @@ function AtomsResult() {
             &lt;Booker /&gt;
           </span>
         </div>
-        <span className="text-micro text-muted-foreground">Cal.com Atoms</span>
+        <span className="text-micro text-muted-foreground">
+          {content.atomsBadgeLabel}
+        </span>
       </div>
 
       <div className="flex gap-1.5">
-        <div className="flex-1 rounded-md bg-foreground py-1 text-center text-2xs font-semibold text-background">
-          Thu 8
-        </div>
-        <div className="flex-1 rounded-md border border-border py-1 text-center text-2xs text-muted-foreground">
-          Fri 9
-        </div>
-        <div className="flex-1 rounded-md border border-border py-1 text-center text-2xs text-muted-foreground">
-          Mon 12
-        </div>
+        {content.dates.map((date, i) => (
+          <div
+            key={date}
+            className={cn(
+              "flex-1 rounded-md py-1 text-center text-2xs",
+              i === 0
+                ? "bg-foreground font-semibold text-background"
+                : "border border-border text-muted-foreground",
+            )}
+          >
+            {date}
+          </div>
+        ))}
       </div>
 
       <div className="flex gap-1.5">
-        {DEV_TIME_SLOTS.map((slot) => (
+        {content.timeSlots.map((slot) => (
           <div
             key={slot}
             className={cn(
               "flex-1 rounded-md py-1 text-center text-2xs",
-              slot === DEV_SELECTED_SLOT
+              slot === content.selectedSlot
                 ? "border-2 border-foreground font-semibold text-foreground"
                 : "border border-border text-foreground",
             )}
@@ -279,23 +86,25 @@ function AtomsResult() {
   );
 }
 
-function ApiV2Result() {
+function ApiV2Result({ content }: { content: ApiV2ResultContent }) {
   return (
     <div className="flex flex-col gap-2 px-4 py-3.5">
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-success/10 px-2 py-0.5 text-micro font-semibold text-success">
-          201 Created
+          {content.statusCode}
         </span>
-        <span className="text-micro text-muted-foreground">142 ms</span>
+        <span className="text-micro text-muted-foreground">
+          {content.responseTime}
+        </span>
       </div>
       <div className="flex flex-col gap-1 font-mono text-micro">
         <div>
           <span className="text-muted-foreground">status: </span>
-          <span className="text-code-value">"accepted"</span>
+          <span className="text-code-value">"{content.status}"</span>
         </div>
         <div>
-          <span className="text-muted-foreground">start (Tokyo): </span>
-          <span className="text-foreground">Thu 8 Oct, 17:00</span>
+          <span className="text-muted-foreground">{content.startLabel}: </span>
+          <span className="text-foreground">{content.startValue}</span>
         </div>
       </div>
       <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
@@ -304,14 +113,14 @@ function ApiV2Result() {
           aria-hidden="true"
         />
         <span className="truncate font-mono text-2xs text-muted-foreground">
-          app.cal.com/video/9fJw3xT2pQ
+          {content.videoLink}
         </span>
       </div>
     </div>
   );
 }
 
-function WebhooksResult() {
+function WebhooksResult({ content }: { content: WebhooksResultContent }) {
   return (
     <div className="flex flex-col gap-2.5 px-4 py-3.5">
       <div className="flex items-center gap-2">
@@ -320,17 +129,14 @@ function WebhooksResult() {
           <span className="relative inline-flex size-2 rounded-full bg-success" />
         </span>
         <span className="text-xs font-semibold text-foreground">
-          BOOKING_CREATED delivered
+          {content.deliveredEvent}
         </span>
         <span className="ml-auto rounded bg-success/10 px-1.5 py-0.5 text-2xs font-semibold text-success">
-          200
+          {content.statusCode}
         </span>
       </div>
       <p className="text-2xs leading-snug text-muted-foreground">
-        Also:{" "}
-        <span className="text-foreground/60">
-          RESCHEDULED · CANCELLED · MEETING_ENDED
-        </span>
+        Also: <span className="text-foreground/60">{content.alsoEvents}</span>
       </p>
     </div>
   );
@@ -340,12 +146,14 @@ export function DevelopersPanel({
   isActive,
   prefersReducedMotion,
   onRestartProgress,
+  content,
 }: {
   isActive: boolean;
   prefersReducedMotion: boolean;
   onRestartProgress: () => void;
+  content: DevContent;
 }) {
-  const [activeDevTab, setActiveDevTab] = React.useState<DevTab>("atoms");
+  const [activeDevTab, setActiveDevTab] = React.useState<DevTabKey>("atoms");
   const [devKey, setDevKey] = React.useState(0);
   const [visibleLines, setVisibleLines] = React.useState(0);
   const [showResult, setShowResult] = React.useState(false);
@@ -357,7 +165,7 @@ export function DevelopersPanel({
     }
   }, [isActive]);
 
-  const lineCount = DEV_CODE[activeDevTab].length;
+  const lineCount = content.tabs[activeDevTab].code.length;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: devKey is an intentional restart trigger
   React.useEffect(() => {
@@ -368,7 +176,7 @@ export function DevelopersPanel({
     }
     setVisibleLines(0);
     setShowResult(false);
-    const count = DEV_CODE[activeDevTab].length;
+    const count = content.tabs[activeDevTab].code.length;
     if (prefersReducedMotion) {
       setVisibleLines(count);
       setShowResult(true);
@@ -405,38 +213,38 @@ export function DevelopersPanel({
         <Tabs
           value={activeDevTab}
           onValueChange={(v: string) => {
-            const tab = v as DevTab;
+            const tab = v as DevTabKey;
             setActiveDevTab(tab);
             setDevKey((k) => k + 1);
             onRestartProgress();
           }}
         >
           {/* Code window */}
-          <div className="overflow-hidden rounded-xl border border-code-border/60 bg-code-surface shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-code-border/60 bg-code-surface shadow-sm">
             {/* Tab + filename bar */}
             <div className="flex items-center border-b border-code-border/60">
               <TabsList
                 aria-label="Developer examples"
                 className="gap-0 rounded-none bg-transparent p-0 [&_[data-slot=tab-indicator]]:hidden"
               >
-                {DEV_ORDERED_TABS.map((tab) => (
+                {content.orderedTabs.map((tab) => (
                   <TabsTab
                     key={tab}
                     value={tab}
                     className="h-auto rounded-none rounded-t border-none px-3.5 py-2.5 text-xs sm:h-auto sm:text-xs text-code-dim hover:text-code-dim-hover data-active:rounded-t data-active:bg-code-tab-active data-active:text-code-tab-text"
                   >
-                    {DEV_TAB_LABELS[tab]}
+                    {content.tabs[tab].label}
                   </TabsTab>
                 ))}
               </TabsList>
               <span className="ml-auto pr-4 font-mono text-2xs text-code-dim">
-                {DEV_TAB_FILES[activeDevTab]}
+                {content.tabs[activeDevTab].filename}
               </span>
             </div>
 
             {/* Code lines */}
             <div className="min-h-[196px] px-4 py-4" aria-hidden="true">
-              {DEV_CODE[activeDevTab].map((entry, i) => (
+              {content.tabs[activeDevTab].code.map((entry, i) => (
                 <div
                   key={entry.id}
                   className={cn(
@@ -471,7 +279,7 @@ export function DevelopersPanel({
 
           {/* Result cards — positioned per tab so atoms/webhooks overlap the empty
               bottom of the code window; apiv2 sits in the pb-32 space below */}
-          {DEV_ORDERED_TABS.map((tab) => (
+          {content.orderedTabs.map((tab) => (
             <TabsPanel
               key={tab}
               value={tab}
@@ -492,10 +300,16 @@ export function DevelopersPanel({
                     }
               }
             >
-              <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                {tab === "atoms" && <AtomsResult />}
-                {tab === "apiv2" && <ApiV2Result />}
-                {tab === "webhooks" && <WebhooksResult />}
+              <div className="pointer-events-auto overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                {tab === "atoms" && (
+                  <AtomsResult content={content.atomsResult} />
+                )}
+                {tab === "apiv2" && (
+                  <ApiV2Result content={content.apiv2Result} />
+                )}
+                {tab === "webhooks" && (
+                  <WebhooksResult content={content.webhooksResult} />
+                )}
               </div>
             </TabsPanel>
           ))}

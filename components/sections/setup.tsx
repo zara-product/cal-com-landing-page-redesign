@@ -8,6 +8,11 @@ import {
   SectionHeading,
 } from "@/components/ui/section-heading";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import {
+  AVAILABILITY_CONTENT,
+  CONNECT_CONTENT,
+  MEET_CONTENT,
+} from "@/content/setup";
 import { useAutoplayProgress } from "@/hooks/use-autoplay-progress";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
@@ -219,13 +224,22 @@ export function SetupSection() {
                 >
                   <div className="w-full max-w-[500px]">
                     {step.id === "connect" && (
-                      <ConnectPanel isActive={activeStep === step.id} />
+                      <ConnectPanel
+                        isActive={activeStep === step.id}
+                        content={CONNECT_CONTENT}
+                      />
                     )}
                     {step.id === "availability" && (
-                      <AvailabilityPanel isActive={activeStep === step.id} />
+                      <AvailabilityPanel
+                        isActive={activeStep === step.id}
+                        content={AVAILABILITY_CONTENT}
+                      />
                     )}
                     {step.id === "meet" && (
-                      <MeetPanel isActive={activeStep === step.id} />
+                      <MeetPanel
+                        isActive={activeStep === step.id}
+                        content={MEET_CONTENT}
+                      />
                     )}
                   </div>
                 </TabsPanel>

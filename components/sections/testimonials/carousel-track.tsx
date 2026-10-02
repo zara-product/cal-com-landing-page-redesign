@@ -25,7 +25,6 @@ export function TestimonialsCarousel() {
   const [animated, setAnimated] = React.useState(true);
   const [cardHovered, setCardHovered] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [hasFocus, setHasFocus] = React.useState(false);
   const [containerW, setContainerW] = React.useState(1440);
   const [ariaLive, setAriaLive] = React.useState<"off" | "polite">("off");
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -36,7 +35,7 @@ export function TestimonialsCarousel() {
     "(prefers-reduced-motion: reduce)",
   );
 
-  const isPaused = cardHovered || isDragging || hasFocus;
+  const isPaused = cardHovered || isDragging;
   // displayActive: 0–5, maps virtual position to real testimonial for pagination
   const displayActive = (virtualActive - REAL_START + COUNT) % COUNT;
 
@@ -56,7 +55,7 @@ export function TestimonialsCarousel() {
     }
   }, []);
 
-  const { progress, restart } = useAutoplayProgress({
+  const { progress } = useAutoplayProgress({
     duration: AUTOPLAY_MS,
     onAdvance,
     containerRef,
@@ -94,18 +93,14 @@ export function TestimonialsCarousel() {
   }, [virtualActive]);
 
   // navigate: guarded by transitioningRef so rapid clicks don't stack transitions
-  const navigate = React.useCallback(
-    (delta: number) => {
-      if (transitioningRef.current) return;
-      transitioningRef.current = true;
-      setAriaLive("polite");
-      restart();
-      setVirtualActive((v) =>
-        Math.max(0, Math.min(SLIDES.length - 1, v + delta)),
-      );
-    },
-    [restart],
-  );
+  const navigate = React.useCallback((delta: number) => {
+    if (transitioningRef.current) return;
+    transitioningRef.current = true;
+    setAriaLive("polite");
+    setVirtualActive((v) =>
+      Math.max(0, Math.min(SLIDES.length - 1, v + delta)),
+    );
+  }, []);
 
   // Cancel the timer synchronously on mouseenter — the useEffect cleanup runs
   // after the next paint (~16ms), which is too late if the timer is about to fire.
@@ -191,12 +186,6 @@ export function TestimonialsCarousel() {
       aria-label="Testimonials carousel — use left and right arrow keys to navigate"
       aria-live={ariaLive}
       onKeyDown={onKeyDown}
-      onFocus={() => setHasFocus(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-          setHasFocus(false);
-        }
-      }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerLeave}
@@ -278,7 +267,6 @@ export function TestimonialsCarousel() {
                     ? () => {
                         if (!transitioningRef.current) {
                           transitioningRef.current = true;
-                          restart();
                           setVirtualActive(i);
                         }
                       }
@@ -290,29 +278,14 @@ export function TestimonialsCarousel() {
         </div>
       </div>
 
-      {/* Pagination dots — plain buttons, no tablist pattern */}
-      <div className="mt-4 flex justify-center gap-2 pb-2">
+      {/* Pagination dots — display-only position indicators */}
+      <div aria-hidden="true" className="mt-4 flex justify-center gap-2 pb-2">
         {TESTIMONIALS.map((t, i) => (
-          <button
+          <span
             key={t.id}
-            type="button"
-            aria-current={i === displayActive ? "true" : undefined}
-            aria-label={`Go to testimonial ${i + 1}: ${t.name}`}
-            onClick={() => {
-              const target = REAL_START + i;
-              if (target !== virtualActive && !transitioningRef.current) {
-                transitioningRef.current = true;
-                setAriaLive("polite");
-                restart();
-                setVirtualActive(target);
-              }
-            }}
             className={cn(
-              "relative block h-1.5 overflow-hidden rounded-full transition-[width,background-color] duration-250",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
-              i === displayActive
-                ? "w-6 bg-card/30"
-                : "w-1.5 bg-card/30 hover:bg-card/50",
+              "relative block h-1.5 overflow-hidden rounded-full transition-[width] duration-250",
+              i === displayActive ? "w-6 bg-card/30" : "w-1.5 bg-card/30",
             )}
           >
             {i === displayActive && !prefersReducedMotion && (
@@ -322,7 +295,7 @@ export function TestimonialsCarousel() {
                 style={{ width: `${progress}%` }}
               />
             )}
-          </button>
+          </span>
         ))}
       </div>
     </div>

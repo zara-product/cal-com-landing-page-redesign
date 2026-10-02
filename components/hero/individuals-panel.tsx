@@ -2,6 +2,7 @@
 
 import { ClockIcon, GlobeIcon, VideoIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { IndividualsContent } from "@/content/hero";
 import { cn } from "@/lib/utils";
 
 // ─── Individuals animation thresholds (% of MODE_DURATION.individuals = 4000ms) ──
@@ -11,44 +12,35 @@ const IND_SELECT = 38.75; // 1550ms — 10:00 selected
 
 const CAL_DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
 
-// October 2026: Oct 1 = Thursday (offset 4 in SUN-SAT grid)
-const OCT_OFFSET = 4;
-const OCT_CELLS = Array.from({ length: 35 }, (_, i) => {
-  const d = i - OCT_OFFSET + 1;
-  return d >= 1 && d <= 31 ? d : null;
-});
-
-const AVAILABLE_DAYS = new Set([
-  5, 6, 7, 9, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27,
-]);
-const SELECTED_DAY = 8;
-const TIME_SLOTS = [
-  "9:00",
-  "9:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-] as const;
-const SELECTED_SLOT = "10:00";
-
 export function IndividualsPanel({
   progress,
   isActive,
   prefersReducedMotion,
+  content,
 }: {
   progress: number;
   isActive: boolean;
   prefersReducedMotion: boolean;
+  content: IndividualsContent;
 }) {
   const instant = prefersReducedMotion && isActive;
   const calIlluminated = instant || (isActive && progress >= IND_CALENDAR);
   const visibleSlotCount = instant
-    ? TIME_SLOTS.length
+    ? content.timeSlots.length
     : isActive
       ? IND_SLOTS.filter((t) => progress >= t).length
       : 0;
   const slotSelected = instant || (isActive && progress >= IND_SELECT);
+
+  const gridSize =
+    Math.ceil((content.calendarMonthOffset + content.calendarDaysInMonth) / 7) *
+    7;
+  const calendarCells = Array.from({ length: gridSize }, (_, i) => {
+    const d = i - content.calendarMonthOffset + 1;
+    return d >= 1 && d <= content.calendarDaysInMonth ? d : null;
+  });
+  const availableDaysSet = new Set(content.availableDays);
+  const selectedDayDisplay = String(content.selectedDay).padStart(2, "0");
 
   return (
     <div className="relative min-w-0">
@@ -69,26 +61,28 @@ export function IndividualsPanel({
         {/* Mobile-only compact host row */}
         <div className="flex items-center gap-2.5 border-b border-border p-3 sm:hidden">
           <Avatar className="size-7">
-            <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
+            <AvatarImage src={content.hostAvatarSrc} alt={content.hostName} />
             <AvatarFallback className="bg-input text-micro font-semibold text-muted-foreground">
-              EN
+              {content.hostAvatarFallback}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="text-2xs text-muted-foreground">Ewa Nowak</p>
-            <p className="text-xs font-bold text-foreground">Intro call</p>
+            <p className="text-2xs text-muted-foreground">{content.hostName}</p>
+            <p className="text-xs font-bold text-foreground">
+              {content.eventTitle}
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-muted-foreground">
               <span className="flex items-center gap-1">
                 <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-2xs">30m</span>
+                <span className="text-2xs">{content.duration}</span>
               </span>
               <span className="flex items-center gap-1">
                 <VideoIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-2xs">Cal Video</span>
+                <span className="text-2xs">{content.meetingType}</span>
               </span>
               <span className="flex items-center gap-1">
                 <GlobeIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-2xs">Warsaw</span>
+                <span className="text-2xs">{content.timezoneShort}</span>
               </span>
             </div>
           </div>
@@ -97,15 +91,17 @@ export function IndividualsPanel({
           {/* Left — host details */}
           <div className="hidden sm:flex w-[132px] shrink-0 flex-col gap-4 p-4">
             <Avatar className="size-8">
-              <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
+              <AvatarImage src={content.hostAvatarSrc} alt={content.hostName} />
               <AvatarFallback className="bg-input text-micro font-semibold text-muted-foreground">
-                EN
+                {content.hostAvatarFallback}
               </AvatarFallback>
             </Avatar>
             <div className="-mt-1">
-              <p className="text-micro text-muted-foreground">Ewa Nowak</p>
+              <p className="text-micro text-muted-foreground">
+                {content.hostName}
+              </p>
               <p className="mt-0.5 text-sm font-bold text-foreground">
-                Intro call
+                {content.eventTitle}
               </p>
             </div>
             <div className="space-y-2">
@@ -114,7 +110,9 @@ export function IndividualsPanel({
                   className="size-3 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="text-micro text-muted-foreground">30m</span>
+                <span className="text-micro text-muted-foreground">
+                  {content.duration}
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <VideoIcon
@@ -122,7 +120,7 @@ export function IndividualsPanel({
                   aria-hidden="true"
                 />
                 <span className="text-micro text-muted-foreground">
-                  Cal Video
+                  {content.meetingType}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -131,7 +129,7 @@ export function IndividualsPanel({
                   aria-hidden="true"
                 />
                 <span className="text-micro text-muted-foreground">
-                  Europe/Warsaw
+                  {content.timezoneLong}
                 </span>
               </div>
             </div>
@@ -140,8 +138,12 @@ export function IndividualsPanel({
           {/* Middle — calendar */}
           <div className="min-w-0 flex-1 p-4">
             <div className="mb-3 flex items-baseline gap-1">
-              <span className="text-sm font-bold text-foreground">October</span>
-              <span className="text-sm text-muted-foreground">2026</span>
+              <span className="text-sm font-bold text-foreground">
+                {content.calendarMonth}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {content.calendarYear}
+              </span>
             </div>
             <div className="grid grid-cols-7" aria-hidden="true">
               {CAL_DAYS.map((d) => (
@@ -153,13 +155,13 @@ export function IndividualsPanel({
                   <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
-              {OCT_CELLS.map((day, i) => {
+              {calendarCells.map((day, i) => {
                 if (day === null) {
                   // biome-ignore lint/suspicious/noArrayIndexKey: static calendar offset — order never changes
                   return <div key={`e-${i}`} className="py-[3px]" />;
                 }
-                const isSelected = day === SELECTED_DAY;
-                const isAvail = AVAILABLE_DAYS.has(day);
+                const isSelected = day === content.selectedDay;
+                const isAvail = availableDaysSet.has(day);
                 return (
                   <div
                     key={day}
@@ -190,13 +192,18 @@ export function IndividualsPanel({
           {/* Right — time slots */}
           <div className="flex w-[60px] shrink-0 flex-col bg-muted/50 px-2 pb-2.5 pt-4 sm:w-[76px] sm:px-2.5">
             <p className="mb-4 text-xs" aria-hidden="true">
-              <span className="font-normal text-muted-foreground">Thu </span>
-              <span className="font-semibold text-foreground">08</span>
+              <span className="font-normal text-muted-foreground">
+                {content.selectedDayLabel}{" "}
+              </span>
+              <span className="font-semibold text-foreground">
+                {selectedDayDisplay}
+              </span>
             </p>
             <div className="flex flex-col gap-1.5" aria-hidden="true">
-              {TIME_SLOTS.map((slot, i) => {
+              {content.timeSlots.map((slot, i) => {
                 const isVisible = i < visibleSlotCount;
-                const isSelected = slotSelected && slot === SELECTED_SLOT;
+                const isSelected =
+                  slotSelected && slot === content.selectedSlot;
                 return (
                   <div
                     key={slot}

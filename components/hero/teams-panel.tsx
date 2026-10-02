@@ -2,34 +2,31 @@
 
 import { CheckIcon, ShuffleIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { TeamsContent } from "@/content/hero";
 import { cn } from "@/lib/utils";
 
 // ─── Teams animation thresholds (% of MODE_DURATION.teams = 4000ms) ──────────
 const TMS_SHUFFLE = 6.25; // 250ms  — activate shuffle node
 const TMS_SELECT = 25.0; // 1000ms — select Sofia (dim other avatars)
 const TMS_REVEAL = 43.75; // 1750ms — reveal result card
-const SOFIA_INDEX = 2; // 3rd avatar in the stack (0-based)
-
-const TEAM_AVATARS = [
-  { key: "m1", src: "/avatars/teams-member-1.png" },
-  { key: "m2", src: "/avatars/teams-member-2.png" },
-  { key: "sofia", src: "/avatars/teams-sofia.png" },
-  { key: "m4", src: "/avatars/teams-member-4.png" },
-] as const;
 
 export function TeamsPanel({
   progress,
   isActive,
   prefersReducedMotion,
+  content,
 }: {
   progress: number;
   isActive: boolean;
   prefersReducedMotion: boolean;
+  content: TeamsContent;
 }) {
   const instant = prefersReducedMotion && isActive;
   const shuffleActive = instant || (isActive && progress >= TMS_SHUFFLE);
   const sofiaSelected = instant || (isActive && progress >= TMS_SELECT);
   const resultRevealed = instant || (isActive && progress >= TMS_REVEAL);
+
+  const selectedAvatar = content.teamAvatars[content.selectedAvatarIndex];
 
   return (
     <div
@@ -51,7 +48,7 @@ export function TeamsPanel({
           <div className="flex items-center gap-4">
             {/* Overlapping avatar stack */}
             <div className="flex shrink-0 -space-x-2.5">
-              {TEAM_AVATARS.map(({ key, src }, i) => (
+              {content.teamAvatars.map(({ key, src }, i) => (
                 <div
                   key={key}
                   className={cn(
@@ -60,8 +57,12 @@ export function TeamsPanel({
                       "transition-opacity duration-450 ease-out",
                   )}
                   style={{
-                    zIndex: TEAM_AVATARS.length - i,
-                    opacity: sofiaSelected ? (i === SOFIA_INDEX ? 1 : 0.4) : 1,
+                    zIndex: content.teamAvatars.length - i,
+                    opacity: sofiaSelected
+                      ? i === content.selectedAvatarIndex
+                        ? 1
+                        : 0.4
+                      : 1,
                   }}
                 >
                   <Avatar className="size-8 ring-2 ring-card">
@@ -75,7 +76,7 @@ export function TeamsPanel({
             {/* Event metadata */}
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">
-                Product demo · Sales team
+                {content.eventTitle} · {content.teamName}
               </p>
               <div className="mt-1 flex items-center gap-1.5">
                 <ShuffleIcon
@@ -83,7 +84,7 @@ export function TeamsPanel({
                   aria-hidden="true"
                 />
                 <span className="text-xs text-muted-foreground">
-                  Round robin · 45m
+                  {content.routingType} · {content.duration}
                 </span>
               </div>
             </div>
@@ -161,10 +162,7 @@ export function TeamsPanel({
               {/* Avatars + check — items-center aligns check with avatar midlines */}
               <div className="flex items-center gap-3">
                 <Avatar className="size-10">
-                  <AvatarImage
-                    src="/avatars/teams-customer.png"
-                    alt="Customer"
-                  />
+                  <AvatarImage src={content.customerAvatarSrc} alt="Customer" />
                   <AvatarFallback className="bg-input" />
                 </Avatar>
                 <div className="flex size-6 items-center justify-center rounded-full border border-success/20 bg-success/10">
@@ -175,8 +173,8 @@ export function TeamsPanel({
                 </div>
                 <Avatar className="size-10">
                   <AvatarImage
-                    src="/avatars/teams-sofia.png"
-                    alt="Sofia Ruiz"
+                    src={selectedAvatar?.src}
+                    alt={content.selectedHostName}
                   />
                   <AvatarFallback className="bg-input" />
                 </Avatar>
@@ -192,10 +190,10 @@ export function TeamsPanel({
             {/* Result text */}
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-snug text-foreground">
-                This event is scheduled
+                {content.resultTitle}
               </p>
               <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                Sofia Ruiz · Thu 8 Oct, 10:00 · least booked this week
+                {content.resultDetail}
               </p>
             </div>
           </div>

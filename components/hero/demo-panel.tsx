@@ -8,6 +8,12 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import {
+  DEV_CONTENT,
+  INDIVIDUALS_CONTENT,
+  ORGS_CONTENT,
+  TEAMS_CONTENT,
+} from "@/content/hero";
 import { useAutoplayProgress } from "@/hooks/use-autoplay-progress";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
@@ -187,6 +193,7 @@ export function DemoPanel() {
                     progress={isActive ? progress : 0}
                     isActive={isActive}
                     prefersReducedMotion={prefersReducedMotion}
+                    content={INDIVIDUALS_CONTENT}
                   />
                 )}
                 {mode === "teams" && (
@@ -194,12 +201,14 @@ export function DemoPanel() {
                     progress={isActive ? progress : 0}
                     isActive={isActive}
                     prefersReducedMotion={prefersReducedMotion}
+                    content={TEAMS_CONTENT}
                   />
                 )}
                 {mode === "organizations" && (
                   <OrgsPanel
                     isActive={isActive}
                     prefersReducedMotion={prefersReducedMotion}
+                    content={ORGS_CONTENT}
                   />
                 )}
                 {mode === "developers" && (
@@ -207,6 +216,7 @@ export function DemoPanel() {
                     isActive={isActive}
                     prefersReducedMotion={prefersReducedMotion}
                     onRestartProgress={resetProgress}
+                    content={DEV_CONTENT}
                   />
                 )}
               </TabsPanel>

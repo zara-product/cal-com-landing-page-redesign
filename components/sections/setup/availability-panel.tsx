@@ -2,56 +2,24 @@
 
 import { CopyIcon, GlobeIcon, PlusIcon, XIcon } from "lucide-react";
 import * as React from "react";
+import type { AvailabilityContent } from "@/content/setup";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { VisualSwitch } from "./visual-switch";
 
-const DAYS = [
-  { key: "sun", label: "Sunday", short: "Sun", start: null, end: null },
-  {
-    key: "mon",
-    label: "Monday",
-    short: "Mon",
-    start: "9:00 AM",
-    end: "5:00 PM",
-  },
-  {
-    key: "tue",
-    label: "Tuesday",
-    short: "Tue",
-    start: "9:00 AM",
-    end: "5:00 PM",
-  },
-  {
-    key: "wed",
-    label: "Wednesday",
-    short: "Wed",
-    start: "9:00 AM",
-    end: "5:00 PM",
-  },
-  {
-    key: "thu",
-    label: "Thursday",
-    short: "Thu",
-    start: "9:00 AM",
-    end: "5:00 PM",
-  },
-  {
-    key: "fri",
-    label: "Friday",
-    short: "Fri",
-    start: "9:00 AM",
-    end: "5:00 PM",
-  },
-  { key: "sat", label: "Saturday", short: "Sat", start: null, end: null },
-] as const;
-
-export function AvailabilityPanel({ isActive }: { isActive: boolean }) {
+export function AvailabilityPanel({
+  isActive,
+  content,
+}: {
+  isActive: boolean;
+  content: AvailabilityContent;
+}) {
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
   const [activeDays, setActiveDays] = React.useState<Set<string>>(new Set());
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: content is a stable module constant
   React.useEffect(() => {
     if (!isActive) {
       const t = setTimeout(() => {
@@ -60,7 +28,7 @@ export function AvailabilityPanel({ isActive }: { isActive: boolean }) {
       return () => clearTimeout(t);
     }
 
-    const weekdays = DAYS.filter((d) => d.start !== null);
+    const weekdays = content.days.filter((d) => d.start !== null);
 
     if (prefersReducedMotion) {
       setActiveDays(new Set(weekdays.map((d) => d.key)));
@@ -87,26 +55,26 @@ export function AvailabilityPanel({ isActive }: { isActive: boolean }) {
   }, [isActive, prefersReducedMotion]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {/* Header */}
       <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Your availability
+            {content.cardTitle}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            When can people book time with you?
+            {content.cardDescription}
           </p>
         </div>
         <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground">
           <GlobeIcon className="size-3 opacity-60" aria-hidden="true" />
-          Europe / Berlin
+          {content.timezone}
         </span>
       </div>
 
       {/* Day rows — weekdays activate sequentially; weekend stays muted */}
       <div className="divide-y divide-border/50">
-        {DAYS.map((day) => {
+        {content.days.map((day) => {
           const unavailable = day.start === null;
           const on = !unavailable && activeDays.has(day.key);
           return (

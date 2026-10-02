@@ -2,6 +2,7 @@
 
 import NextImage from "next/image";
 import * as React from "react";
+import type { CalendarKey, ConnectContent } from "@/content/setup";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { VisualSwitch } from "./visual-switch";
@@ -48,28 +49,21 @@ function IconAppleCalendar() {
   );
 }
 
-const CONNECT_CALENDARS = [
-  {
-    key: "google",
-    name: "Google Calendar",
-    accountLabel: "Personal",
-    Icon: IconGoogleCalendar,
-  },
-  {
-    key: "outlook",
-    name: "Microsoft Outlook",
-    accountLabel: "Work",
-    Icon: IconOutlook,
-  },
-  {
-    key: "apple",
-    name: "Apple Calendar",
-    accountLabel: "iCloud",
-    Icon: IconAppleCalendar,
-  },
-] as const;
+type CalIcon = () => React.ReactElement;
 
-export function ConnectPanel({ isActive }: { isActive: boolean }) {
+const CALENDAR_ICON: Record<CalendarKey, CalIcon> = {
+  google: IconGoogleCalendar,
+  outlook: IconOutlook,
+  apple: IconAppleCalendar,
+};
+
+export function ConnectPanel({
+  isActive,
+  content,
+}: {
+  isActive: boolean;
+  content: ConnectContent;
+}) {
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
@@ -112,18 +106,17 @@ export function ConnectPanel({ isActive }: { isActive: boolean }) {
     };
   }, [isActive, prefersReducedMotion]);
 
-  const calStates = [
-    { ...CONNECT_CALENDARS[0], on: googleOn },
-    { ...CONNECT_CALENDARS[1], on: outlookOn },
-    { ...CONNECT_CALENDARS[2], on: false },
-  ] as const;
+  const calStates = content.calendars.map((cal, i) => ({
+    ...cal,
+    on: i === 0 ? googleOn : i === 1 ? outlookOn : false,
+  }));
 
   return (
     <div className="relative">
       {/* Calendar card */}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-border bg-card",
+          "overflow-hidden rounded-2xl border border-border bg-card",
           !prefersReducedMotion && "transition-transform duration-450 ease-out",
         )}
         style={
@@ -134,32 +127,35 @@ export function ConnectPanel({ isActive }: { isActive: boolean }) {
       >
         <div className="border-b border-border px-6 py-5">
           <p className="text-sm font-semibold text-foreground">
-            Connected calendars
+            {content.cardTitle}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Cal.com checks your existing events to prevent double-booking.
+            {content.cardDescription}
           </p>
         </div>
 
         <div className="divide-y divide-border/50">
-          {calStates.map((cal) => (
-            <div key={cal.key} className="flex items-center gap-4 px-6 py-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70">
-                <span className="flex h-6 w-6">
-                  <cal.Icon />
+          {calStates.map((cal) => {
+            const CalIcon = CALENDAR_ICON[cal.key];
+            return (
+              <div key={cal.key} className="flex items-center gap-4 px-6 py-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70">
+                  <span className="flex h-6 w-6">
+                    <CalIcon />
+                  </span>
                 </span>
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">
-                  {cal.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {cal.accountLabel}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">
+                    {cal.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {cal.accountLabel}
+                  </p>
+                </div>
+                <VisualSwitch checked={cal.on} />
               </div>
-              <VisualSwitch checked={cal.on} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -188,13 +184,13 @@ export function ConnectPanel({ isActive }: { isActive: boolean }) {
               }
         }
       >
-        <div className="pointer-events-auto w-[264px] rounded-xl border border-border bg-card px-4 py-3.5 shadow-sm">
+        <div className="pointer-events-auto w-[264px] rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold text-foreground">
-              Calendars in sync
+              {content.confirmationTitle}
             </p>
             <span className="shrink-0 text-2xs text-muted-foreground">
-              Just now
+              {content.confirmationTime}
             </span>
           </div>
           <div className="my-2.5 border-t border-border" />
@@ -203,9 +199,11 @@ export function ConnectPanel({ isActive }: { isActive: boolean }) {
               aria-hidden="true"
               className="h-3.5 w-1 shrink-0 rounded-full bg-foreground/70"
             />
-            <span className="text-xs font-medium text-foreground">Busy</span>
+            <span className="text-xs font-medium text-foreground">
+              {content.busyLabel}
+            </span>
             <span className="text-xs text-muted-foreground">
-              Thu 10:00 – 11:00 hidden
+              {content.busyDetail}
             </span>
           </div>
         </div>
