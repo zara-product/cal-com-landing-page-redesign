@@ -292,6 +292,7 @@ export function SetupSection() {
                     id={`setup-panel-${step.id}`}
                     aria-labelledby={`setup-tab-${step.id}`}
                     aria-hidden={!isActive}
+                    inert={!isActive}
                     className={cn(
                       "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-8",
                       "transition-[opacity,transform] duration-300 ease-out",

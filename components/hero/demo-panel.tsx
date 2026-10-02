@@ -254,6 +254,7 @@ export function DemoPanel() {
               id={`hero-panel-${mode}`}
               aria-labelledby={`hero-tab-${mode}`}
               aria-hidden={!isActive}
+              inert={!isActive}
               style={{ gridArea: "1 / 1" }}
               className={cn(
                 !prefersReducedMotion && "transition-opacity duration-200",
