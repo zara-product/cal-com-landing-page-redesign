@@ -6,6 +6,7 @@ import {
   SectionEyebrow,
   SectionHeading,
 } from "@/components/ui/section-heading";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { AvailabilityPanel } from "./setup/availability-panel";
@@ -58,11 +59,9 @@ export function SetupSection() {
     "(prefers-reduced-motion: reduce)",
   );
   const sectionRef = React.useRef<HTMLElement>(null);
-  const tabsRef = React.useRef<HTMLDivElement>(null);
   const rafRef = React.useRef<number | null>(null);
   const startTimeRef = React.useRef<number | null>(null);
 
-  // Start timer only once the section has scrolled into view
   React.useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -82,7 +81,6 @@ export function SetupSection() {
 
     if (!inView) return;
 
-    // Read activeStep here so it's a real dep (no stale closure, satisfies lint)
     const nextStep =
       STEP_IDS[(STEP_IDS.indexOf(activeStep) + 1) % STEP_IDS.length];
 
@@ -119,36 +117,6 @@ export function SetupSection() {
     };
   }, [activeStep, prefersReducedMotion, inView]);
 
-  function handleStepClick(id: StepId) {
-    setActiveStep(id);
-  }
-
-  function handleStepKeyDown(
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    id: StepId,
-  ) {
-    const idx = STEP_IDS.indexOf(id);
-    const buttons =
-      tabsRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']");
-    const go = (i: number) => {
-      setActiveStep(STEP_IDS[i]);
-      buttons?.[i]?.focus();
-    };
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      go((idx + 1) % STEP_IDS.length);
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      go((idx - 1 + STEP_IDS.length) % STEP_IDS.length);
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      go(0);
-    } else if (e.key === "End") {
-      e.preventDefault();
-      go(STEP_IDS.length - 1);
-    }
-  }
-
   return (
     <section
       ref={sectionRef}
@@ -172,62 +140,73 @@ export function SetupSection() {
           </div>
 
           {/* Step nav + product stage */}
-          <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:mt-10 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20">
+          <Tabs
+            value={activeStep}
+            onValueChange={(v) => setActiveStep(v as StepId)}
+            orientation="vertical"
+            className="mt-8 grid grid-cols-1 items-start gap-6 lg:mt-10 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20"
+          >
             {/* Step nav */}
-            <div
-              ref={tabsRef}
-              role="tablist"
+            <TabsList
               aria-label="Setup steps"
-              className="flex flex-col gap-1"
+              className="flex flex-col gap-1 rounded-none bg-transparent p-0 w-full [&_[data-slot=tab-indicator]]:hidden"
             >
-              {STEPS.map((step) => {
-                const isActive = activeStep === step.id;
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`setup-panel-${step.id}`}
-                    id={`setup-tab-${step.id}`}
-                    tabIndex={isActive ? 0 : -1}
-                    onClick={() => handleStepClick(step.id)}
-                    onKeyDown={(e) => handleStepKeyDown(e, step.id)}
-                    className={cn(
-                      "relative w-full overflow-hidden rounded-xl text-left transition-shadow duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      isActive
-                        ? "bg-card shadow-sm"
-                        : "bg-transparent hover:bg-muted/20",
-                    )}
-                  >
-                    {/* Progress fill — animates left-to-right inside active card */}
-                    {isActive && !prefersReducedMotion && (
-                      <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 bg-muted/50"
-                        style={{ width: `${progress}%`, right: "auto" }}
-                      />
-                    )}
+              {STEPS.map((step) => (
+                <TabsTab
+                  key={step.id}
+                  value={step.id}
+                  className={cn(
+                    "relative h-auto sm:h-auto w-full overflow-hidden rounded-xl",
+                    "whitespace-normal justify-start items-start px-0 py-0 border-none",
+                    "bg-transparent text-left",
+                    "hover:bg-muted/20 hover:text-inherit",
+                    "data-active:bg-card data-active:shadow-sm",
+                    "transition-shadow duration-250",
+                  )}
+                >
+                  {/* Progress fill — animates left-to-right inside active card */}
+                  {activeStep === step.id && !prefersReducedMotion && (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-muted/50"
+                      style={{ width: `${progress}%`, right: "auto" }}
+                    />
+                  )}
 
-                    <div className="relative flex items-start gap-3 px-5 py-4">
-                      <span className="shrink-0 tabular-nums text-xs font-semibold leading-snug text-muted-foreground">
-                        {step.number}
+                  <div className="relative flex items-start gap-3 px-5 py-4 w-full">
+                    <span className="shrink-0 tabular-nums text-xs font-semibold leading-snug text-muted-foreground">
+                      {step.number}
+                    </span>
+                    <span className="min-w-0">
+                      <span
+                        className={cn(
+                          "block text-base font-bold leading-snug transition-colors",
+                          activeStep === step.id
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {step.title}
                       </span>
-                      <span className="min-w-0">
+                      <span
+                        className={cn(
+                          "grid overflow-hidden transition-all duration-450",
+                          activeStep === step.id
+                            ? "grid-rows-[1fr]"
+                            : "grid-rows-[0fr]",
+                        )}
+                        style={
+                          prefersReducedMotion
+                            ? { transition: "none" }
+                            : undefined
+                        }
+                      >
                         <span
                           className={cn(
-                            "block text-base font-bold leading-snug transition-colors",
-                            isActive
-                              ? "text-foreground"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {step.title}
-                        </span>
-                        <span
-                          className={cn(
-                            "grid overflow-hidden transition-all duration-450",
-                            isActive ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                            "min-h-0 text-sm leading-relaxed text-muted-foreground transition-opacity duration-250",
+                            activeStep === step.id
+                              ? "opacity-100 mt-2"
+                              : "opacity-0",
                           )}
                           style={
                             prefersReducedMotion
@@ -235,30 +214,18 @@ export function SetupSection() {
                               : undefined
                           }
                         >
-                          <span
-                            className={cn(
-                              "min-h-0 text-sm leading-relaxed text-muted-foreground transition-opacity duration-250",
-                              isActive ? "opacity-100 mt-2" : "opacity-0",
-                            )}
-                            style={
-                              prefersReducedMotion
-                                ? { transition: "none" }
-                                : undefined
-                            }
-                          >
-                            {step.description}
-                          </span>
+                          {step.description}
                         </span>
                       </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    </span>
+                  </div>
+                </TabsTab>
+              ))}
+            </TabsList>
 
             {/* Product stage */}
             <div className="relative min-h-[460px]">
-              {/* Ripple rings — behind all product UI, clipped to stage bounds */}
+              {/* Ripple rings */}
               {!prefersReducedMotion && (
                 <div
                   aria-hidden="true"
@@ -277,41 +244,36 @@ export function SetupSection() {
                 </div>
               )}
 
-              {STEPS.map((step) => {
-                const isActive = activeStep === step.id;
-                return (
-                  <div
-                    key={step.id}
-                    role="tabpanel"
-                    id={`setup-panel-${step.id}`}
-                    aria-labelledby={`setup-tab-${step.id}`}
-                    aria-hidden={!isActive}
-                    inert={!isActive}
-                    className={cn(
-                      "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-8",
+              {STEPS.map((step) => (
+                <TabsPanel
+                  key={step.id}
+                  value={step.id}
+                  keepMounted
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center px-8 pt-8 pb-8",
+                    "[&[hidden]]:block data-[hidden]:opacity-0 data-[hidden]:pointer-events-none data-[hidden]:z-0",
+                    "data-[ending-style]:opacity-0 data-[ending-style]:translate-y-1",
+                    "data-[starting-style]:opacity-0 data-[starting-style]:translate-y-1",
+                    "z-10",
+                    !prefersReducedMotion &&
                       "transition-[opacity,transform] duration-250 ease-out",
-                      isActive
-                        ? "z-10 translate-y-0 opacity-100"
-                        : "pointer-events-none z-0 translate-y-1 opacity-0",
+                  )}
+                >
+                  <div className="w-full max-w-[500px]">
+                    {step.id === "connect" && (
+                      <ConnectPanel isActive={activeStep === step.id} />
                     )}
-                    style={{
-                      transition: prefersReducedMotion ? "none" : undefined,
-                    }}
-                  >
-                    <div className="w-full max-w-[500px]">
-                      {step.id === "connect" && (
-                        <ConnectPanel isActive={isActive} />
-                      )}
-                      {step.id === "availability" && (
-                        <AvailabilityPanel isActive={isActive} />
-                      )}
-                      {step.id === "meet" && <MeetPanel isActive={isActive} />}
-                    </div>
+                    {step.id === "availability" && (
+                      <AvailabilityPanel isActive={activeStep === step.id} />
+                    )}
+                    {step.id === "meet" && (
+                      <MeetPanel isActive={activeStep === step.id} />
+                    )}
                   </div>
-                );
-              })}
+                </TabsPanel>
+              ))}
             </div>
-          </div>
+          </Tabs>
         </div>
       </div>
 

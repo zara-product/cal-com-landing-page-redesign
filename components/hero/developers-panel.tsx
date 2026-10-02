@@ -2,6 +2,7 @@
 
 import { Code2Icon, VideoIcon } from "lucide-react";
 import * as React from "react";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 type DevTab = "atoms" | "apiv2" | "webhooks";
@@ -207,13 +208,20 @@ const DEV_TAB_FILES: Record<DevTab, string> = {
 };
 
 const DEV_ORDERED_TABS: DevTab[] = ["atoms", "apiv2", "webhooks"];
+
+// Result card bottom offset per tab — atoms/webhooks have 6 lines vs 8 for apiv2,
+// so their code window has empty space at the bottom that the card can overlap.
+const TAB_RESULT_BOTTOM: Record<DevTab, string> = {
+  atoms: "bottom-10",
+  apiv2: "bottom-0",
+  webhooks: "bottom-16",
+} as const;
 const DEV_TIME_SLOTS = ["9:00", "9:30", "10:00"] as const;
 const DEV_SELECTED_SLOT = "10:00";
 
 function AtomsResult() {
   return (
     <div className="space-y-1.5 p-2">
-      {/* Browser chrome — proves component is running inside customer's own domain */}
       <div className="flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1">
         <div className="flex shrink-0 items-center gap-0.5" aria-hidden="true">
           <span className="size-1.5 rounded-full bg-foreground/20" />
@@ -227,7 +235,6 @@ function AtomsResult() {
         </div>
       </div>
 
-      {/* Component tag — visually connects the code window to this rendered output */}
       <div className="flex items-center justify-between rounded-md border border-dashed border-border px-2 py-1">
         <div className="flex items-center gap-1">
           <Code2Icon
@@ -241,7 +248,6 @@ function AtomsResult() {
         <span className="text-micro text-muted-foreground">Cal.com Atoms</span>
       </div>
 
-      {/* Days row — Thu 8 selected */}
       <div className="flex gap-1.5">
         <div className="flex-1 rounded-md bg-foreground py-1 text-center text-2xs font-semibold text-background">
           Thu 8
@@ -254,7 +260,6 @@ function AtomsResult() {
         </div>
       </div>
 
-      {/* Time slots — 10:00 selected (crisp dark border) */}
       <div className="flex gap-1.5">
         {DEV_TIME_SLOTS.map((slot) => (
           <div
@@ -344,9 +349,7 @@ export function DevelopersPanel({
   const [devKey, setDevKey] = React.useState(0);
   const [visibleLines, setVisibleLines] = React.useState(0);
   const [showResult, setShowResult] = React.useState(false);
-  const devTabsRef = React.useRef<HTMLDivElement>(null);
 
-  // Reset to Atoms each time the outer Developers tab becomes active
   React.useEffect(() => {
     if (isActive) {
       setActiveDevTab("atoms");
@@ -356,7 +359,6 @@ export function DevelopersPanel({
 
   const lineCount = DEV_CODE[activeDevTab].length;
 
-  // Line-by-line reveal with cursor; auto-advances on each tab change
   // biome-ignore lint/correctness/useExhaustiveDependencies: devKey is an intentional restart trigger
   React.useEffect(() => {
     if (!isActive) {
@@ -382,41 +384,6 @@ export function DevelopersPanel({
     };
   }, [activeDevTab, devKey, isActive, prefersReducedMotion]);
 
-  function handleTabClick(tab: DevTab) {
-    setActiveDevTab(tab);
-    setDevKey((k) => k + 1);
-    onRestartProgress();
-  }
-
-  function handleDevKeyDown(
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    tab: DevTab,
-  ) {
-    const idx = DEV_ORDERED_TABS.indexOf(tab);
-    const buttons =
-      devTabsRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']");
-    const go = (i: number) => {
-      const next = DEV_ORDERED_TABS[i];
-      setActiveDevTab(next);
-      setDevKey((k) => k + 1);
-      onRestartProgress();
-      buttons?.[i]?.focus();
-    };
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      go((idx + 1) % DEV_ORDERED_TABS.length);
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      go((idx - 1 + DEV_ORDERED_TABS.length) % DEV_ORDERED_TABS.length);
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      go(0);
-    } else if (e.key === "End") {
-      e.preventDefault();
-      go(DEV_ORDERED_TABS.length - 1);
-    }
-  }
-
   const allLinesVisible = visibleLines >= lineCount;
   const showCursor =
     !prefersReducedMotion && !allLinesVisible && visibleLines > 0;
@@ -435,108 +402,104 @@ export function DevelopersPanel({
       }
     >
       <div className="relative pb-32 pr-4">
-        {/* Code window */}
-        <div className="overflow-hidden rounded-xl border border-code-border/60 bg-code-surface shadow-sm">
-          {/* Tab + filename bar */}
-          <div className="flex items-center border-b border-code-border/60">
-            <div
-              ref={devTabsRef}
-              role="tablist"
-              aria-label="Developer examples"
-              className="flex"
-            >
-              {DEV_ORDERED_TABS.map((tab) => {
-                const isActiveTab = activeDevTab === tab;
-                return (
-                  <button
+        <Tabs
+          value={activeDevTab}
+          onValueChange={(v: string) => {
+            const tab = v as DevTab;
+            setActiveDevTab(tab);
+            setDevKey((k) => k + 1);
+            onRestartProgress();
+          }}
+        >
+          {/* Code window */}
+          <div className="overflow-hidden rounded-xl border border-code-border/60 bg-code-surface shadow-sm">
+            {/* Tab + filename bar */}
+            <div className="flex items-center border-b border-code-border/60">
+              <TabsList
+                aria-label="Developer examples"
+                className="gap-0 rounded-none bg-transparent p-0 [&_[data-slot=tab-indicator]]:hidden"
+              >
+                {DEV_ORDERED_TABS.map((tab) => (
+                  <TabsTab
                     key={tab}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActiveTab}
-                    aria-controls="dev-panel"
-                    id={`dev-tab-${tab}`}
-                    tabIndex={isActiveTab ? 0 : -1}
-                    onClick={() => handleTabClick(tab)}
-                    onKeyDown={(e) => handleDevKeyDown(e, tab)}
-                    className={cn(
-                      "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      isActiveTab
-                        ? "rounded-t bg-code-tab-active text-code-tab-text"
-                        : "text-code-dim hover:text-code-dim-hover",
-                    )}
+                    value={tab}
+                    className="h-auto rounded-none rounded-t border-none px-3.5 py-2.5 text-xs sm:h-auto sm:text-xs text-code-dim hover:text-code-dim-hover data-active:rounded-t data-active:bg-code-tab-active data-active:text-code-tab-text"
                   >
                     {DEV_TAB_LABELS[tab]}
-                  </button>
-                );
-              })}
+                  </TabsTab>
+                ))}
+              </TabsList>
+              <span className="ml-auto pr-4 font-mono text-2xs text-code-dim">
+                {DEV_TAB_FILES[activeDevTab]}
+              </span>
             </div>
-            <span className="ml-auto pr-4 font-mono text-2xs text-code-dim">
-              {DEV_TAB_FILES[activeDevTab]}
-            </span>
-          </div>
 
-          {/* Code lines */}
-          <div className="min-h-[196px] px-4 py-4" aria-hidden="true">
-            {DEV_CODE[activeDevTab].map((entry, i) => (
-              <div
-                key={entry.id}
-                className={cn(
-                  "flex",
-                  !prefersReducedMotion &&
-                    "transition-opacity duration-150 ease-out",
-                )}
-                style={
-                  prefersReducedMotion
-                    ? undefined
-                    : { opacity: i < visibleLines ? 1 : 0 }
-                }
-              >
-                <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-code-line-number">
-                  {i + 1}
-                </span>
-                <span className="whitespace-pre font-mono text-xs leading-[1.7]">
-                  {entry.tokens.map((tok, j) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: syntax tokens static per line
-                    <span key={j} className={tok.c}>
-                      {tok.t}
-                    </span>
-                  ))}
-                  {showCursor && i === visibleLines - 1 && (
-                    <span className="ml-0.5 inline-block h-[1em] w-[0.55em] translate-y-[1px] animate-pulse bg-code-cursor" />
+            {/* Code lines */}
+            <div className="min-h-[196px] px-4 py-4" aria-hidden="true">
+              {DEV_CODE[activeDevTab].map((entry, i) => (
+                <div
+                  key={entry.id}
+                  className={cn(
+                    "flex",
+                    !prefersReducedMotion &&
+                      "transition-opacity duration-150 ease-out",
                   )}
-                </span>
-              </div>
-            ))}
+                  style={
+                    prefersReducedMotion
+                      ? undefined
+                      : { opacity: i < visibleLines ? 1 : 0 }
+                  }
+                >
+                  <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-code-line-number">
+                    {i + 1}
+                  </span>
+                  <span className="whitespace-pre font-mono text-xs leading-[1.7]">
+                    {entry.tokens.map((tok, j) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: syntax tokens static per line
+                      <span key={j} className={tok.c}>
+                        {tok.t}
+                      </span>
+                    ))}
+                    {showCursor && i === visibleLines - 1 && (
+                      <span className="ml-0.5 inline-block h-[1em] w-[0.55em] translate-y-[1px] animate-pulse bg-code-cursor" />
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Result card — overlaps bottom-right of code window */}
-        <div
-          role="tabpanel"
-          id="dev-panel"
-          aria-labelledby={`dev-tab-${activeDevTab}`}
-          aria-live="polite"
-          className={cn(
-            "pointer-events-none absolute bottom-0 right-0 z-10 w-[62%]",
-            !prefersReducedMotion &&
-              "transition-[opacity,transform] duration-450 ease-out",
-          )}
-          style={
-            prefersReducedMotion
-              ? { opacity: showResult ? 1 : 0 }
-              : {
-                  opacity: showResult ? 1 : 0,
-                  transform: showResult ? "translateY(0)" : "translateY(8px)",
-                }
-          }
-        >
-          <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            {activeDevTab === "atoms" && <AtomsResult />}
-            {activeDevTab === "apiv2" && <ApiV2Result />}
-            {activeDevTab === "webhooks" && <WebhooksResult />}
-          </div>
-        </div>
+          {/* Result cards — positioned per tab so atoms/webhooks overlap the empty
+              bottom of the code window; apiv2 sits in the pb-32 space below */}
+          {DEV_ORDERED_TABS.map((tab) => (
+            <TabsPanel
+              key={tab}
+              value={tab}
+              className={cn(
+                "pointer-events-none absolute right-0 z-10 w-[62%]",
+                TAB_RESULT_BOTTOM[tab],
+                !prefersReducedMotion &&
+                  "transition-[opacity,transform] duration-450 ease-out",
+              )}
+              style={
+                prefersReducedMotion
+                  ? { opacity: showResult ? 1 : 0 }
+                  : {
+                      opacity: showResult ? 1 : 0,
+                      transform: showResult
+                        ? "translateY(0)"
+                        : "translateY(8px)",
+                    }
+              }
+            >
+              <div className="pointer-events-auto overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                {tab === "atoms" && <AtomsResult />}
+                {tab === "apiv2" && <ApiV2Result />}
+                {tab === "webhooks" && <WebhooksResult />}
+              </div>
+            </TabsPanel>
+          ))}
+        </Tabs>
       </div>
     </div>
   );
