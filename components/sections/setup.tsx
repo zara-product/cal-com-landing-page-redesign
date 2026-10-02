@@ -210,14 +210,7 @@ export function SetupSection() {
                     )}
 
                     <div className="relative flex items-start gap-3 px-5 py-4">
-                      <span
-                        className={cn(
-                          "shrink-0 tabular-nums text-xs font-semibold leading-snug",
-                          isActive
-                            ? "text-foreground/40"
-                            : "text-muted-foreground/40",
-                        )}
-                      >
+                      <span className="shrink-0 tabular-nums text-xs font-semibold leading-snug text-muted-foreground">
                         {step.number}
                       </span>
                       <span className="min-w-0">

@@ -221,7 +221,7 @@ function AtomsResult() {
           <span className="size-1.5 rounded-full bg-foreground/20" />
         </div>
         <div className="flex flex-1 justify-center">
-          <span className="rounded-full bg-background px-2 py-0.5 text-[9px] text-muted-foreground">
+          <span className="rounded-full bg-background px-2 py-0.5 text-micro text-muted-foreground">
             acmehealth.com/visits/new
           </span>
         </div>
@@ -238,7 +238,7 @@ function AtomsResult() {
             &lt;Booker /&gt;
           </span>
         </div>
-        <span className="text-[9px] text-muted-foreground">Cal.com Atoms</span>
+        <span className="text-micro text-muted-foreground">Cal.com Atoms</span>
       </div>
 
       {/* Days row — Thu 8 selected */}

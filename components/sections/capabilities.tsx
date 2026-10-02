@@ -164,7 +164,7 @@ function RouteBookingsVisual() {
       <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-1.5">
         <Avatar className="size-6 shrink-0">
           <AvatarImage src="/avatars/marcus-lee.png" alt="Marcus Lee" />
-          <AvatarFallback className="bg-avatar-bg" />
+          <AvatarFallback className="bg-input" />
         </Avatar>
         <span className="truncate text-xs font-medium text-foreground">
           Marcus Lee
@@ -236,7 +236,7 @@ function CoordinateTeamsVisual() {
             className={cn("size-10 ring-2 ring-card", !active && "opacity-40")}
           >
             <AvatarImage src={src} alt={name} />
-            <AvatarFallback className="bg-neutral-pale" />
+            <AvatarFallback className="bg-accent" />
           </Avatar>
         ))}
       </div>

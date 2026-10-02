@@ -36,15 +36,6 @@
   --color-code-line-number: oklch(43.9% 0 0);
   --color-code-cursor: oklch(70.8% 0 0);
 
-  /* Avatar fallback — light fixed values */
-  --color-avatar-bg: oklch(92.2% 0 0);
-  --color-avatar-fg: oklch(43.9% 0 0);
-
-  /* Neutral fixed tints */
-  --color-neutral-wash: oklch(97% 0 0);
-  --color-neutral-pale: oklch(87% 0 0);
-  --color-neutral-deep: oklch(55.6% 0 0);
-
   /* Transparent fills */
   --color-dot-fill: oklch(0% 0 0 / 5.5%);
   --color-border-inactive: oklch(0% 0 0 / 10%);

@@ -152,13 +152,13 @@ function ReviewSource({
         <span className="text-stat font-bold leading-none tracking-tight text-inverse-foreground">
           {main}
         </span>
-        <span className="text-sm font-medium leading-none text-inverse-foreground/40">
+        <span className="text-sm font-medium leading-none text-inverse-foreground/70">
           /{denom}
         </span>
       </span>
       <div className="flex flex-col gap-1">
         <Stars />
-        <span className="text-xs leading-none text-inverse-foreground/50">
+        <span className="text-xs leading-none text-inverse-foreground/70">
           {label}
         </span>
       </div>
@@ -170,7 +170,10 @@ function ReviewSource({
 
 export function ReviewProofBanner() {
   return (
-    <div className="relative w-full overflow-hidden bg-inverse py-10">
+    <section
+      aria-label="Review scores"
+      className="relative w-full overflow-hidden bg-inverse py-10"
+    >
       <BannerTileCluster />
       <div className="relative mx-auto max-w-[1200px] px-10">
         <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16">
@@ -199,6 +202,6 @@ export function ReviewProofBanner() {
           />
         </div>
       </div>
-    </div>
+    </section>
   );
 }

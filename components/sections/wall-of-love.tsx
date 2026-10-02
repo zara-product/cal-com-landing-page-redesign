@@ -312,7 +312,10 @@ export function WallOfLoveSection() {
   const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
 
   return (
-    <section className="w-full bg-background py-24 overflow-hidden">
+    <section
+      aria-label="Wall of love"
+      className="w-full bg-background py-24 overflow-hidden"
+    >
       <div className="mx-auto max-w-[1200px] px-10">
         <div className="relative z-10 flex flex-col items-center text-center gap-4 mb-16">
           <div className="flex items-center gap-3">

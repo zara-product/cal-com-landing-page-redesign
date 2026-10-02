@@ -54,10 +54,10 @@ function AwardBadge({ category, rank }: { category: string; rank: string }) {
     <div className="flex items-center gap-1">
       <PhLaurelLeft className="shrink-0 text-foreground/35" />
       <div className="flex flex-col items-center text-center">
-        <span className="text-[8px] font-semibold uppercase leading-none tracking-[0.13em] text-muted-foreground/55">
+        <span className="text-micro font-semibold uppercase leading-none tracking-[0.13em] text-muted-foreground">
           {category}
         </span>
-        <span className="mt-1 text-lg font-bold leading-none tracking-tight text-foreground/55">
+        <span className="mt-1 text-lg font-bold leading-none tracking-tight text-foreground">
           {rank}
         </span>
       </div>

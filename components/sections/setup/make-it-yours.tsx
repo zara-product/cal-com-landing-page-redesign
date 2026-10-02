@@ -48,15 +48,14 @@ export function YourLookVisual() {
         aria-hidden="true"
         className="block h-5 w-5 rounded-full bg-foreground ring-2 ring-foreground ring-offset-2"
       />
-      {/* Dark grey */}
+      {/* Example brand colours — not UI tokens */}
       <span
         aria-hidden="true"
-        className="block h-5 w-5 rounded-full bg-neutral-deep"
+        className="block h-5 w-5 rounded-full bg-neutral-500"
       />
-      {/* Light grey */}
       <span
         aria-hidden="true"
-        className="block h-5 w-5 rounded-full bg-neutral-pale"
+        className="block h-5 w-5 rounded-full bg-neutral-300"
       />
       {/* White */}
       <span

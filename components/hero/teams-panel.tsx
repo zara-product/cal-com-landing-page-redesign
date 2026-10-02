@@ -66,7 +66,7 @@ export function TeamsPanel({
                 >
                   <Avatar className="size-8 ring-2 ring-card">
                     <AvatarImage src={src} alt="" />
-                    <AvatarFallback className="bg-avatar-bg" />
+                    <AvatarFallback className="bg-input" />
                   </Avatar>
                 </div>
               ))}
@@ -165,7 +165,7 @@ export function TeamsPanel({
                     src="/avatars/teams-customer.png"
                     alt="Customer"
                   />
-                  <AvatarFallback className="bg-avatar-bg" />
+                  <AvatarFallback className="bg-input" />
                 </Avatar>
                 <div className="flex size-6 items-center justify-center rounded-full border border-success/20 bg-success/10">
                   <CheckIcon
@@ -178,7 +178,7 @@ export function TeamsPanel({
                     src="/avatars/teams-sofia.png"
                     alt="Sofia Ruiz"
                   />
-                  <AvatarFallback className="bg-avatar-bg" />
+                  <AvatarFallback className="bg-input" />
                 </Avatar>
               </div>
             </div>

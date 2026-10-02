@@ -80,7 +80,7 @@ function FaqTrigger({ question }: { question: string }) {
 
 export function QuestionsSection() {
   return (
-    <section className="w-full py-24 bg-background">
+    <section aria-label="Questions" className="w-full py-24 bg-background">
       <div className="mx-auto max-w-[1200px] px-10">
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-4 mb-16">

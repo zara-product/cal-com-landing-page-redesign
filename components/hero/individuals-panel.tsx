@@ -70,7 +70,7 @@ export function IndividualsPanel({
         <div className="flex items-center gap-2.5 border-b border-border p-3 sm:hidden">
           <Avatar className="size-7">
             <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
-            <AvatarFallback className="bg-avatar-bg text-[9px] font-semibold text-avatar-fg">
+            <AvatarFallback className="bg-input text-micro font-semibold text-muted-foreground">
               EN
             </AvatarFallback>
           </Avatar>
@@ -98,7 +98,7 @@ export function IndividualsPanel({
           <div className="hidden sm:flex w-[132px] shrink-0 flex-col gap-4 p-4">
             <Avatar className="size-8">
               <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
-              <AvatarFallback className="bg-avatar-bg text-[9px] font-semibold text-avatar-fg">
+              <AvatarFallback className="bg-input text-micro font-semibold text-muted-foreground">
                 EN
               </AvatarFallback>
             </Avatar>
@@ -147,7 +147,7 @@ export function IndividualsPanel({
               {CAL_DAYS.map((d) => (
                 <div
                   key={d}
-                  className="pb-1.5 text-center text-[8px] font-medium tracking-wide text-muted-foreground/50"
+                  className="pb-1.5 text-center text-micro font-medium text-muted-foreground/50"
                 >
                   <span className="sm:hidden">{d[0]}</span>
                   <span className="hidden sm:inline">{d}</span>
@@ -174,7 +174,7 @@ export function IndividualsPanel({
                             : "text-muted-foreground/30"
                           : isAvail
                             ? calIlluminated
-                              ? "bg-neutral-wash font-medium text-foreground"
+                              ? "bg-muted font-medium text-foreground"
                               : "text-muted-foreground/30"
                             : "text-muted-foreground/30",
                       )}

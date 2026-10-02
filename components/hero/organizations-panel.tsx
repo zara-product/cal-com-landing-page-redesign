@@ -18,31 +18,24 @@ const ORG_MEETINGS: Array<{
   label: string;
 }> = [
   { id: 1, day: 1, startHour: 9, span: 2, team: "sales", label: "Demo" },
-  {
-    id: 2,
-    day: 2,
-    startHour: 10,
-    span: 1,
-    team: "support",
-    label: "Onboarding",
-  },
-  { id: 3, day: 3, startHour: 9, span: 1, team: "hiring", label: "Interview" },
+  { id: 2, day: 2, startHour: 10, span: 1, team: "support", label: "Intro" },
+  { id: 3, day: 3, startHour: 9, span: 1, team: "hiring", label: "Screen" },
   { id: 4, day: 4, startHour: 11, span: 2, team: "sales", label: "Discovery" },
-  { id: 5, day: 5, startHour: 9, span: 1, team: "support", label: "Check-in" },
-  { id: 6, day: 2, startHour: 12, span: 1, team: "hiring", label: "Interview" },
-  { id: 7, day: 3, startHour: 11, span: 1, team: "support", label: "Support" },
+  { id: 5, day: 5, startHour: 9, span: 1, team: "support", label: "Check" },
+  { id: 6, day: 2, startHour: 12, span: 1, team: "hiring", label: "Offer" },
+  { id: 7, day: 3, startHour: 11, span: 1, team: "support", label: "Assist" },
   { id: 8, day: 5, startHour: 11, span: 2, team: "sales", label: "Demo" },
 ];
 
 const ORG_TEAM_BLOCK: Record<OrgTeam, string> = {
   sales: "bg-foreground text-background",
-  support: "bg-neutral-wash text-foreground",
+  support: "bg-muted text-foreground",
   hiring: "border border-border bg-card text-foreground",
 };
 
 const ORG_LEGEND_SWATCH: Record<OrgTeam, string> = {
   sales: "bg-foreground",
-  support: "bg-avatar-bg",
+  support: "bg-input",
   hiring: "border border-border bg-card",
 };
 
@@ -105,7 +98,7 @@ export function OrgsPanel({
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-foreground"
               aria-hidden="true"
             >
-              <span className="text-[9px] font-bold text-background">A</span>
+              <span className="text-micro font-bold text-background">A</span>
             </div>
             <span className="truncate text-xs font-medium text-foreground">
               Acme ·{" "}
@@ -192,7 +185,7 @@ export function OrgsPanel({
                   style={{
                     gridColumn: meeting.day + 1,
                     gridRow: `${meeting.startHour - 8} / span ${meeting.span}`,
-                    padding: "2px 3px",
+                    padding: "2px 2px",
                     zIndex: 1,
                     opacity: isVisible ? 1 : 0,
                     transform: isVisible ? "none" : "translateY(4px)",
@@ -200,7 +193,7 @@ export function OrgsPanel({
                 >
                   <div
                     className={cn(
-                      "flex h-full w-full items-start rounded-sm px-1.5 py-1 text-[9px] font-semibold leading-tight",
+                      "flex h-full w-full items-start overflow-hidden rounded-sm px-1 py-1 text-micro font-semibold leading-tight",
                       ORG_TEAM_BLOCK[meeting.team],
                     )}
                   >

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import NextImage from "next/image";
 import * as React from "react";
 import {
   SectionEyebrow,
@@ -19,7 +20,7 @@ const TESTIMONIALS = [
       "More elegant than Calendly, more open than SavvyCal, Cal.com works and it feels just right.",
     name: "Flo Merian",
     role: "Product Marketing, Mintlify",
-    portrait: "https://github.com/fmerian.png?size=400",
+    portrait: "/avatars/testimonials/fmerian.png",
   },
   {
     id: "guillermo",
@@ -28,7 +29,7 @@ const TESTIMONIALS = [
       "I think Cal.com has a very good chance of creating a new category around being both great and well designed.",
     name: "Guillermo Rauch",
     role: "CEO, Vercel",
-    portrait: "https://github.com/rauchg.png?size=400",
+    portrait: "/avatars/testimonials/rauchg.png",
   },
   {
     id: "kent",
@@ -36,7 +37,7 @@ const TESTIMONIALS = [
     quote: "I just migrated from Calendly to Cal.com.",
     name: "Kent C. Dodds",
     role: "Founder, EpicWeb.dev",
-    portrait: "https://github.com/kentcdodds.png?size=400",
+    portrait: "/avatars/testimonials/kentcdodds.png",
   },
   {
     id: "aria",
@@ -45,7 +46,7 @@ const TESTIMONIALS = [
       "Just gave it a go and it's definitely the easiest meeting I've ever scheduled!",
     name: "Aria Minaei",
     role: "CEO, Theatre.JS",
-    portrait: "https://github.com/AriaMinaei.png?size=400",
+    portrait: "/avatars/testimonials/ariaminaei.png",
   },
   {
     id: "ant",
@@ -54,7 +55,7 @@ const TESTIMONIALS = [
       "I finally made the move to Cal.com after I couldn't find how to edit events in the Calendly dashboard.",
     name: "Ant Wilson",
     role: "Co-Founder & CTO, Supabase",
-    portrait: "https://github.com/awalias.png?size=400",
+    portrait: "/avatars/testimonials/awalias.png",
   },
   {
     id: "micah",
@@ -175,16 +176,14 @@ function PortraitSlot({
   name: string;
   company: string;
 }) {
-  const [failed, setFailed] = React.useState(false);
-
-  if (portrait && !failed) {
+  if (portrait) {
     return (
-      // biome-ignore lint/performance/noImgElement: V1 portrait images — migrate to next/image with remotePatterns in refinement
-      <img
+      <NextImage
         src={portrait}
         alt={name}
-        className="h-full w-full object-cover"
-        onError={() => setFailed(true)}
+        fill
+        sizes="(min-width: 1024px) 200px, (min-width: 640px) 160px, 140px"
+        className="object-cover"
       />
     );
   }
@@ -207,11 +206,13 @@ export function TestimonialsSection() {
   const [animated, setAnimated] = React.useState(true);
   const [cardHovered, setCardHovered] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [hasFocus, setHasFocus] = React.useState(false);
   const [containerW, setContainerW] = React.useState(1440);
   const [inView, setInView] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
+  const [ariaLive, setAriaLive] = React.useState<"off" | "polite">("off");
   const sectionRef = React.useRef<HTMLElement>(null);
-  const containerRef = React.useRef<HTMLElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressRafRef = React.useRef<number | null>(null);
   const progressStartRef = React.useRef<number | null>(null);
@@ -222,7 +223,7 @@ export function TestimonialsSection() {
     "(prefers-reduced-motion: reduce)",
   );
 
-  const isPaused = cardHovered || isDragging;
+  const isPaused = cardHovered || isDragging || hasFocus;
   // displayActive: 0–5, maps virtual position to real testimonial for pagination
   const displayActive = (virtualActive - REAL_START + COUNT) % COUNT;
 
@@ -333,6 +334,7 @@ export function TestimonialsSection() {
   const navigate = React.useCallback((delta: number) => {
     if (transitioningRef.current) return;
     transitioningRef.current = true;
+    setAriaLive("polite");
     setVirtualActive((v) =>
       Math.max(0, Math.min(SLIDES.length - 1, v + delta)),
     );
@@ -382,6 +384,7 @@ export function TestimonialsSection() {
     } else {
       // Normal transition completed — release the lock immediately
       transitioningRef.current = false;
+      setAriaLive("off");
     }
   };
 
@@ -434,7 +437,7 @@ export function TestimonialsSection() {
             Don&apos;t just take our word for it.
           </SectionHeading>
 
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-inverse-foreground/55">
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-inverse-foreground/80">
             See how people and teams use Cal.com to make scheduling work the way
             they do.
           </p>
@@ -442,14 +445,22 @@ export function TestimonialsSection() {
       </div>
 
       {/* Carousel — full bleed */}
-      <section
+      {/* biome-ignore lint/a11y/useSemanticElements: section not usable here — the outer element is already a section landmark */}
+      <div
         ref={containerRef}
+        role="region"
         className="relative mt-14 pb-16 lg:pb-24"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard navigation region for carousel
         tabIndex={0}
         aria-label="Testimonials carousel — use left and right arrow keys to navigate"
-        aria-live="polite"
+        aria-live={ariaLive}
         onKeyDown={onKeyDown}
+        onFocus={() => setHasFocus(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setHasFocus(false);
+          }
+        }}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerLeave}
@@ -584,44 +595,44 @@ export function TestimonialsSection() {
           </div>
         </div>
 
-        {/* Pagination dots — always maps over real TESTIMONIALS */}
-        <div
-          role="tablist"
-          aria-label="Go to testimonial"
-          className="mt-4 flex justify-center gap-2 pb-2"
-        >
+        {/* Pagination dots — plain buttons, no tablist pattern */}
+        <div className="mt-4 flex justify-center gap-2 pb-2">
           {TESTIMONIALS.map((t, i) => (
             <button
               key={t.id}
               type="button"
-              role="tab"
-              aria-selected={i === displayActive}
-              aria-label={`Testimonial ${i + 1}: ${t.name}`}
+              aria-current={i === displayActive ? "true" : undefined}
+              aria-label={`Go to testimonial ${i + 1}: ${t.name}`}
               onClick={() => {
                 const target = REAL_START + i;
                 if (target !== virtualActive && !transitioningRef.current) {
                   transitioningRef.current = true;
+                  setAriaLive("polite");
                   setVirtualActive(target);
                 }
               }}
-              className={cn(
-                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
-                i === displayActive
-                  ? "w-6 bg-card/30"
-                  : "w-1.5 bg-card/30 hover:bg-card/50",
-              )}
+              className="group flex min-h-6 min-w-6 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
             >
-              {i === displayActive && !prefersReducedMotion && (
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-y-0 left-0 rounded-full bg-card"
-                  style={{ width: `${progress}%` }}
-                />
-              )}
+              <span
+                className={cn(
+                  "relative block overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250",
+                  i === displayActive
+                    ? "w-6 bg-card/30"
+                    : "w-1.5 bg-card/30 group-hover:bg-card/50",
+                )}
+              >
+                {i === displayActive && !prefersReducedMotion && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 rounded-full bg-card"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </span>
             </button>
           ))}
         </div>
-      </section>
+      </div>
     </section>
   );
 }
