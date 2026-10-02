@@ -111,56 +111,36 @@ function NavDropdown({
   items: Array<{ label: string; href: string }>;
 }) {
   const [open, setOpen] = React.useState(false);
-  const closeTimerRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const cancelClose = () => clearTimeout(closeTimerRef.current);
-  const scheduleClose = () => {
-    closeTimerRef.current = setTimeout(() => setOpen(false), 100);
-  };
-
-  React.useEffect(() => () => clearTimeout(closeTimerRef.current), []);
 
   return (
-    <div
-      role="none"
-      onMouseEnter={() => {
-        cancelClose();
-        setOpen(true);
-      }}
-      onMouseLeave={scheduleClose}
-    >
-      <Menu open={open} onOpenChange={setOpen}>
-        <MenuTrigger
+    <Menu open={open} onOpenChange={setOpen}>
+      <MenuTrigger
+        openOnHover
+        delay={100}
+        closeDelay={100}
+        className={cn(
+          "flex cursor-pointer items-center gap-1 px-3 py-2 text-sm text-muted-foreground",
+          "transition-colors hover:text-foreground",
+          "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+      >
+        {label}
+        <ChevronDownIcon
           className={cn(
-            "flex cursor-pointer items-center gap-1 px-3 py-2 text-sm text-muted-foreground",
-            "transition-colors hover:text-foreground",
-            "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "size-3 transition-transform duration-250",
+            open && "rotate-180",
           )}
-        >
-          {label}
-          <ChevronDownIcon
-            className={cn(
-              "size-3 transition-transform duration-250",
-              open && "rotate-180",
-            )}
-            aria-hidden="true"
-          />
-        </MenuTrigger>
-        <MenuPopup
-          side="bottom"
-          sideOffset={8}
-          align="start"
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleClose}
-        >
-          {items.map((item) => (
-            <MenuLinkItem key={item.label} href={item.href}>
-              {item.label}
-            </MenuLinkItem>
-          ))}
-        </MenuPopup>
-      </Menu>
-    </div>
+          aria-hidden="true"
+        />
+      </MenuTrigger>
+      <MenuPopup side="bottom" sideOffset={8} align="start">
+        {items.map((item) => (
+          <MenuLinkItem key={item.label} href={item.href}>
+            {item.label}
+          </MenuLinkItem>
+        ))}
+      </MenuPopup>
+    </Menu>
   );
 }
 

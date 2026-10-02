@@ -147,7 +147,7 @@ export function IndividualsPanel({
               {CAL_DAYS.map((d) => (
                 <div
                   key={d}
-                  className="pb-1.5 text-center text-micro font-medium text-muted-foreground/50"
+                  className="pb-1.5 text-center text-micro font-medium text-muted-foreground"
                 >
                   <span className="sm:hidden">{d[0]}</span>
                   <span className="hidden sm:inline">{d}</span>

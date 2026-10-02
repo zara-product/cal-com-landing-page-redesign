@@ -135,7 +135,7 @@ export function OrgsPanel({
             {ORG_DAY_LABELS.map((day) => (
               <div
                 key={day}
-                className="pb-1.5 text-center text-2xs font-medium text-muted-foreground/60"
+                className="pb-1.5 text-center text-2xs font-medium text-muted-foreground"
               >
                 {day}
               </div>

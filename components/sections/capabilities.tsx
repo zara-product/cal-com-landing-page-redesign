@@ -133,20 +133,20 @@ function BentoCard({
 
 function RouteBookingsVisual() {
   return (
-    <div className="flex w-full items-stretch gap-2">
-      {/* Question + answer — two-line card sets the row height */}
+    <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-stretch">
+      {/* Question + answer */}
       <div className="min-w-0 flex-1 rounded-xl border border-border bg-card px-2.5 py-1.5">
         <p className="text-2xs text-muted-foreground">Company size?</p>
         <p className="mt-0.5 text-sm font-semibold text-foreground">200+</p>
       </div>
 
       <ArrowRightIcon
-        className="size-3 shrink-0 self-center text-muted-foreground/30"
+        className="hidden size-3 shrink-0 self-center text-muted-foreground/30 sm:block"
         aria-hidden="true"
       />
 
-      {/* Rule pill + fallback — centred in row */}
-      <div className="min-w-0 flex-1 self-center">
+      {/* Rule pill + fallback */}
+      <div className="min-w-0 flex-1 sm:self-center">
         <div className="whitespace-nowrap rounded-lg bg-foreground px-2 py-1 text-micro font-medium text-background">
           200+ → Enterprise
         </div>
@@ -156,11 +156,11 @@ function RouteBookingsVisual() {
       </div>
 
       <ArrowRightIcon
-        className="size-3 shrink-0 self-center text-muted-foreground/30"
+        className="hidden size-3 shrink-0 self-center text-muted-foreground/30 sm:block"
         aria-hidden="true"
       />
 
-      {/* Destination — stretches to same height as left card */}
+      {/* Destination */}
       <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-1.5">
         <Avatar className="size-6 shrink-0">
           <AvatarImage src="/avatars/marcus-lee.png" alt="Marcus Lee" />
@@ -295,7 +295,7 @@ function StayConsistentVisual() {
 
 function EmbedVisual() {
   return (
-    <div className="flex w-full gap-3">
+    <div className="flex w-full flex-col gap-3 sm:flex-row">
       {/* Code block */}
       <div className="min-w-0 flex-1 rounded-lg bg-foreground p-4">
         <pre

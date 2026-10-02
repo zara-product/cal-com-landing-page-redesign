@@ -1,15 +1,10 @@
+import { GeistMono } from "geist/font/mono";
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/sections/site-footer";
 import { SiteHeader } from "@/components/sections/site-header";
 import { PageRails, SectionDivider } from "@/components/ui/page-rail";
 import { cn } from "@/lib/utils";
-
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Cal.com — Scheduling made simple",
@@ -21,7 +16,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistMono.variable, "font-sans")}
+      className={cn("h-full", "antialiased", GeistMono.variable, "font-sans")}
     >
       <body className="min-h-full flex flex-col">
         {/* Rails wrapper gives PageRails its anchor and stops before footer */}
