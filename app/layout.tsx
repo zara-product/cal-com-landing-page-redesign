@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cal.com — Scheduling made simple",
   description:
-    "A redesigned Cal.com homepage showing how scheduling grows from individuals to teams, organisations and developers.",
+    "A redesigned Cal.com homepage showing how scheduling grows from individuals to teams, organizations and developers.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

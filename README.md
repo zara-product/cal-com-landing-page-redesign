@@ -10,7 +10,7 @@ A product-led redesign of Cal.com's homepage, completed as part of a Senior Prod
 
 From auditing the current homepage and product surfaces, I found that Cal.com communicates the individual scheduling use case very strongly.
 
-What is less immediate is the depth behind that entry point. Team distribution, routing, workflows, organisational controls and developer infrastructure are all part of the product, but they take more effort to discover and understand as a connected story.
+What is less immediate is the depth behind that entry point. Team distribution, routing, workflows, organizational controls and developer infrastructure are all part of the product, but they take more effort to discover and understand as a connected story.
 
 The opportunity was not to add more information.
 
@@ -22,7 +22,7 @@ I approached this as a **redesign, not a rebrand**.
 
 **Before:** the homepage makes simple scheduling easy to understand, while deeper product value takes more effort to discover.
 
-**After:** the entry point stays simple, but different types of users can recognise Cal.com's relevance earlier, while deeper capability is progressively revealed through the page.
+**After:** the entry point stays simple, but different types of users can recognize Cal.com's relevance earlier, while deeper capability is progressively revealed through the page.
 
 ## Information architecture
 
@@ -44,15 +44,15 @@ The hero needed to stay simple while allowing different kinds of Cal.com users t
 
 I introduced four lightweight audience views:
 
-**Individuals · Teams · Organisations · Developers**
+**Individuals · Teams · Organizations · Developers**
 
 These are not the information architecture of the page. They are a compact way to signal the breadth of Cal.com without turning the hero into a heavy product explanation.
 
-Each view demonstrates a product behaviour:
+Each view demonstrates a product behavior:
 
 - Individuals — selecting and confirming a booking.
 - Teams — round-robin meeting distribution.
-- Organisations — one shared view of scheduling across teams.
+- Organizations — one shared view of scheduling across teams.
 - Developers — Atoms, API and webhook flows producing a scheduling outcome.
 
 The headline stays deliberately simple while the interaction carries more of the product depth.
@@ -64,7 +64,7 @@ The existing hero offers different signup methods, but they ultimately serve the
 I asked whether the two primary CTA positions could instead serve two meaningfully different user intents:
 
 **Sign up for free** — for someone ready to start immediately.  
-**Book a demo** — for a team or organisation that may need a higher-consideration path.
+**Book a demo** — for a team or organization that may need a higher-consideration path.
 
 The global navigation also does not expose a prominent Book a demo or sales action, so the hero became a useful place to surface that path without adding another navigation item.
 
@@ -87,7 +87,7 @@ Instead, a short sequence can show:
 
 **available team → distribution logic → selected host**
 
-The same applies to booking confirmation, organisational routing and developer workflows.
+The same applies to booking confirmation, organizational routing and developer workflows.
 
 The intention was to let someone understand deeper product value by watching it happen instead of asking them to study Cal.com.
 
@@ -123,7 +123,7 @@ That includes:
 - payments;
 - workflows and automation;
 - team distribution;
-- organisational controls;
+- organizational controls;
 - embedded scheduling.
 
 The intention was not to create another flat feature list.
@@ -186,11 +186,23 @@ I worked within the existing component and primitive foundation rather than intr
 The final implementation pass included checks for:
 
 - semantic links and controls;
-- keyboard and focus behaviour;
+- keyboard and focus behavior;
 - reduced-motion support;
-- responsive behaviour;
+- responsive behavior;
+- design-token consistency;
 - dead and placeholder code;
 - TypeScript and production build errors.
+
+## Quality pass after submission
+
+After submitting, I audited the project against the role's expectations and tightened it:
+
+- **Responsive:** checked at 320, 375, 390, 768, 1024 and 1440px with no horizontal overflow. The hero demo has its own small-screen layout.
+- **System:** type scale, motion timings and colors are defined as tokens. Section headings share one component. The auto-advancing showcases in the hero and Simple Scheduling are built on coss Tabs (Base UI), following the W3C tabbed-carousel pattern, with the autoplay and progress behavior layered on top.
+- **Accuracy:** the developer samples follow Cal.com's API v2 and webhook documentation.
+- **Accessibility:** inactive panels are inert, text meets 4.5:1 contrast with an 11px minimum, and reduced motion resolves every sequence to its final state.
+- **Codebase:** only the coss components in use are kept, the hero and setup panels live in focused files, and lint and the production build pass on a fresh clone.
+- **Handoff:** the hero is a marketing illustration with example content. To ship it, I would move that content into props and propose the autoplay-with-progress showcase to coss as a shared pattern.
 
 ## Process
 
@@ -216,7 +228,7 @@ The first thing I would test is whether people beyond the individual scheduling 
 For example:
 
 - Does someone managing a team immediately understand that Cal.com can coordinate and distribute meetings?
-- Does an organisational user recognise routing, controls and scheduling standards as relevant to how they operate?
+- Does an organizational user recognize routing, controls and scheduling standards as relevant to how they operate?
 - Does a developer quickly understand that Cal.com can become scheduling infrastructure inside their own product?
 
 I would also test:

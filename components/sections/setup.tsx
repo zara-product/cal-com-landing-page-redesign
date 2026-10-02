@@ -296,7 +296,7 @@ export function SetupSection() {
             />
             <MakeItYoursCard
               title="Your look"
-              description="Match your brand with custom colours, your logo and light or dark mode."
+              description="Match your brand with custom colors, your logo and light or dark mode."
               visual={<YourLookVisual />}
             />
             <MakeItYoursCard

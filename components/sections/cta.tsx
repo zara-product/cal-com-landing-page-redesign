@@ -88,14 +88,14 @@ function PhAwardBadges() {
     <div
       role="img"
       aria-label="Product Hunt: number 1 Product of the Day, Week and Month"
-      className="mt-8 flex flex-wrap items-center justify-center gap-5 sm:gap-8"
+      className="mt-16 flex flex-wrap items-center justify-center gap-5 sm:gap-8"
     >
       <span
         aria-hidden="true"
         className="flex flex-wrap items-center justify-center gap-5 sm:gap-8"
       >
         {CTA_PH_AWARDS.map(({ label, rank }) => (
-          <span key={label} className="flex items-center gap-1.5">
+          <span key={label} className="flex items-center gap-1">
             <PhLaurelLeft className="shrink-0 text-slate-700" />
             <span className="flex flex-col items-center gap-0.5 text-center">
               <span className="text-xs font-semibold leading-none text-slate-700">
@@ -126,7 +126,7 @@ export function CtaSection() {
           </SectionHeading>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:max-w-none">
             <span className="lg:block lg:whitespace-nowrap">
-              Free for individuals. Built to scale with teams and organisations.
+              Free for individuals. Built to scale with teams and organizations.
             </span>{" "}
             <span className="lg:block lg:whitespace-nowrap">
               Developer-ready when scheduling becomes part of your product.

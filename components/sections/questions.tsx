@@ -27,19 +27,19 @@ const FAQS = [
     id: "cost",
     question: "Is Cal.com free to use?",
     answer:
-      "Cal.com is free forever for individuals. Paid plans add capabilities for teams and organisations, including round robin scheduling, routing, shared availability, administration and enterprise controls. Enterprise pricing is custom.",
+      "Cal.com is free forever for individuals. Paid plans add capabilities for teams and organizations, including round robin scheduling, routing, shared availability, administration and enterprise controls. Enterprise pricing is custom.",
   },
   {
     id: "different",
     question: "What makes Cal.com different from other scheduling tools?",
     answer:
-      "Cal.com is built for flexibility. You can control how and when you're booked, customise the experience, automate what happens around meetings, route bookings and connect scheduling to the tools and products you already use.",
+      "Cal.com is built for flexibility. You can control how and when you're booked, customize the experience, automate what happens around meetings, route bookings and connect scheduling to the tools and products you already use.",
   },
   {
     id: "teams",
-    question: "Can Cal.com work for teams and organisations?",
+    question: "Can Cal.com work for teams and organizations?",
     answer:
-      "Yes. Teams can coordinate availability, distribute meetings and automate workflows, while organisations can add sub-teams, permissions, company-wide routing, SSO and other central controls.",
+      "Yes. Teams can coordinate availability, distribute meetings and automate workflows, while organizations can add sub-teams, permissions, company-wide routing, SSO and other central controls.",
   },
   {
     id: "embed",
