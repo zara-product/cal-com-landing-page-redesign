@@ -193,6 +193,8 @@ The final implementation pass included checks for:
 - dead and placeholder code;
 - TypeScript and production build errors.
 
+Light mode only, by design: the scope of this redesign is the default homepage experience.
+
 ## Quality pass after submission
 
 After submitting, I audited the project against the role's expectations and tightened it:

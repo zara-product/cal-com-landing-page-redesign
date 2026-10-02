@@ -611,24 +611,21 @@ export function TestimonialsSection() {
                   setVirtualActive(target);
                 }
               }}
-              className="group flex min-h-6 min-w-6 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+              className={cn(
+                "relative block h-1.5 overflow-hidden rounded-full transition-[width,background-color] duration-250",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
+                i === displayActive
+                  ? "w-6 bg-card/30"
+                  : "w-1.5 bg-card/30 hover:bg-card/50",
+              )}
             >
-              <span
-                className={cn(
-                  "relative block overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250",
-                  i === displayActive
-                    ? "w-6 bg-card/30"
-                    : "w-1.5 bg-card/30 group-hover:bg-card/50",
-                )}
-              >
-                {i === displayActive && !prefersReducedMotion && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 rounded-full bg-card"
-                    style={{ width: `${progress}%` }}
-                  />
-                )}
-              </span>
+              {i === displayActive && !prefersReducedMotion && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 rounded-full bg-card"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
             </button>
           ))}
         </div>
