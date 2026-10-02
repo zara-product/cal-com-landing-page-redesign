@@ -151,7 +151,7 @@ export function HeroSection() {
         </div>
 
         {/* Product Hunt achievements — centred across full hero width */}
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-0 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {PH_AWARDS.map((award) => (
             <AwardBadge
               key={award.category}

@@ -223,7 +223,7 @@ export function IntegrationsSection() {
   return (
     <section aria-label="Integrations" className="w-full bg-background">
       <div className="mx-auto max-w-[1200px] px-10">
-        <div className="py-20 lg:py-28">
+        <div className="pt-16 pb-20 lg:pt-20 lg:pb-28">
           {/* Two-column: copy | hub */}
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-8">
             {/* Left: copy */}

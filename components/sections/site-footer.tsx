@@ -81,7 +81,7 @@ function IconTile({
       aria-label={label}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex size-11 items-center justify-center rounded-lg border border-border bg-card shadow-sm transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex size-11 items-center justify-center rounded-lg border border-border bg-card transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <NextImage
         src={src}
