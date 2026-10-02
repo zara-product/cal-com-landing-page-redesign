@@ -2,7 +2,7 @@
 @import "cal-sans";
 
 @theme {
-  --breakpoint-wide: 1200px;
+  --breakpoint-wide: 1240px;
 }
 
 @custom-variant dark (&:is(.dark *));

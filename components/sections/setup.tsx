@@ -1027,8 +1027,8 @@ function MakeItYoursCard({
   visual: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl bg-card p-6">
-      <div className="flex h-7 w-full items-start">{visual}</div>
+    <div className="flex flex-col overflow-hidden rounded-2xl bg-card p-6">
+      <div className="flex min-h-7 w-full items-start">{visual}</div>
       <div className="mt-6">
         <p className="text-lg font-bold leading-snug text-foreground">
           {title}
@@ -1085,7 +1085,7 @@ function YourLookVisual() {
 
 function TimeSlotsVisual() {
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full flex-wrap items-center justify-between gap-y-1.5">
       <div className="flex items-center gap-1.5">
         <span className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground">
           9:00
