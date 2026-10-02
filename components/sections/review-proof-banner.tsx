@@ -184,7 +184,7 @@ export function ReviewProofBanner() {
           <ReviewSource
             mark={<TrustpilotMark />}
             score="4.7/5"
-            label="413 reviews on Trustpilot"
+            label="400 reviews on Trustpilot"
           />
           <div
             className="hidden sm:block w-px h-8 bg-background/10"
