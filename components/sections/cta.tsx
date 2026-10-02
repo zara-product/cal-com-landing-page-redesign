@@ -45,9 +45,13 @@ export function CtaSection() {
           <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
             Start simple. Grow from there.
           </h2>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">
-            Free for individuals. Built to scale with teams and organisations.
-            Developer-ready when scheduling becomes part of your product.
+          <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:max-w-none">
+            <span className="lg:block lg:whitespace-nowrap">
+              Free for individuals. Built to scale with teams and organisations.
+            </span>{" "}
+            <span className="lg:block lg:whitespace-nowrap">
+              Developer-ready when scheduling becomes part of your product.
+            </span>
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button
