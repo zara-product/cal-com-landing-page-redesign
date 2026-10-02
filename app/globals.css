@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "cal-sans";
 
+@theme {
+  --breakpoint-wide: 1200px;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

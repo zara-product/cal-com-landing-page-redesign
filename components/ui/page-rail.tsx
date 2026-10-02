@@ -68,7 +68,7 @@ export function PageRails() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-10"
+      className="pointer-events-none absolute inset-0 z-10 hidden wide:block"
     >
       <div
         className="absolute inset-y-0 w-px"
@@ -119,7 +119,7 @@ export function SectionDivider({
         <>
           {/* Left rail intersection */}
           <div
-            className="absolute"
+            className="absolute hidden wide:block"
             style={{ left: `calc(50% - ${RAIL_HALF}px)`, top: 0 }}
           >
             {/* Vertical gap strip — covers rail through the intersection zone */}
@@ -138,7 +138,7 @@ export function SectionDivider({
 
           {/* Right rail intersection */}
           <div
-            className="absolute"
+            className="absolute hidden wide:block"
             style={{ left: `calc(50% + ${RAIL_HALF}px)`, top: 0 }}
           >
             {/* Vertical gap strip */}
