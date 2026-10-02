@@ -52,7 +52,7 @@ Each view demonstrates a product behaviour:
 
 - Individuals — selecting and confirming a booking.
 - Teams — round-robin meeting distribution.
-- Organisations — attribute-based routing.
+- Organisations — one shared view of scheduling across teams.
 - Developers — Atoms, API and webhook flows producing a scheduling outcome.
 
 The headline stays deliberately simple while the interaction carries more of the product depth.
@@ -189,7 +189,6 @@ The final implementation pass included checks for:
 - keyboard and focus behaviour;
 - reduced-motion support;
 - responsive behaviour;
-- design-token consistency;
 - dead and placeholder code;
 - TypeScript and production build errors.
 
