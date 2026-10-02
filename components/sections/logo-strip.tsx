@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Container } from "@/components/ui/container";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 // ─── Logo data ────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ export function LogoStripSection() {
       aria-label="Trusted by companies around the world"
       className="w-full bg-background"
     >
-      <div className="mx-auto max-w-[1200px] px-10">
+      <Container>
         <div>
           <div className="flex flex-col gap-4 pb-5 pt-6 md:flex-row md:items-center md:gap-0 md:pb-5 md:pt-6">
             {/* Copy block */}
@@ -118,7 +119,7 @@ export function LogoStripSection() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

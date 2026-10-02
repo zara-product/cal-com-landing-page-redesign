@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { Container } from "@/components/ui/container";
 import { SectionDivider } from "@/components/ui/page-rail";
 import {
   SectionEyebrow,
   SectionHeading,
 } from "@/components/ui/section-heading";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { useAutoplayProgress } from "@/hooks/use-autoplay-progress";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { AvailabilityPanel } from "./setup/availability-panel";
@@ -53,69 +55,22 @@ const AUTO_CYCLE_MS = 5200;
 
 export function SetupSection() {
   const [activeStep, setActiveStep] = React.useState<StepId>("connect");
-  const [progress, setProgress] = React.useState(0);
-  const [inView, setInView] = React.useState(false);
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
   const sectionRef = React.useRef<HTMLElement>(null);
-  const rafRef = React.useRef<number | null>(null);
-  const startTimeRef = React.useRef<number | null>(null);
 
-  React.useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
+  const onAdvance = React.useCallback(() => {
+    setActiveStep((s) => STEP_IDS[(STEP_IDS.indexOf(s) + 1) % STEP_IDS.length]);
   }, []);
 
-  React.useEffect(() => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-
-    if (!inView) return;
-
-    const nextStep =
-      STEP_IDS[(STEP_IDS.indexOf(activeStep) + 1) % STEP_IDS.length];
-
-    if (prefersReducedMotion) {
-      const timer = setInterval(() => setActiveStep(nextStep), AUTO_CYCLE_MS);
-      return () => clearInterval(timer);
-    }
-
-    startTimeRef.current = null;
-    setProgress(0);
-
-    const animate = (timestamp: number) => {
-      if (startTimeRef.current === null) startTimeRef.current = timestamp;
-      const pct = Math.min(
-        (timestamp - startTimeRef.current) / AUTO_CYCLE_MS,
-        1,
-      );
-      setProgress(pct * 100);
-      if (pct < 1) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        rafRef.current = null;
-        setActiveStep(nextStep);
-      }
-    };
-
-    rafRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, [activeStep, prefersReducedMotion, inView]);
+  const { progress, restart } = useAutoplayProgress({
+    duration: AUTO_CYCLE_MS,
+    onAdvance,
+    containerRef: sectionRef,
+    prefersReducedMotion,
+    advanceOnReducedMotion: true,
+  });
 
   return (
     <section
@@ -123,7 +78,7 @@ export function SetupSection() {
       aria-label="Simple scheduling"
       className="w-full bg-background"
     >
-      <div className="mx-auto max-w-[1200px] px-10">
+      <Container>
         <div className="pt-20 pb-10 lg:pt-28 lg:pb-14">
           {/* Section header */}
           <div>
@@ -142,7 +97,10 @@ export function SetupSection() {
           {/* Step nav + product stage */}
           <Tabs
             value={activeStep}
-            onValueChange={(v) => setActiveStep(v as StepId)}
+            onValueChange={(v) => {
+              restart();
+              setActiveStep(v as StepId);
+            }}
             orientation="vertical"
             className="mt-8 grid grid-cols-1 items-start gap-6 lg:mt-10 lg:grid-cols-[360px_1fr] lg:items-center lg:gap-14 xl:gap-20"
           >
@@ -275,11 +233,11 @@ export function SetupSection() {
             </div>
           </Tabs>
         </div>
-      </div>
+      </Container>
 
       <SectionDivider />
 
-      <div className="mx-auto max-w-[1200px] px-10">
+      <Container>
         <div className="py-14">
           {/* ── Make it yours ── */}
           <div className="mb-10">
@@ -306,7 +264,7 @@ export function SetupSection() {
             />
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

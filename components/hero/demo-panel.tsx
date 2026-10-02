@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { useAutoplayProgress } from "@/hooks/use-autoplay-progress";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { DevelopersPanel } from "./developers-panel";
@@ -75,8 +76,6 @@ function FadeOutBar({ width, onDone }: { width: number; onDone: () => void }) {
 
 export function DemoPanel() {
   const [activeMode, setActiveMode] = React.useState<Mode>("individuals");
-  const [progress, setProgress] = React.useState(0);
-  const [inView, setInView] = React.useState(true);
   const [departingBar, setDepartingBar] = React.useState<{
     mode: Mode;
     width: number;
@@ -85,60 +84,35 @@ export function DemoPanel() {
     "(prefers-reduced-motion: reduce)",
   );
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const progressRef = React.useRef(0);
 
-  React.useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  const onAdvance = React.useCallback(() => {
+    setDepartingBar({ mode: activeMode, width: 100 });
+    setActiveMode((m) => MODES[(MODES.indexOf(m) + 1) % MODES.length]);
+  }, [activeMode]);
 
-  React.useEffect(() => {
-    if (prefersReducedMotion || !inView) return;
-
-    const duration = MODE_DURATION[activeMode];
-    const startOffset = (progressRef.current / 100) * duration;
-    const startTime = performance.now() - startOffset;
-
-    let raf: number;
-    const tick = (now: number) => {
-      const p = Math.min(((now - startTime) / duration) * 100, 100);
-      progressRef.current = p;
-      setProgress(p);
-      if (p >= 100) {
-        progressRef.current = 0;
-        setDepartingBar({ mode: activeMode, width: 100 });
-        setActiveMode((m) => MODES[(MODES.indexOf(m) + 1) % MODES.length]);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [activeMode, prefersReducedMotion, inView]);
+  const { progress, progressRef, restart } = useAutoplayProgress({
+    duration: MODE_DURATION[activeMode],
+    onAdvance,
+    containerRef,
+    prefersReducedMotion,
+    resumeOnPause: true,
+  });
 
   const switchMode = React.useCallback(
     (mode: Mode) => {
       if (mode === activeMode) return;
       setDepartingBar({ mode: activeMode, width: progressRef.current });
-      progressRef.current = 0;
-      setProgress(0);
+      restart();
       setActiveMode(mode);
     },
-    [activeMode],
+    [activeMode, progressRef, restart],
   );
 
   const resetProgress = React.useCallback(() => {
-    setDepartingBar({ mode: activeMode, width: progressRef.current });
-    progressRef.current = 0;
-    setProgress(0);
-  }, [activeMode]);
+    const width = progressRef.current;
+    setDepartingBar({ mode: activeMode, width });
+    restart();
+  }, [activeMode, progressRef, restart]);
 
   return (
     <div ref={containerRef} className="flex flex-col gap-9">

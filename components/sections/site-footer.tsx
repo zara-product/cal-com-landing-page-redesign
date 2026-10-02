@@ -4,6 +4,7 @@ import { ChevronDownIcon, GlobeIcon } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 import {
   Menu,
   MenuLinkItem,
@@ -341,7 +342,7 @@ function LanguageSelector() {
 export function SiteFooter() {
   return (
     <footer className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
+      <Container className="border-l border-r border-border">
         {/* ── Main grid: left identity + 5 link columns ── */}
         <div className="grid grid-cols-1 gap-12 py-16 lg:grid-cols-[260px_1fr]">
           {/* Left: wordmark, mission, CTAs, compliance */}
@@ -437,13 +438,13 @@ export function SiteFooter() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* ── Divider with plus markers — standard frame intersection treatment ── */}
       <SectionDivider />
 
       {/* ── Legal bar ── */}
-      <div className="mx-auto max-w-[1200px] border-l border-r border-border px-10">
+      <Container className="border-l border-r border-border">
         <div className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span className="text-xs text-muted-foreground">
@@ -475,7 +476,7 @@ export function SiteFooter() {
             <LanguageSelector />
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

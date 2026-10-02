@@ -1,13 +1,14 @@
 import { ArrowRightIcon, WorkflowIcon } from "lucide-react";
 import { DemoPanel } from "@/components/hero/demo-panel";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 
 // ─── HeroSection ──────────────────────────────────────────────────────────────
 
 export function HeroSection() {
   return (
     <section aria-label="Hero" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10 pt-14 pb-6 lg:pt-20 lg:pb-10">
+      <Container className="pt-14 pb-6 lg:pt-20 lg:pb-10">
         <div className="grid grid-cols-1 items-start gap-12 xl:grid-cols-2 xl:gap-16">
           {/* Left: copy */}
           <div className="flex flex-col">
@@ -85,7 +86,7 @@ export function HeroSection() {
             <DemoPanel />
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

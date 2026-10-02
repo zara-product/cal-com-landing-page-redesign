@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Container } from "@/components/ui/container";
 import {
   SectionEyebrow,
   SectionHeading,
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 export function CapabilitiesSection() {
   return (
     <section aria-label="Built to grow" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10">
+      <Container>
         <div className="py-20 lg:py-28">
           {/* Section header */}
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-end lg:gap-16">
@@ -88,7 +89,7 @@ export function CapabilitiesSection() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

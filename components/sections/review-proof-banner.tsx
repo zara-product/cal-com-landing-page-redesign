@@ -1,4 +1,5 @@
 import type * as React from "react";
+import { Container } from "@/components/ui/container";
 
 // ─── Tile cluster constants (mirrors Testimonials motif) ──────────────────────
 
@@ -175,7 +176,7 @@ export function ReviewProofBanner() {
       className="relative w-full overflow-hidden bg-inverse py-10"
     >
       <BannerTileCluster />
-      <div className="relative mx-auto max-w-[1200px] px-10">
+      <Container className="relative">
         <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16">
           <ReviewSource
             mark={<G2Mark />}
@@ -201,7 +202,7 @@ export function ReviewProofBanner() {
             label="86 reviews on Product Hunt"
           />
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

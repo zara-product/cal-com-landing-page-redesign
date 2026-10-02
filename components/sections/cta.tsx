@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/ui/container";
 import {
   SectionEyebrow,
   SectionHeading,
@@ -118,7 +119,7 @@ function PhAwardBadges() {
 export function CtaSection() {
   return (
     <section aria-label="Get started" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10 py-20 lg:py-28">
+      <Container className="py-20 lg:py-28">
         <div className="flex flex-col items-center text-center">
           <SectionEyebrow>Get started</SectionEyebrow>
           <SectionHeading className="mt-4">
@@ -152,7 +153,7 @@ export function CtaSection() {
           </div>
           <PhAwardBadges />
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

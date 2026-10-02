@@ -3,6 +3,7 @@
 import { ArrowRightIcon } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
+import { Container } from "@/components/ui/container";
 import {
   SectionEyebrow,
   SectionHeading,
@@ -224,7 +225,7 @@ function IntegrationsHub() {
 export function IntegrationsSection() {
   return (
     <section aria-label="Integrations" className="w-full bg-background">
-      <div className="mx-auto max-w-[1200px] px-10">
+      <Container>
         <div className="pt-16 pb-20 lg:pt-20 lg:pb-28">
           {/* Two-column: copy | hub */}
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-8">
@@ -282,7 +283,7 @@ export function IntegrationsSection() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
