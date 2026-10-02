@@ -260,6 +260,7 @@ export function DemoPanel() {
               inert={!isActive}
               style={{ gridArea: "1 / 1" }}
               className={cn(
+                "min-w-0",
                 !prefersReducedMotion && "transition-opacity duration-200",
                 isActive
                   ? "opacity-100 z-10"
@@ -346,7 +347,7 @@ function IndividualsPanel({
   const slotSelected = instant || (isActive && progress >= IND_SELECT);
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       {/* Main booking card */}
       <div
         style={
@@ -370,19 +371,19 @@ function IndividualsPanel({
           <div className="min-w-0 flex-1">
             <p className="text-[10px] text-muted-foreground">Ewa Nowak</p>
             <p className="text-xs font-bold text-foreground">Intro call</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
-              <span className="text-[10px]">30m</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <VideoIcon className="size-3 shrink-0" aria-hidden="true" />
-              <span className="text-[10px]">Cal Video</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <GlobeIcon className="size-3 shrink-0" aria-hidden="true" />
-              <span className="text-[10px]">Warsaw</span>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                <span className="text-[10px]">30m</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <VideoIcon className="size-3 shrink-0" aria-hidden="true" />
+                <span className="text-[10px]">Cal Video</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <GlobeIcon className="size-3 shrink-0" aria-hidden="true" />
+                <span className="text-[10px]">Warsaw</span>
+              </span>
             </div>
           </div>
         </div>
@@ -460,7 +461,7 @@ function IndividualsPanel({
                   >
                     <div
                       className={cn(
-                        "flex size-7 items-center justify-center rounded-xl text-[11px] transition-all duration-300",
+                        "flex size-5 items-center justify-center rounded-lg text-[10px] transition-all duration-300 sm:size-7 sm:rounded-xl sm:text-[11px]",
                         isSelected
                           ? calIlluminated
                             ? "bg-foreground font-semibold text-background"
@@ -481,7 +482,7 @@ function IndividualsPanel({
           </div>
 
           {/* Right — time slots */}
-          <div className="flex w-[76px] shrink-0 flex-col bg-muted/50 px-2.5 pb-2.5 pt-4">
+          <div className="flex w-[60px] shrink-0 flex-col bg-muted/50 px-2 pb-2.5 pt-4 sm:w-[76px] sm:px-2.5">
             <p className="mb-4 text-xs" aria-hidden="true">
               <span className="font-normal text-muted-foreground">Thu </span>
               <span className="font-semibold text-foreground">08</span>
