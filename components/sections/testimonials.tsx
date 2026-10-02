@@ -150,8 +150,8 @@ function TileCluster() {
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
                 borderRadius: "16px",
-                background: `rgba(255,255,255,${tileOpacity(row, col)})`,
-                border: `1px solid rgba(255,255,255,${tileBorder(row, col)})`,
+                background: `oklch(from var(--color-inverse-foreground) l c h / ${tileOpacity(row, col)})`,
+                border: `1px solid oklch(from var(--color-inverse-foreground) l c h / ${tileBorder(row, col)})`,
               }}
             />
           );
@@ -191,7 +191,7 @@ function PortraitSlot({
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-foreground p-8">
-      <span className="select-none text-center text-2xl font-bold uppercase tracking-[0.18em] text-background">
+      <span className="select-none text-center text-2xl font-bold uppercase tracking-[0.18em] text-inverse-foreground">
         {company}
       </span>
     </div>
@@ -418,7 +418,7 @@ export function TestimonialsSection() {
     <section
       ref={sectionRef}
       aria-label="Customer testimonials"
-      className="relative w-full overflow-hidden bg-neutral-950"
+      className="relative w-full overflow-hidden bg-inverse"
     >
       {/* Top-right concentrated tile cluster */}
       <TileCluster />
@@ -434,7 +434,7 @@ export function TestimonialsSection() {
             Don&apos;t just take our word for it.
           </SectionHeading>
 
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-background/55">
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-inverse-foreground/55">
             See how people and teams use Cal.com to make scheduling work the way
             they do.
           </p>
@@ -461,7 +461,7 @@ export function TestimonialsSection() {
             type="button"
             aria-label="Previous testimonial"
             onClick={() => navigate(-1)}
-            className="absolute z-20 flex h-12 w-12 items-center justify-center text-background/50 transition-opacity hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+            className="absolute z-20 flex h-12 w-12 items-center justify-center text-inverse-foreground/50 transition-opacity hover:text-inverse-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
             style={{
               left: `${leftArrowLeft}px`,
               top: "50%",
@@ -480,7 +480,7 @@ export function TestimonialsSection() {
             type="button"
             aria-label="Next testimonial"
             onClick={() => navigate(1)}
-            className="absolute z-20 flex h-12 w-12 items-center justify-center text-background/50 transition-opacity hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+            className="absolute z-20 flex h-12 w-12 items-center justify-center text-inverse-foreground/50 transition-opacity hover:text-inverse-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
             style={{
               left: `${rightArrowLeft}px`,
               top: "50%",
@@ -605,7 +605,7 @@ export function TestimonialsSection() {
                 }
               }}
               className={cn(
-                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
+                "relative overflow-hidden h-1.5 rounded-full transition-[width,background-color] duration-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inverse-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground",
                 i === displayActive
                   ? "w-6 bg-card/30"
                   : "w-1.5 bg-card/30 hover:bg-card/50",

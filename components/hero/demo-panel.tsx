@@ -365,7 +365,7 @@ function IndividualsPanel({
         <div className="flex items-center gap-2.5 border-b border-border p-3 sm:hidden">
           <Avatar className="size-7">
             <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
-            <AvatarFallback className="bg-neutral-200 text-[9px] font-semibold text-neutral-600">
+            <AvatarFallback className="bg-avatar-bg text-[9px] font-semibold text-avatar-fg">
               EN
             </AvatarFallback>
           </Avatar>
@@ -393,7 +393,7 @@ function IndividualsPanel({
           <div className="hidden sm:flex w-[132px] shrink-0 flex-col gap-4 p-4">
             <Avatar className="size-8">
               <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
-              <AvatarFallback className="bg-neutral-200 text-[9px] font-semibold text-neutral-600">
+              <AvatarFallback className="bg-avatar-bg text-[9px] font-semibold text-avatar-fg">
                 EN
               </AvatarFallback>
             </Avatar>
@@ -469,7 +469,7 @@ function IndividualsPanel({
                             : "text-muted-foreground/30"
                           : isAvail
                             ? calIlluminated
-                              ? "bg-neutral-100 font-medium text-foreground"
+                              ? "bg-neutral-wash font-medium text-foreground"
                               : "text-muted-foreground/30"
                             : "text-muted-foreground/30",
                       )}
@@ -582,7 +582,7 @@ function TeamsPanel({
                 >
                   <Avatar className="size-8 ring-2 ring-card">
                     <AvatarImage src={src} alt="" />
-                    <AvatarFallback className="bg-neutral-200" />
+                    <AvatarFallback className="bg-avatar-bg" />
                   </Avatar>
                 </div>
               ))}
@@ -611,7 +611,7 @@ function TeamsPanel({
           className="relative flex w-full flex-col items-center"
           style={{
             backgroundImage:
-              "radial-gradient(circle, oklch(0 0 0 / 0.055) 1px, transparent 1px)",
+              "radial-gradient(circle, var(--color-dot-fill) 1px, transparent 1px)",
             backgroundSize: "14px 14px",
           }}
         >
@@ -625,7 +625,7 @@ function TeamsPanel({
                 "transition-[transform,border-color] duration-450 ease-out",
             )}
             style={{
-              border: `1px solid ${shuffleActive ? "var(--border)" : "oklch(0 0 0 / 0.1)"}`,
+              border: `1px solid ${shuffleActive ? "var(--color-border)" : "var(--color-border-inactive)"}`,
               transform: shuffleActive ? "scale(1.05)" : "scale(1)",
             }}
           >
@@ -681,7 +681,7 @@ function TeamsPanel({
                     src="/avatars/teams-customer.png"
                     alt="Customer"
                   />
-                  <AvatarFallback className="bg-neutral-200" />
+                  <AvatarFallback className="bg-avatar-bg" />
                 </Avatar>
                 <div className="flex size-6 items-center justify-center rounded-full border border-success/20 bg-success/10">
                   <CheckIcon
@@ -694,7 +694,7 @@ function TeamsPanel({
                     src="/avatars/teams-sofia.png"
                     alt="Sofia Ruiz"
                   />
-                  <AvatarFallback className="bg-neutral-200" />
+                  <AvatarFallback className="bg-avatar-bg" />
                 </Avatar>
               </div>
             </div>
@@ -756,13 +756,13 @@ const ORG_MEETINGS: Array<{
 
 const ORG_TEAM_BLOCK: Record<OrgTeam, string> = {
   sales: "bg-foreground text-background",
-  support: "bg-neutral-100 text-foreground",
+  support: "bg-neutral-wash text-foreground",
   hiring: "border border-border bg-card text-foreground",
 };
 
 const ORG_LEGEND_SWATCH: Record<OrgTeam, string> = {
   sales: "bg-foreground",
-  support: "bg-neutral-200",
+  support: "bg-avatar-bg",
   hiring: "border border-border bg-card",
 };
 
@@ -944,12 +944,12 @@ type DevTab = "atoms" | "apiv2" | "webhooks";
 type CodeToken = { t: string; c: string };
 type CodeEntry = { id: string; tokens: CodeToken[] };
 
-const kw = (t: string): CodeToken => ({ t, c: "text-sky-400" });
-const str = (t: string): CodeToken => ({ t, c: "text-orange-300" });
-const tag = (t: string): CodeToken => ({ t, c: "text-rose-400" });
-const att = (t: string): CodeToken => ({ t, c: "text-sky-300" });
-const pln = (t: string): CodeToken => ({ t, c: "text-slate-200" });
-const dim = (t: string): CodeToken => ({ t, c: "text-slate-400" });
+const kw = (t: string): CodeToken => ({ t, c: "text-code-keyword" });
+const str = (t: string): CodeToken => ({ t, c: "text-code-string" });
+const tag = (t: string): CodeToken => ({ t, c: "text-code-tag" });
+const att = (t: string): CodeToken => ({ t, c: "text-code-attr" });
+const pln = (t: string): CodeToken => ({ t, c: "text-code-plain" });
+const dim = (t: string): CodeToken => ({ t, c: "text-code-muted" });
 
 const DEV_CODE: Record<DevTab, CodeEntry[]> = {
   atoms: [
@@ -1222,7 +1222,7 @@ function ApiV2Result() {
       <div className="flex flex-col gap-1 font-mono text-micro">
         <div>
           <span className="text-muted-foreground">status: </span>
-          <span className="text-orange-400">"accepted"</span>
+          <span className="text-code-value">"accepted"</span>
         </div>
         <div>
           <span className="text-muted-foreground">start (Tokyo): </span>
@@ -1372,9 +1372,9 @@ function DevelopersPanel({
     >
       <div className="relative pb-32 pr-4">
         {/* Code window */}
-        <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-code-border/60 bg-code-surface shadow-sm">
           {/* Tab + filename bar */}
-          <div className="flex items-center border-b border-neutral-700/60">
+          <div className="flex items-center border-b border-code-border/60">
             <div
               ref={devTabsRef}
               role="tablist"
@@ -1398,8 +1398,8 @@ function DevelopersPanel({
                       "px-3.5 py-2.5 text-xs font-medium transition-colors duration-150",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isActiveTab
-                        ? "rounded-t bg-neutral-800 text-neutral-100"
-                        : "text-neutral-500 hover:text-neutral-300",
+                        ? "rounded-t bg-code-tab-active text-code-tab-text"
+                        : "text-code-dim hover:text-code-dim-hover",
                     )}
                   >
                     {DEV_TAB_LABELS[tab]}
@@ -1407,7 +1407,7 @@ function DevelopersPanel({
                 );
               })}
             </div>
-            <span className="ml-auto pr-4 font-mono text-2xs text-neutral-500">
+            <span className="ml-auto pr-4 font-mono text-2xs text-code-dim">
               {DEV_TAB_FILES[activeDevTab]}
             </span>
           </div>
@@ -1428,7 +1428,7 @@ function DevelopersPanel({
                     : { opacity: i < visibleLines ? 1 : 0 }
                 }
               >
-                <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-neutral-600">
+                <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-code-line-number">
                   {i + 1}
                 </span>
                 <span className="whitespace-pre font-mono text-xs leading-[1.7]">
@@ -1439,7 +1439,7 @@ function DevelopersPanel({
                     </span>
                   ))}
                   {showCursor && i === visibleLines - 1 && (
-                    <span className="ml-0.5 inline-block h-[1em] w-[0.55em] translate-y-[1px] animate-pulse bg-neutral-400" />
+                    <span className="ml-0.5 inline-block h-[1em] w-[0.55em] translate-y-[1px] animate-pulse bg-code-cursor" />
                   )}
                 </span>
               </div>

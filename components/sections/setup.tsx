@@ -1076,12 +1076,12 @@ function YourLookVisual() {
       {/* Dark grey */}
       <span
         aria-hidden="true"
-        className="block h-5 w-5 rounded-full bg-neutral-500"
+        className="block h-5 w-5 rounded-full bg-neutral-deep"
       />
       {/* Light grey */}
       <span
         aria-hidden="true"
-        className="block h-5 w-5 rounded-full bg-neutral-300"
+        className="block h-5 w-5 rounded-full bg-neutral-pale"
       />
       {/* White */}
       <span

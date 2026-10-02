@@ -12,6 +12,42 @@
   --duration-250: 250ms;
   --duration-450: 450ms;
   --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Inverse surface pair — dark sections (Testimonials, Review Banner) */
+  --color-inverse: oklch(14.5% 0 0);
+  --color-inverse-foreground: #f4f4f4;
+
+  /* Code syntax highlighting */
+  --color-code-keyword: oklch(74.6% 0.16 232.661);
+  --color-code-string: oklch(83.7% 0.128 66.29);
+  --color-code-tag: oklch(71.2% 0.194 13.428);
+  --color-code-attr: oklch(82.8% 0.111 230.318);
+  --color-code-plain: oklch(92.9% 0.013 255.508);
+  --color-code-muted: oklch(70.4% 0.04 256.788);
+  --color-code-value: oklch(75% 0.183 55.934);
+
+  /* Code window chrome — always dark fixed surface */
+  --color-code-surface: oklch(20.5% 0 0);
+  --color-code-border: oklch(37.1% 0 0);
+  --color-code-tab-active: oklch(26.9% 0 0);
+  --color-code-tab-text: oklch(97% 0 0);
+  --color-code-dim: oklch(55.6% 0 0);
+  --color-code-dim-hover: oklch(87% 0 0);
+  --color-code-line-number: oklch(43.9% 0 0);
+  --color-code-cursor: oklch(70.8% 0 0);
+
+  /* Avatar fallback — light fixed values */
+  --color-avatar-bg: oklch(92.2% 0 0);
+  --color-avatar-fg: oklch(43.9% 0 0);
+
+  /* Neutral fixed tints */
+  --color-neutral-wash: oklch(97% 0 0);
+  --color-neutral-pale: oklch(87% 0 0);
+  --color-neutral-deep: oklch(55.6% 0 0);
+
+  /* Transparent fills */
+  --color-dot-fill: oklch(0% 0 0 / 5.5%);
+  --color-border-inactive: oklch(0% 0 0 / 10%);
 }
 
 @custom-variant dark (&:is(.dark *));

@@ -57,8 +57,8 @@ function BannerTileCluster() {
                 width: `${TILE_SIZE}px`,
                 height: `${TILE_SIZE}px`,
                 borderRadius: "16px",
-                background: `rgba(255,255,255,${tileOpacity(row, col)})`,
-                border: `1px solid rgba(255,255,255,${tileBorder(row, col)})`,
+                background: `oklch(from var(--color-inverse-foreground) l c h / ${tileOpacity(row, col)})`,
+                border: `1px solid oklch(from var(--color-inverse-foreground) l c h / ${tileBorder(row, col)})`,
               }}
             />
           );
@@ -149,16 +149,18 @@ function ReviewSource({
     <div className="flex items-center gap-3">
       {mark}
       <span className="flex items-baseline gap-0.5">
-        <span className="text-stat font-bold leading-none tracking-tight text-background">
+        <span className="text-stat font-bold leading-none tracking-tight text-inverse-foreground">
           {main}
         </span>
-        <span className="text-sm font-medium leading-none text-background/40">
+        <span className="text-sm font-medium leading-none text-inverse-foreground/40">
           /{denom}
         </span>
       </span>
       <div className="flex flex-col gap-1">
         <Stars />
-        <span className="text-xs leading-none text-background/50">{label}</span>
+        <span className="text-xs leading-none text-inverse-foreground/50">
+          {label}
+        </span>
       </div>
     </div>
   );
@@ -168,7 +170,7 @@ function ReviewSource({
 
 export function ReviewProofBanner() {
   return (
-    <div className="relative w-full overflow-hidden bg-neutral-950 py-10">
+    <div className="relative w-full overflow-hidden bg-inverse py-10">
       <BannerTileCluster />
       <div className="relative mx-auto max-w-[1200px] px-10">
         <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-16">
@@ -178,7 +180,7 @@ export function ReviewProofBanner() {
             label="154 reviews on G2"
           />
           <div
-            className="hidden sm:block w-px h-8 bg-background/10"
+            className="hidden sm:block w-px h-8 bg-inverse-foreground/10"
             aria-hidden="true"
           />
           <ReviewSource
@@ -187,7 +189,7 @@ export function ReviewProofBanner() {
             label="400 reviews on Trustpilot"
           />
           <div
-            className="hidden sm:block w-px h-8 bg-background/10"
+            className="hidden sm:block w-px h-8 bg-inverse-foreground/10"
             aria-hidden="true"
           />
           <ReviewSource
