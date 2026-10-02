@@ -1193,7 +1193,7 @@ function ApiV2Result() {
           aria-hidden="true"
         />
         <span className="truncate font-mono text-[10px] text-muted-foreground">
-          meet.cal.com/kai-nakamura/consult
+          app.cal.com/video/9fJw3xT2pQ
         </span>
       </div>
     </div>
@@ -1326,7 +1326,7 @@ function DevelopersPanel({
             }
       }
     >
-      <div className="relative pb-14 pr-4">
+      <div className="relative pb-32 pr-4">
         {/* Code window */}
         <div className="overflow-hidden rounded-xl border border-neutral-700/60 bg-neutral-900 shadow-sm">
           {/* Tab + filename bar */}
@@ -1386,7 +1386,7 @@ function DevelopersPanel({
                 <span className="w-7 select-none pr-3 text-right font-mono text-[12px] leading-[1.7] text-neutral-600">
                   {i + 1}
                 </span>
-                <span className="font-mono text-[12px] leading-[1.7]">
+                <span className="whitespace-pre font-mono text-[12px] leading-[1.7]">
                   {entry.tokens.map((tok, j) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: syntax tokens static per line
                     <span key={j} className={tok.c}>
