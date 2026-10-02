@@ -98,11 +98,11 @@ function PhAwardBadges() {
           <span key={label} className="flex items-center gap-1.5">
             <PhLaurelLeft className="shrink-0 text-slate-700" />
             <span className="flex flex-col items-center gap-0.5 text-center">
-              <span className="text-base font-bold leading-none tracking-tight text-slate-700">
-                {rank}
-              </span>
               <span className="text-xs font-semibold leading-none text-slate-700">
                 {label}
+              </span>
+              <span className="text-base font-bold leading-none tracking-tight text-slate-700">
+                {rank}
               </span>
             </span>
             <PhLaurelRight className="shrink-0 text-slate-700" />
