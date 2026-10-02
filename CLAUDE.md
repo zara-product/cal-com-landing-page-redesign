@@ -6,10 +6,7 @@ This repository contains a focused redesign of the Cal.com landing-page experien
 
 Before substantial implementation work:
 - follow the Next.js guidance imported from `AGENTS.md`
-- read the relevant approved files in `.claude/context/`
-- use the installed coss skill as the source of truth for coss components and conventions
 
-Approved design decisions live in `.claude/context/`.
 Do not silently change approved product, copy, information architecture, or interaction decisions.
 
 ## Stack
@@ -129,55 +126,6 @@ Before considering an approved slice complete:
 6. verify keyboard behaviour where applicable
 
 `bun run build` currently includes the project's TypeScript compilation check.
-
-## Implementation workflow
-
-- When the user provides an approved implementation brief, treat that brief as approval to build.
-- Do not re-propose the design or ask for another approval.
-- Do one SHORT inspection pass only: read the existing implementation and the minimum directly relevant components needed.
-- Then start coding immediately.
-- Do not perform open-ended research, browse external references, or inspect unrelated files during implementation.
-- Only research when a specific missing fact or asset is genuinely blocking implementation.
-- If a non-critical detail cannot be resolved quickly, use a clearly identified V1 treatment and flag it for the refinement pass rather than continuing to research.
-- For V1 section builds, prioritise a complete, working implementation over exhaustive optimisation.
-- Reuse existing project patterns and coss primitives.
-- Do not refactor unrelated code.
-- Do not revisit already approved product/design decisions unless implementation exposes a real problem.
-
-## Validation workflow
-
-After implementing each approved section:
-
-1. Run Biome only on files changed for that section.
-2. Run the production build/type check.
-3. Test the section in the real browser.
-4. Verify its primary interaction actually works.
-5. Check for runtime/console errors.
-6. Capture the requested screenshot.
-7. Report:
-   - files changed
-   - coss components reused
-   - custom components created
-   - temporary/V1 treatments
-   - validation results
-8. Stop.
-
-Do not print or explain the entire source code unless requested.
-
-## Research budget
-
-- Do not repeatedly search for a better reference or asset once enough context exists to implement.
-- One focused lookup is acceptable for a concrete blocker.
-- If that lookup does not resolve a non-critical issue, continue with the V1 and flag it for later.
-- Never spend an implementation pass researching optional details.
-
-## Build strategy
-
-- First complete every landing-page section to a solid V1.
-- After the full page exists, refine each section for content, visual design, product authenticity, UI detail, responsive behaviour, motion, animation and accessibility.
-- Do not attempt final-polish quality while the rest of the page is still missing.
-
-Do not automatically begin the next major section.
 
 ## Engineering discipline
 
