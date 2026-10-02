@@ -233,7 +233,10 @@ export function DemoPanel() {
                     onDone={() => setDepartingBar(null)}
                   />
                 )}
-              <Icon className="relative size-3.5 shrink-0" aria-hidden="true" />
+              <Icon
+                className="relative hidden size-3.5 shrink-0 sm:block"
+                aria-hidden="true"
+              />
               <span className="relative hidden sm:inline">
                 {MODE_LABELS[mode]}
               </span>
@@ -243,8 +246,8 @@ export function DemoPanel() {
         })}
       </div>
 
-      {/* Product stage — fixed height contains all panel states including Orgs final state (~356px) */}
-      <div className="grid h-[400px]">
+      {/* Product stage — fixed height on sm+; auto on mobile so it matches the tallest panel */}
+      <div className="grid sm:h-[400px]">
         {MODES.map((mode) => {
           const isActive = activeMode === mode;
           return (
@@ -356,9 +359,36 @@ function IndividualsPanel({
         }
         className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
       >
+        {/* Mobile-only compact host row */}
+        <div className="flex items-center gap-2.5 border-b border-border p-3 sm:hidden">
+          <Avatar className="size-7">
+            <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
+            <AvatarFallback className="bg-neutral-200 text-[9px] font-semibold text-neutral-600">
+              EN
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] text-muted-foreground">Ewa Nowak</p>
+            <p className="text-xs font-bold text-foreground">Intro call</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+              <span className="text-[10px]">30m</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <VideoIcon className="size-3 shrink-0" aria-hidden="true" />
+              <span className="text-[10px]">Cal Video</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <GlobeIcon className="size-3 shrink-0" aria-hidden="true" />
+              <span className="text-[10px]">Warsaw</span>
+            </div>
+          </div>
+        </div>
         <div className="flex divide-x divide-border">
           {/* Left — host details */}
-          <div className="flex w-[132px] shrink-0 flex-col gap-4 p-4">
+          <div className="hidden sm:flex w-[132px] shrink-0 flex-col gap-4 p-4">
             <Avatar className="size-8">
               <AvatarImage src="/avatars/individuals-ewa.png" alt="Ewa Nowak" />
               <AvatarFallback className="bg-neutral-200 text-[9px] font-semibold text-neutral-600">
@@ -412,7 +442,8 @@ function IndividualsPanel({
                   key={d}
                   className="pb-1.5 text-center text-[8px] font-medium tracking-wide text-muted-foreground/50"
                 >
-                  {d}
+                  <span className="sm:hidden">{d[0]}</span>
+                  <span className="hidden sm:inline">{d}</span>
                 </div>
               ))}
               {OCT_CELLS.map((day, i) => {
