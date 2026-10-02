@@ -2,6 +2,10 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -423,14 +427,12 @@ export function TestimonialsSection() {
       <div className="relative mx-auto max-w-[1200px] px-10">
         <div className="pt-20 lg:pt-28">
           <div className="flex items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-background/50">
-              Testimonials
-            </p>
+            <SectionEyebrow tone="dark">Testimonials</SectionEyebrow>
           </div>
 
-          <h2 className="mt-4 max-w-2xl text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-background">
+          <SectionHeading tone="dark" className="mt-4 max-w-2xl">
             Don&apos;t just take our word for it.
-          </h2>
+          </SectionHeading>
 
           <p className="mt-4 max-w-sm text-base leading-relaxed text-background/55">
             See how people and teams use Cal.com to make scheduling work the way
@@ -562,7 +564,7 @@ export function TestimonialsSection() {
                   {/* Content column */}
                   <div className="flex flex-1 flex-col justify-center px-6 pb-8 pt-2 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
                     <blockquote>
-                      <p className="text-[1.25rem] font-bold leading-snug tracking-tight text-foreground lg:text-[1.5rem]">
+                      <p className="text-xl font-bold leading-snug tracking-tight text-foreground lg:text-2xl">
                         &ldquo;{t.quote}&rdquo;
                       </p>
                     </blockquote>

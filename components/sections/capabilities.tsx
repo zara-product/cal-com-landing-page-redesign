@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { cn } from "@/lib/utils";
 
 // ─── CapabilitiesSection ──────────────────────────────────────────────────────
@@ -20,17 +24,15 @@ export function CapabilitiesSection() {
           {/* Section header */}
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-end lg:gap-16">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-                Scheduling that grows with you
-              </span>
-              <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
+              <SectionEyebrow>Scheduling that grows with you</SectionEyebrow>
+              <SectionHeading className="mt-4">
                 More capability.
                 <br />
                 Same simplicity.
-              </h2>
+              </SectionHeading>
             </div>
             <div className="border-l border-border pl-10 lg:pl-12">
-              <p className="text-base leading-relaxed text-muted-foreground lg:text-[1.0625rem]">
+              <p className="text-base leading-relaxed text-muted-foreground lg:text-body-lg">
                 Start simple, then add more as you need it — with the same ease
                 throughout.
               </p>
@@ -134,7 +136,7 @@ function RouteBookingsVisual() {
     <div className="flex w-full items-stretch gap-2">
       {/* Question + answer — two-line card sets the row height */}
       <div className="min-w-0 flex-1 rounded-xl border border-border bg-card px-2.5 py-1.5">
-        <p className="text-[10px] text-muted-foreground">Company size?</p>
+        <p className="text-2xs text-muted-foreground">Company size?</p>
         <p className="mt-0.5 text-sm font-semibold text-foreground">200+</p>
       </div>
 
@@ -145,10 +147,10 @@ function RouteBookingsVisual() {
 
       {/* Rule pill + fallback — centred in row */}
       <div className="min-w-0 flex-1 self-center">
-        <div className="whitespace-nowrap rounded-lg bg-foreground px-2 py-1 text-[11px] font-medium text-background">
+        <div className="whitespace-nowrap rounded-lg bg-foreground px-2 py-1 text-micro font-medium text-background">
           200+ → Enterprise
         </div>
-        <p className="mt-1 px-1 text-[10px] text-muted-foreground">
+        <p className="mt-1 px-1 text-2xs text-muted-foreground">
           Else → Self-serve
         </p>
       </div>
@@ -178,7 +180,7 @@ function AcceptPaymentsVisual() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold text-foreground">Intro call</p>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">60 min</p>
+          <p className="mt-0.5 text-2xs text-muted-foreground">60 min</p>
         </div>
         <p className="text-xl font-bold tabular-nums text-foreground">€120</p>
       </div>
@@ -210,7 +212,7 @@ function AutomateVisual() {
             />
             <span className="text-xs text-foreground">{label}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground">{time}</span>
+          <span className="text-2xs text-muted-foreground">{time}</span>
         </div>
       ))}
     </div>
@@ -258,7 +260,7 @@ function StayConsistentVisual() {
       {/* Org header */}
       <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-1.5">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded bg-foreground text-[10px] font-bold text-background">
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-foreground text-2xs font-bold text-background">
             A
           </span>
           <span className="text-sm font-semibold text-foreground">
@@ -279,11 +281,11 @@ function StayConsistentVisual() {
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-1">
             <span className="text-xs font-medium text-foreground">Sales</span>
-            <span className="text-[10px] text-muted-foreground">Admin</span>
+            <span className="text-2xs text-muted-foreground">Admin</span>
           </div>
           <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-1">
             <span className="text-xs font-medium text-foreground">Support</span>
-            <span className="text-[10px] text-muted-foreground">Member</span>
+            <span className="text-2xs text-muted-foreground">Member</span>
           </div>
         </div>
       </div>
@@ -311,7 +313,7 @@ function EmbedVisual() {
             <span className="block h-1.5 w-1.5 rounded-full bg-muted-foreground/25" />
             <span className="block h-1.5 w-1.5 rounded-full bg-muted-foreground/25" />
           </div>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-2xs text-muted-foreground">
             yourapp.com/book
           </span>
         </div>

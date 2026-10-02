@@ -115,7 +115,7 @@ function FooterColumn({ title, links }: { title: string; links: NavLink[] }) {
             >
               {link.label}
               {link.badge && (
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="rounded bg-muted px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {link.badge}
                 </span>
               )}

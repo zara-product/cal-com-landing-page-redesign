@@ -8,6 +8,10 @@ import {
   AccordionPanel,
   AccordionPrimitive,
 } from "@/components/ui/accordion";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { cn } from "@/lib/utils";
 
 // ─── Content ───────────────────────────────────────────────────────────────────
@@ -81,13 +85,11 @@ export function QuestionsSection() {
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-4 mb-16">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold tracking-widest uppercase text-foreground">
-              Questions
-            </span>
+            <SectionEyebrow>Questions</SectionEyebrow>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground leading-[1.05] tracking-tight">
+          <SectionHeading>
             Got a question about Cal.com? Start here.
-          </h2>
+          </SectionHeading>
         </div>
 
         {/* Accordion */}

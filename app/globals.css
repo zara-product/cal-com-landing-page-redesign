@@ -3,6 +3,12 @@
 
 @theme {
   --breakpoint-wide: 1240px;
+  --text-2xs: 0.625rem;
+  --text-micro: 0.6875rem;
+  --text-body-lg: 1.0625rem;
+  --text-stat: 1.625rem;
+  --text-display: 2.75rem;
+  --text-display-xl: 3.5rem;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -175,7 +181,7 @@
 }
 
 :root {
-  --font-sans: "Cal Sans";
+  --font-sans: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans);
   --frame: --alpha(var(--color-neutral-500) / 21%);
   --frame-strong: --alpha(var(--color-neutral-500) / 52%);

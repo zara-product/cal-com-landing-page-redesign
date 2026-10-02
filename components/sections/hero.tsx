@@ -57,7 +57,7 @@ function AwardBadge({ category, rank }: { category: string; rank: string }) {
         <span className="text-[8px] font-semibold uppercase leading-none tracking-[0.13em] text-muted-foreground/55">
           {category}
         </span>
-        <span className="mt-1 text-[18px] font-bold leading-none tracking-tight text-foreground/55">
+        <span className="mt-1 text-lg font-bold leading-none tracking-tight text-foreground/55">
           {rank}
         </span>
       </div>
@@ -100,12 +100,12 @@ export function HeroSection() {
             </a>
 
             {/* Headline */}
-            <h1 className="mt-6 text-[2.75rem] font-bold leading-[1.08] tracking-tight text-foreground xl:text-[3.5rem]">
+            <h1 className="mt-6 text-display font-bold leading-[1.08] tracking-tight text-foreground xl:text-display-xl">
               Scheduling made simple.
             </h1>
 
             {/* Body */}
-            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:text-[1.0625rem]">
+            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:text-body-lg">
               Make time easy to book, coordinate meetings across teams, automate
               what happens around them, or bring scheduling directly into your
               product.

@@ -1,4 +1,8 @@
 import { Button } from "@/components/ui/button";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 
 // Standard Google 4-color G icon — kept at natural size in the auth button.
 // opacity-100 prevents the button's default 80% svg opacity from washing out
@@ -39,12 +43,10 @@ export function CtaSection() {
     <section aria-label="Get started" className="w-full bg-background">
       <div className="mx-auto max-w-[1200px] px-10 py-20 lg:py-28">
         <div className="flex flex-col items-center text-center">
-          <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-            Get started
-          </span>
-          <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
+          <SectionEyebrow>Get started</SectionEyebrow>
+          <SectionHeading className="mt-4">
             Start simple. Grow from there.
-          </h2>
+          </SectionHeading>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:max-w-none">
             <span className="lg:block lg:whitespace-nowrap">
               Free for individuals. Built to scale with teams and organisations.

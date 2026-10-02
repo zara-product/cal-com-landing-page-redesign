@@ -12,6 +12,10 @@ import {
 import NextImage from "next/image";
 import * as React from "react";
 import { SectionDivider } from "@/components/ui/page-rail";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -156,14 +160,12 @@ export function SetupSection() {
         <div className="pt-20 pb-10 lg:pt-28 lg:pb-14">
           {/* Section header */}
           <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-              Simple scheduling
-            </span>
-            <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
+            <SectionEyebrow>Simple scheduling</SectionEyebrow>
+            <SectionHeading className="mt-4">
               Share your availability.
               <br />
               Skip the back-and-forth.
-            </h2>
+            </SectionHeading>
             <p className="mt-5 text-base leading-relaxed text-muted-foreground">
               Stay in control of your time while Cal.com takes care of the
               scheduling around it.
@@ -327,12 +329,10 @@ export function SetupSection() {
         <div className="py-14">
           {/* ── Make it yours ── */}
           <div className="mb-10">
-            <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-              Make it yours
-            </span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-foreground">
+            <SectionEyebrow>Make it yours</SectionEyebrow>
+            <SectionHeading size="md" className="mt-4">
               Your link. Your look. Your way to schedule.
-            </h2>
+            </SectionHeading>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <MakeItYoursCard
@@ -543,7 +543,7 @@ function ConnectPanel({ isActive }: { isActive: boolean }) {
             <p className="text-xs font-semibold text-foreground">
               Calendars in sync
             </p>
-            <span className="shrink-0 text-[10px] text-muted-foreground">
+            <span className="shrink-0 text-2xs text-muted-foreground">
               Just now
             </span>
           </div>

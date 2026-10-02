@@ -369,20 +369,20 @@ function IndividualsPanel({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] text-muted-foreground">Ewa Nowak</p>
+            <p className="text-2xs text-muted-foreground">Ewa Nowak</p>
             <p className="text-xs font-bold text-foreground">Intro call</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-muted-foreground">
               <span className="flex items-center gap-1">
                 <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-[10px]">30m</span>
+                <span className="text-2xs">30m</span>
               </span>
               <span className="flex items-center gap-1">
                 <VideoIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-[10px]">Cal Video</span>
+                <span className="text-2xs">Cal Video</span>
               </span>
               <span className="flex items-center gap-1">
                 <GlobeIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="text-[10px]">Warsaw</span>
+                <span className="text-2xs">Warsaw</span>
               </span>
             </div>
           </div>
@@ -397,7 +397,7 @@ function IndividualsPanel({
               </AvatarFallback>
             </Avatar>
             <div className="-mt-1">
-              <p className="text-[11px] text-muted-foreground">Ewa Nowak</p>
+              <p className="text-micro text-muted-foreground">Ewa Nowak</p>
               <p className="mt-0.5 text-sm font-bold text-foreground">
                 Intro call
               </p>
@@ -408,14 +408,14 @@ function IndividualsPanel({
                   className="size-3 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="text-[11px] text-muted-foreground">30m</span>
+                <span className="text-micro text-muted-foreground">30m</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <VideoIcon
                   className="size-3 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-micro text-muted-foreground">
                   Cal Video
                 </span>
               </div>
@@ -424,7 +424,7 @@ function IndividualsPanel({
                   className="size-3 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-micro text-muted-foreground">
                   Europe/Warsaw
                 </span>
               </div>
@@ -461,7 +461,7 @@ function IndividualsPanel({
                   >
                     <div
                       className={cn(
-                        "flex size-5 items-center justify-center rounded-lg text-[10px] transition-all duration-300 sm:size-7 sm:rounded-xl sm:text-[11px]",
+                        "flex size-5 items-center justify-center rounded-lg text-2xs transition-all duration-300 sm:size-7 sm:rounded-xl sm:text-micro",
                         isSelected
                           ? calIlluminated
                             ? "bg-foreground font-semibold text-background"
@@ -505,7 +505,7 @@ function IndividualsPanel({
                           }
                     }
                     className={cn(
-                      "rounded-lg py-1 text-center text-[11px] font-medium",
+                      "rounded-lg py-1 text-center text-micro font-medium",
                       isSelected
                         ? "bg-foreground text-background"
                         : "border border-border bg-card text-foreground shadow-xs",
@@ -660,11 +660,11 @@ function TeamsPanel({
             <div className="shrink-0">
               {/* Labels */}
               <div className="mb-1.5 flex gap-3">
-                <span className="w-10 text-center text-[10px] text-muted-foreground">
+                <span className="w-10 text-center text-2xs text-muted-foreground">
                   Customer
                 </span>
                 <span className="w-6" aria-hidden="true" />
-                <span className="w-10 text-center text-[10px] text-muted-foreground">
+                <span className="w-10 text-center text-2xs text-muted-foreground">
                   Host
                 </span>
               </div>
@@ -837,7 +837,7 @@ function OrgsPanel({
                     ORG_LEGEND_SWATCH[team],
                   )}
                 />
-                <span className="text-[10px] capitalize text-muted-foreground">
+                <span className="text-2xs capitalize text-muted-foreground">
                   {team}
                 </span>
               </div>
@@ -856,7 +856,7 @@ function OrgsPanel({
             {ORG_DAY_LABELS.map((day) => (
               <div
                 key={day}
-                className="pb-1.5 text-center text-[10px] font-medium text-muted-foreground/60"
+                className="pb-1.5 text-center text-2xs font-medium text-muted-foreground/60"
               >
                 {day}
               </div>
@@ -887,7 +887,7 @@ function OrgsPanel({
               <div
                 key={hour}
                 style={{ gridColumn: 1, gridRow: i + 1 }}
-                className="flex items-start pt-0.5 text-[10px] leading-none text-muted-foreground/50"
+                className="flex items-start pt-0.5 text-2xs leading-none text-muted-foreground/50"
               >
                 {hour}
               </div>
@@ -1161,7 +1161,7 @@ function AtomsResult() {
             className="size-3 shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
-          <span className="font-mono text-[10px] text-foreground">
+          <span className="font-mono text-2xs text-foreground">
             &lt;Booker /&gt;
           </span>
         </div>
@@ -1170,13 +1170,13 @@ function AtomsResult() {
 
       {/* Days row — Thu 8 selected */}
       <div className="flex gap-1.5">
-        <div className="flex-1 rounded-md bg-foreground py-1 text-center text-[10px] font-semibold text-background">
+        <div className="flex-1 rounded-md bg-foreground py-1 text-center text-2xs font-semibold text-background">
           Thu 8
         </div>
-        <div className="flex-1 rounded-md border border-border py-1 text-center text-[10px] text-muted-foreground">
+        <div className="flex-1 rounded-md border border-border py-1 text-center text-2xs text-muted-foreground">
           Fri 9
         </div>
-        <div className="flex-1 rounded-md border border-border py-1 text-center text-[10px] text-muted-foreground">
+        <div className="flex-1 rounded-md border border-border py-1 text-center text-2xs text-muted-foreground">
           Mon 12
         </div>
       </div>
@@ -1187,7 +1187,7 @@ function AtomsResult() {
           <div
             key={slot}
             className={cn(
-              "flex-1 rounded-md py-1 text-center text-[10px]",
+              "flex-1 rounded-md py-1 text-center text-2xs",
               slot === DEV_SELECTED_SLOT
                 ? "border-2 border-foreground font-semibold text-foreground"
                 : "border border-border text-foreground",
@@ -1205,12 +1205,12 @@ function ApiV2Result() {
   return (
     <div className="flex flex-col gap-2 px-4 py-3.5">
       <div className="flex items-center gap-2">
-        <span className="rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+        <span className="rounded-full bg-success/10 px-2 py-0.5 text-micro font-semibold text-success">
           201 Created
         </span>
-        <span className="text-[11px] text-muted-foreground">142 ms</span>
+        <span className="text-micro text-muted-foreground">142 ms</span>
       </div>
-      <div className="flex flex-col gap-1 font-mono text-[11px]">
+      <div className="flex flex-col gap-1 font-mono text-micro">
         <div>
           <span className="text-muted-foreground">status: </span>
           <span className="text-orange-400">"accepted"</span>
@@ -1225,7 +1225,7 @@ function ApiV2Result() {
           className="size-3 shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
-        <span className="truncate font-mono text-[10px] text-muted-foreground">
+        <span className="truncate font-mono text-2xs text-muted-foreground">
           app.cal.com/video/9fJw3xT2pQ
         </span>
       </div>
@@ -1244,11 +1244,11 @@ function WebhooksResult() {
         <span className="text-xs font-semibold text-foreground">
           BOOKING_CREATED delivered
         </span>
-        <span className="ml-auto rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-semibold text-success">
+        <span className="ml-auto rounded bg-success/10 px-1.5 py-0.5 text-2xs font-semibold text-success">
           200
         </span>
       </div>
-      <p className="text-[10px] leading-snug text-muted-foreground">
+      <p className="text-2xs leading-snug text-muted-foreground">
         Also:{" "}
         <span className="text-foreground/60">
           RESCHEDULED · CANCELLED · MEETING_ENDED
@@ -1396,7 +1396,7 @@ function DevelopersPanel({
                 );
               })}
             </div>
-            <span className="ml-auto pr-4 font-mono text-[10px] text-neutral-500">
+            <span className="ml-auto pr-4 font-mono text-2xs text-neutral-500">
               {DEV_TAB_FILES[activeDevTab]}
             </span>
           </div>
@@ -1416,10 +1416,10 @@ function DevelopersPanel({
                       }
                 }
               >
-                <span className="w-7 select-none pr-3 text-right font-mono text-[12px] leading-[1.7] text-neutral-600">
+                <span className="w-7 select-none pr-3 text-right font-mono text-xs leading-[1.7] text-neutral-600">
                   {i + 1}
                 </span>
-                <span className="whitespace-pre font-mono text-[12px] leading-[1.7]">
+                <span className="whitespace-pre font-mono text-xs leading-[1.7]">
                   {entry.tokens.map((tok, j) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: syntax tokens static per line
                     <span key={j} className={tok.c}>

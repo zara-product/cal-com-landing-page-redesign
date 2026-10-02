@@ -1,6 +1,10 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -296,13 +300,11 @@ export function WallOfLoveSection() {
       <div className="mx-auto max-w-[1200px] px-10">
         <div className="relative z-10 flex flex-col items-center text-center gap-4 mb-16">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold tracking-widest uppercase text-foreground">
-              Wall of love
-            </span>
+            <SectionEyebrow>Wall of love</SectionEyebrow>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground leading-[1.05] tracking-tight max-w-lg">
+          <SectionHeading className="max-w-lg">
             Why our users love Cal.com.
-          </h2>
+          </SectionHeading>
           <p className="text-base text-muted-foreground leading-relaxed max-w-md">
             Real feedback from people using Cal.com to schedule, coordinate and
             build scheduling into their products.

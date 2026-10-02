@@ -3,6 +3,10 @@
 import { ArrowRightIcon } from "lucide-react";
 import NextImage from "next/image";
 import * as React from "react";
+import {
+  SectionEyebrow,
+  SectionHeading,
+} from "@/components/ui/section-heading";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -228,13 +232,11 @@ export function IntegrationsSection() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-8">
             {/* Left: copy */}
             <div className="flex flex-col gap-6 lg:gap-7">
-              <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
-                Integrations
-              </span>
+              <SectionEyebrow>Integrations</SectionEyebrow>
 
-              <h2 className="text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
+              <SectionHeading>
                 Keep your meetings in sync with the tools you already use.
-              </h2>
+              </SectionHeading>
 
               <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
                 Bring Slack, Salesforce, Google Calendar, Zoom and the rest of

@@ -149,7 +149,7 @@ function ReviewSource({
     <div className="flex items-center gap-3">
       {mark}
       <span className="flex items-baseline gap-0.5">
-        <span className="text-[1.625rem] font-bold leading-none tracking-tight text-background">
+        <span className="text-stat font-bold leading-none tracking-tight text-background">
           {main}
         </span>
         <span className="text-sm font-medium leading-none text-background/40">
