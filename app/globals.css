@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "cal-sans";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -170,6 +171,7 @@
 }
 
 :root {
+  --font-sans: "Cal Sans";
   --font-heading: var(--font-sans);
   --frame: --alpha(var(--color-neutral-500) / 21%);
   --frame-strong: --alpha(var(--color-neutral-500) / 52%);
@@ -304,6 +306,7 @@
   }
   html {
     @apply font-sans;
+    font-optical-sizing: auto;
   }
 }
 

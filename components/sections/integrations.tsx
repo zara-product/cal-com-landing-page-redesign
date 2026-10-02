@@ -232,7 +232,7 @@ export function IntegrationsSection() {
                 Integrations
               </span>
 
-              <h2 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+              <h2 className="text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
                 Keep your meetings in sync with the tools you already use.
               </h2>
 

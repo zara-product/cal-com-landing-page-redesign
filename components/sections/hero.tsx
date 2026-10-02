@@ -57,7 +57,7 @@ function AwardBadge({ category, rank }: { category: string; rank: string }) {
         <span className="text-[8px] font-semibold uppercase leading-none tracking-[0.13em] text-muted-foreground/55">
           {category}
         </span>
-        <span className="mt-1 text-[18px] font-black leading-none tracking-tight text-foreground/55">
+        <span className="mt-1 text-[18px] font-bold leading-none tracking-tight text-foreground/55">
           {rank}
         </span>
       </div>

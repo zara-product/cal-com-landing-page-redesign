@@ -75,7 +75,7 @@ function G2Mark() {
     <span
       role="img"
       aria-label="G2"
-      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white text-sm font-black tracking-tight shrink-0"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white text-sm font-bold tracking-tight shrink-0"
       style={{ background: "#FF492C" }}
     >
       G2
@@ -109,7 +109,7 @@ function ProductHuntMark() {
     <span
       role="img"
       aria-label="Product Hunt"
-      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white text-sm font-black tracking-tight shrink-0"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-white text-sm font-bold tracking-tight shrink-0"
       style={{ background: "#DA552F" }}
     >
       P
@@ -149,7 +149,7 @@ function ReviewSource({
     <div className="flex items-center gap-3">
       {mark}
       <span className="flex items-baseline gap-0.5">
-        <span className="text-[1.625rem] font-extrabold leading-none tracking-tight text-background">
+        <span className="text-[1.625rem] font-bold leading-none tracking-tight text-background">
           {main}
         </span>
         <span className="text-sm font-medium leading-none text-background/40">

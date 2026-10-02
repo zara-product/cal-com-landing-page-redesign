@@ -23,7 +23,7 @@ export function CapabilitiesSection() {
               <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
                 Scheduling that grows with you
               </span>
-              <h2 className="mt-4 text-5xl font-extrabold leading-[1.04] tracking-tight text-foreground lg:text-[3.5rem]">
+              <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
                 More capability.
                 <br />
                 Same simplicity.

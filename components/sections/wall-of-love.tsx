@@ -300,7 +300,7 @@ export function WallOfLoveSection() {
               Wall of love
             </span>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground leading-[1.05] tracking-tight max-w-lg">
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground leading-[1.05] tracking-tight max-w-lg">
             Why our users love Cal.com.
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed max-w-md">

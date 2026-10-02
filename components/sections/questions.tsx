@@ -85,7 +85,7 @@ export function QuestionsSection() {
               Questions
             </span>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground leading-[1.05] tracking-tight">
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground leading-[1.05] tracking-tight">
             Got a question about Cal.com? Start here.
           </h2>
         </div>

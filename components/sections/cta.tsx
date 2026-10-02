@@ -42,7 +42,7 @@ export function CtaSection() {
           <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
             Get started
           </span>
-          <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+          <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
             Start simple. Grow from there.
           </h2>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground">

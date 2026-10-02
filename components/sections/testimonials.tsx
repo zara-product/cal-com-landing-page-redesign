@@ -423,16 +423,16 @@ export function TestimonialsSection() {
       <div className="relative mx-auto max-w-[1200px] px-10">
         <div className="pt-20 lg:pt-28">
           <div className="flex items-center gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-background/50">
+            <p className="text-xs font-semibold uppercase tracking-widest text-background/50">
               Testimonials
             </p>
           </div>
 
-          <h2 className="mt-4 max-w-2xl text-[2.25rem] font-bold leading-tight tracking-tight text-background lg:text-[3rem]">
+          <h2 className="mt-4 max-w-2xl text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-background">
             Don&apos;t just take our word for it.
           </h2>
 
-          <p className="mt-4 max-w-sm text-[0.9375rem] leading-relaxed text-background/55">
+          <p className="mt-4 max-w-sm text-base leading-relaxed text-background/55">
             See how people and teams use Cal.com to make scheduling work the way
             they do.
           </p>
@@ -568,7 +568,7 @@ export function TestimonialsSection() {
                     </blockquote>
 
                     <div className="mt-7">
-                      <p className="text-[0.9375rem] font-semibold text-foreground">
+                      <p className="text-sm font-semibold text-foreground">
                         {t.name}
                       </p>
                       <p className="mt-0.5 text-sm text-muted-foreground">

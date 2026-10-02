@@ -159,7 +159,7 @@ export function SetupSection() {
             <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
               Simple scheduling
             </span>
-            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+            <h2 className="mt-4 text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight text-foreground">
               Share your availability.
               <br />
               Skip the back-and-forth.
@@ -329,7 +329,7 @@ export function SetupSection() {
             <span className="text-xs font-semibold uppercase tracking-widest text-foreground">
               Make it yours
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+            <h2 className="mt-4 text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-foreground">
               Your link. Your look. Your way to schedule.
             </h2>
           </div>
