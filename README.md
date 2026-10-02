@@ -61,7 +61,7 @@ I used AI tools where they helped me move faster, while the product decisions, c
 
 Tools included:
 
-- **ChatGPT** for research synthesis, documentation and working through the information architecture;
+- **ChatGPT** — for documentation support and helping organise parts of the written rationale;
 - **Figma Make and Lovable** for ideation, visual exploration and auditing different directions;
 - **ChatGPT image generation** for supporting visual assets;
 - **Claude Code** for frontend implementation and refinement directly in code.
