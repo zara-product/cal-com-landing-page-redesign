@@ -41,6 +41,8 @@ The implementation uses:
 
 I worked within the existing component and primitive foundation rather than introducing another UI library.
 
+**Built for where Cal.com is going.** This redesign is based on the homepage live at cal.com during the task. Knowing Cal.com had started rebuilding its site in code, beginning with its blog on Next.js, coss ui and Motion, I built in that same direction, so these sections could move into the new site as components rather than be rebuilt from a static design.
+
 The final implementation pass included checks for:
 
 - semantic links and controls;
@@ -61,10 +63,10 @@ I used AI tools where they helped me move faster, while the product decisions, c
 
 Tools included:
 
-- **ChatGPT** — for documentation support and helping organise parts of the written rationale;
-- **Figma Make and Lovable** for ideation, visual exploration and auditing different directions;
-- **ChatGPT image generation** for supporting visual assets;
-- **Claude Code** for frontend implementation and refinement directly in code.
+- **ChatGPT** — for documentation support and helping organize parts of the written rationale;
+- **Figma Make and Lovable** — for ideation, visual exploration and auditing different directions;
+- **ChatGPT image generation** — for supporting visual assets;
+- **Claude Code** — for frontend implementation and refinement directly in code.
 
 Alongside these tools, I repeatedly audited the current Cal.com experience and my own implementation manually — reviewing hierarchy, spacing, typography, interaction behavior, responsive states, accessibility, motion and system consistency.
 
@@ -84,7 +86,7 @@ Before finalizing the project, I audited the implementation against the role's p
 - **Code quality:** removed dead dependencies and duplicated logic, checked interaction cleanup, and ran lint, TypeScript and the production build.
 - **Product accuracy:** reviewed scheduling, developer and integration examples against the product surfaces they represent.
 
-The hero remains a marketing illustration using example content. In production, I would move that content into a data layer and evaluate whether the autoplay-with-progress pattern belongs in the shared system.
+The hero is a marketing illustration using example content. Its copy and data already live in typed content files, and the autoplay-with-progress behavior is one shared hook used by three sections, so both are ready to move into a CMS or the shared system.
 
 ## Core redesign decisions
 
@@ -100,7 +102,7 @@ Conversion is also available from the beginning for users who already know what 
 
 The goal was to let someone understand more of Cal.com progressively rather than asking them to learn the whole product at once.
 
-### Hero — help more users recognise themselves
+### Hero — help more users recognize themselves
 
 The hero needed to stay simple while allowing different kinds of Cal.com users to arrive and quickly think:
 
@@ -236,7 +238,7 @@ Motion is focused on product state and logic rather than decoration. Reduced-mot
 
 I would treat this as the first iteration of a product hypothesis rather than a finished answer.
 
-The first thing I would test is whether people beyond the individual scheduling use case recognise Cal.com's relevance to them quickly.
+The first thing I would test is whether people beyond the individual scheduling use case recognize Cal.com's relevance to them quickly.
 
 For example:
 
@@ -247,7 +249,7 @@ For example:
 I would also test:
 
 - whether the progression from simple entry to deeper capability increases understanding without increasing perceived complexity;
-- whether the hero interactions help different audiences recognise themselves;
+- whether the hero interactions help different audiences recognize themselves;
 - whether motion improves comprehension compared with static explanation;
 - whether the hero CTA split between self-serve and sales performs better or worse than the current signup options;
 - movement from product understanding into signup or sales;
@@ -260,5 +262,4 @@ Those findings would shape the next iteration.
 ```bash
 bun install
 bun dev
-```
 ```
