@@ -41,7 +41,7 @@ The implementation uses:
 
 I worked within the existing component and primitive foundation rather than introducing another UI library.
 
-**Built for where Cal.com is going.** This redesign is based on the homepage live at cal.com during the task. Knowing Cal.com had started rebuilding its site in code, beginning with its blog on Next.js, coss ui and Motion, I built in that same direction, so these sections could move into the new site as components rather than be rebuilt from a static design.
+**Built for where Cal.com is going.** This redesign is based on the homepage live at cal.com during the task. Knowing Cal.com had started rebuilding its site in code with Next.js, coss ui and Motion, I built in that same direction, so these sections are already working code that could move into the new site, rather than static designs an engineer would need to rebuild.
 
 The final implementation pass included checks for:
 
